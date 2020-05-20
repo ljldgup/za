@@ -1,0 +1,19 @@
+
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head> 
+    <title>Getting Started: Serving Web Content</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+	<body>
+		{% for pic in pics %}
+		<div style = “width:100%;margin: 0 auto”>
+		    <p>&ensp;</p>
+			<img  align="center" src="/static/{{path}}/{{pic}}"/>
+		</div>
+ 		<br><br><br><br><br><br>
+		{% endfor %}
+
+	</body>
+</html>
+
