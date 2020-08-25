@@ -1,0 +1,130 @@
+
+docker stop node1 node2 node3 node4 node5
+docker rm node1 node2 node3 node4 node5
+docker volume rm v1 v2 v3 v4 v5
+-------------------------------------------------------------
+# 使用8.0版本，集群会报ssl错错误
+# percona不能删
+docker pull percona/percona-xtradb-cluster
+# 重命名
+docker tag percona/percona-xtradb-cluster:latest pxc
+
+docker rmi percona/percona-xtradb-cluster:latest
+
+# 创建网段
+docker network create --subnet=172.18.0.0/24 net1
+# 查看网段
+docker network inspect net1
+# 删除网段
+# docker network rm net1
+
+
+
+# 创建名称为v1的数据卷，--name可以省略
+docker volume create --name v1
+
+# docker inspect v1
+# docker volume rm v1
+docker volume create --name v2
+docker volume create --name v3
+docker volume create --name v4
+docker volume create --name v5
+
+
+
+
+
+# 创建5个PXC容器构成集群
+# 都在之前创建172.18.0.0网段上 --network=net1 --ip 172.18.0.2
+#  -e 传递环境变量
+# 在第一个节点启动后要等待一段时间，等候mysql启动完成。
+docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=abc123456 -e CLUSTER_NAME=PXC -e XTRABACKUP_PASSWORD=abc123456 -v v1:/var/lib/mysql --name=node1 --network=net1 --ip 172.18.0.2 pxc
+# 其他节点
+docker run -d -p 3308:3306 -e MYSQL_ROOT_PASSWORD=abc123456 -e CLUSTER_NAME=PXC -e XTRABACKUP_PASSWORD=abc123456 -e CLUSTER_JOIN=node1 -v v2:/var/lib/mysql --name=node2 --net=net1 --ip 172.18.0.3 pxc
+docker run -d -p 3309:3306 -e MYSQL_ROOT_PASSWORD=abc123456 -e CLUSTER_NAME=PXC -e XTRABACKUP_PASSWORD=abc123456 -e CLUSTER_JOIN=node1 -v v3:/var/lib/mysql --name=node3 --net=net1 --ip 172.18.0.4 pxc
+docker run -d -p 3310:3306 -e MYSQL_ROOT_PASSWORD=abc123456 -e CLUSTER_NAME=PXC -e XTRABACKUP_PASSWORD=abc123456 -e CLUSTER_JOIN=node1 -v v4:/var/lib/mysql --name=node4 --net=net1 --ip 172.18.0.5 pxc
+docker run -d -p 3311:3306 -e MYSQL_ROOT_PASSWORD=abc123456 -e CLUSTER_NAME=PXC -e XTRABACKUP_PASSWORD=abc123456 -e CLUSTER_JOIN=node1 -v v5:/var/lib/mysql --name=node5 --net=net1 --ip 172.18.0.6 pxc
+
+者里节点2-5都会因为没有ssl证书直接挂，在运行容器失败后
+通过访问hyper-v宿主机来吧第一台机器的秘钥考到其他机器上，注意要带权限
+docker run --net=host --ipc=host --uts=host --pid=host -it --security-opt=seccomp=unconfined --privileged --rm -v /:/host alpine /bin/sh
+cd host/var/lib/docker/volumes/
+# 拷贝秘钥文件，-p带权限
+cp -p v1/_data/*.pem v2/_data/
+cp -p v1/_data/*.pem v3/_data/
+cp -p v1/_data/*.pem v4/_data/
+cp -p v1/_data/*.pem v5/_data/
+
+docker start node2 node3  node4 node5
+
+# 配置tcp/ip代理
+docker pull haproxy
+
+
+# 在数据库集群中创建空密码、无权限用户haproxy，来供Haproxy对MySQL数据库进行心跳检测
+
+docker exec -it node1 /bin/bash
+mysql -uroot -pabc123456
+create user 'haproxy'@'%' identified by '';
+commit
+exit
+exit
+创建这一步貌似不需要，数据库中自带了haproxy用户
+
+
+docker run -it -d -p 4001:8888 -p 4002:3306 -v D/Temp/haproxy:/usr/local/etc/haproxy --name h1 --net=net1 --ip 172.18.0.7 --privileged haproxy
+docker exec -it h1 bash
+haproxy -f /usr/local/etc/haproxy/haproxy.cfghaproxy/haproxy.cfg
+exit
+
+http://localhost:4001/dbs
+在浏览器中打开Haproxy监控界面，端口4001，在配置文件中定义有用户名admin，密码abc123456。
+
+# 安装keepalived 可以不干
+docker exec -it h1 bash
+mv /etc/apt/sources.list /etc/apt/sources.list.bk
+# 通过映射在本机上文件考进去
+cp /usr/local/etc/haproxy/sources.list /etc/apt
+apt-get update
+apt-get install keepalived
+service keepalived start
+cp /usr/local/etc/haproxy/keepalived.conf /etc/keepalived/
+
+
+# 创建卷
+docker volume create v1
+# 创建容器
+docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=abc123456 -e CLUSTER_NAME=PXC -e XTRABACKUP_PASSWORD=abc123456 -v v1:/var/lib/mysql -v backup:/data --name=node1 --network=net1 --ip 172.18.0.2 pxc
+# 以root身份进入容器
+docker exec -it -uroot node1 bash
+# 删除数据
+rm -rf /var/lib/mysql/*
+# 准备阶段
+xtrabackup --prepare --target-dir=/data/backup/full/
+# 执行冷还原
+xtrabackup --copy-back --target-dir=/data/backup/full/
+# 更改还原后的数据库文件属主
+chown -R mysql:mysql /var/lib/mysql
+# 退出容器后，重启容器
+docker stop node1
+docker start node1
+---------------------------------------------------------------------
+# 节点启动后直接退出，docker log查看报没ssl证书错误，尝试关闭ssl，
+# 使用root权限修改my.cnf
+docker exec -it -u root node1 /bin/bash
+
+echo [mysqld]>>/etc/my.cnf
+echo skip_ssl>>/etc/my.cnf
+exit
+
+# 容器内修改会出错
+docker restart node1
+docker exec -it node1 /bin/bash
+
+mysql -uroot -p123456
+show global variables like '%ssl%';
+可以看到
+ have_openssl       | DISABLED        |
+| have_ssl           | DISABLED
+
+关闭后仍然没有用，需要用一样的秘钥，换用5.7版本的mysql

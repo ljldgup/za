@@ -1,0 +1,165 @@
+task test7 {
+    doFirst{
+        println name
+        println System.getProperty("http.proxyHost")
+        
+        println "http://www.baidu.com/".toURL().text
+        println "https://repo.maven.apache.org/maven2/com/sun/xml/ws/jaxws-rt/2.2.10/jaxws-rt-2.2.10.pom".toURL().text
+    }
+}
+
+
+
+//写在doFisrt 和 doLast 中的部分才能单独执行
+task test6 {
+    doFirst{
+        def test = "name"
+        def test1 = {
+            //this 是指当前的root project 'groovy'
+            println this
+        }
+        
+        def test2 = { x,y ->
+                    println this.name
+                    (x+y)*(x-y)
+        }
+        println name
+        println project.name  
+        println getProperty("name")
+        println Project.getProperty("name")
+        println project."name"    
+        println project."${test}" 
+        
+        //不调用函数不会执行
+        test1()        
+        println test1."${test}"    
+        println test2
+        println test2(2,4)
+    }
+}
+
+task test5 { 
+    doFirst{
+        println "test doFirst"
+    }
+    
+    doLast{
+        println ""
+        //因为是动态语言，此处递归需要先定义，不然无法使用
+        def Fibonacci 
+        Fibonacci = {x -> 
+            //注意groovy lambda表达式不用大括号直接换行
+            if(x==1 || x==2) return 1
+            
+            //else (Fibonacci(x-1) + Fibonacci(x-2))
+            //防止堆栈溢出,这种情况值最终会 (x+x)/x=x
+            else (Fibonacci(x-1) + Fibonacci(x-2))/Fibonacci(x-1)
+        }
+        
+        def Fibonacci100 = Fibonacci.memoize()
+        
+        def Fibonacci1000 = Fibonacci.memoizeAtMost(1000)
+        
+        //正常斐波拉契数列数字过大会导致堆溢出
+        def start = System.currentTimeMillis()
+        println "Fibonacci 10 :${Fibonacci100(100)}"
+        println System.currentTimeMillis() - start
+        
+        //第二次时间会短很多
+        start = System.currentTimeMillis()
+        println "Fibonacci 10 :${Fibonacci100(100)}"
+        println System.currentTimeMillis() - start
+    }
+
+}
+
+
+task test4 { 
+    doFirst{
+        println "test doFirst"
+    }
+    
+    doLast{
+        println "科里化和部分实施"
+        def myFunc = {x,y,z -> (x+y)*z}
+        println "myFunc(1,2,3)  :${myFunc(1,2,3)}"
+        
+        println "科里化一次一个参数"
+        def myFunc1 = myFunc.curry(1)
+        def myFunc2 = myFunc1.curry(2)
+        println "myFunc(1)(2,3) :${myFunc1(2,3)}"
+        println "myFunc(1)(2)(3):${myFunc2(3)}"
+        
+        println "部分实施一次多个参数"
+        def myFunc3 = myFunc.curry(1,2)
+        println "myFunc(1,2)(3) :${myFunc3(3)}"
+        
+        println "复合函数"
+        def myFunc0 = {x,y,z -> x(y(z))}
+        println "myFunc(1,2,myFunc(1,2,3)): ${myFunc0(myFunc2,myFunc3,3)}"
+    }
+
+}
+
+task test1 { 
+    doLast{
+        //switch 和 范围
+        def age = 25;
+        switch (age) {
+            case 0..17:
+                println '未成年'
+                break
+            case 18..30:
+                println '青年'
+                break
+            case 31..50:
+                println '中年'
+                break
+            default:
+                println '老年'
+        }
+    }
+}
+
+task test2 { 
+    doLast{
+      //文件IO
+      new File("D:/work/script/").eachFileRecurse() {
+         file -> println file.getAbsolutePath();println file.length()
+
+      }
+      
+      new File("D:/work/script/movies.xml").eachLine {  
+         line -> println "line : $line"
+                 println "length : ${line.length()}"
+      }
+      
+      new File('d:/','Example.txt').withWriter('utf-8') { 
+         writer -> writer.write 'Hello World1\ndsfsdfsdf'
+      }
+    }
+
+}
+
+
+task test3 { 
+    doLast{
+        //list
+        def myList = [] 
+        myList+='a' 
+        println myList
+
+        myList = [] 
+        myList << 'a'<<'b' 
+        println myList
+        
+        println myList -['b']
+        
+        println myList*2
+
+        for(i in myList){
+            println i
+        }
+    }
+}
+
