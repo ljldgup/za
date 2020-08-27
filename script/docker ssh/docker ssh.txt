@@ -1,0 +1,37 @@
+# 已经有就不要覆盖，直接输入到authorized_keys
+ssh-keygen -t rsa 
+cat ~/.ssh/id_rsa.pub > authorized_keys
+将生成的文件拷到
+${HOME}\.ssh 
+# 注意这里有个点
+docker build -t sshd:dockerfile .
+
+docker run -d -p 10122:22 sshd:dockerfile
+
+ ssh 127.0.0.1 -p 10122
+ 
+ docker exec -it containerID /bin/bash
+ 添加后的登录仍然需要密码，网上说是远程机器.ssh,authorized_keys权限不对，但是我改了还是不行，
+  之后尝试修改 /etc/ssh/sshd_config 仍然不行
+  ssh -vvv 127.0.0.1 -p 10122 没发现明显问题
+ 原因不明，放弃
+ 
+无意中发现 ssh -p 10122 root@127.0.0.1 这种可以直接登录，之前可能没有写用户名
+并且后面的ip可以改成真实地址，root@127.0.0.?, ?可以写任意值
+
+sshd日志
+1、修改SSH程序
+
+[root@server01 ~]# vim  /etc/ssh/sshd_config 
+
+将SyslogFacility AUTHPRIV改为SyslogFacility local5
+
+2、修改日志程序
+
+[root@server01 ~]#Vim /etc/syslog.conf
+
+添加如下两行：
+
+＃ save sshd messages also to sshd.log
+
+local5.*  /data/log/sshd.log

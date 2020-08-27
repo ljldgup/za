@@ -1,0 +1,61 @@
+docker-compose 也可以实现集群不过要自己使用相关镜像实现负载均衡和扩容等
+
+配置文件中 KAFKA_ADVERTISED_HOST_NAME KAFKA_ADVERTISED_PORT 由KAFKA_LISTENERS代替
+    - KAFKA_LISTENERS=PLAINTEXT://kafka3:9092
+    - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://<宿主机ip>:9094
+
+
+同过KAFKA_ADVERTISED_LISTENERS设置外网访问地址，
+KAFKA_LISTENERS运行地址 不同访问方式来避免上述操作，以及修改hosts文件。
+KAFKA_ADVERTISED_LISTENERS 不能用localhost，将导致容器内无法连接。
+KAFKA_ADVERTISED_LISTENERS 可以定义inside和outside，来适应容器
+
+
+networks 不需要手动创建
+networks:
+  zk-net:
+    name: zk-net
+    
+刚启动kafka失败，yml中设置    restart: always使得卡夫卡能够自动重启
+
+启动，在含有docker-compose.yml文件加下
+docker-compose up -d
+
+Ports are not available: listen tcp 0.0.0.0:2184: bind: An attempt was made to access a socket in a way forbidden by its access permissions.
+ 换端口
+
+注意每一个
+
+
+zookeeper 管理页面
+http://localhost:8083/commands
+
+
+
+# 直接通过容器来访问zookeeper client 检查kafka信息是否注册
+docker exec -it zk1 bash bin/zkCli.sh
+ls /brokers/ids
+ls /brokers/topics
+
+docker run -it --rm --network host wurstmeister/kafka:2.12-2.2.1 \
+		bash /opt/kafka/bin/kafka-console-producer.sh \
+		--broker-list kafka:9090 --topic logsTopic
+
+在本机使用kafka脚本时要先在本机hosts文件里配置kafka1，kafka2，kafka3解析为本机地址否则客户端会报错
+因为kafka段返回的时zookeeper中注册的容器地址，比较坑
+从这个角度来看kafka貌似不太适合用docker。。。
+
+通过KAFKA_ADVERTISED_LISTENERS，可以避免上述过程。
+
+kafka-topics.bat --create --zookeeper localhost:2481 --replication-factor 3 --partitions 3 --topic test
+可以显示说明zookeeper集群没问题
+kafka-topics.bat --list --zookeeper localhost:2483
+
+
+
+kafka-console-producer.bat --broker-list localhost:9093 --topic test
+
+kafka-console-consumer.bat --bootstrap-server localhost:9094 --topic test
+
+docker stop zk1 zk2 zk3 kafka1 kafka2 kafka3
+docker rm zk1 zk2 zk3 kafka1 kafka2 kafka3
