@@ -9,6 +9,7 @@ from functools import reduce
 
 
 #_代表无关临时变量,即第二个变量不用
+# range(n - 2)提供reduce和map的计算次数
 def fib1(n:int) ->int:
     return reduce(lambda x, _:x + [x[-1] + x[-2]], range(n - 2),[0,1])[n-1]
 

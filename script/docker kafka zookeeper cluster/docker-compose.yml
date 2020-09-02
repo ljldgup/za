@@ -15,7 +15,7 @@ services:
     container_name: zk1
     # 配置docker container和宿主机的端口映射
     ports:
-      - 2481:2181
+      - 21081:2181
       - 8081:8080
     # 配置docker container的环境变量
     environment:
@@ -36,7 +36,7 @@ services:
     hostname: zk2
     container_name: zk2
     ports:
-      - 2482:2181
+      - 21082:2181
       - 8082:8080
     environment:
       ZOO_MY_ID: 2
@@ -52,7 +52,7 @@ services:
     hostname: zk3
     container_name: zk3
     ports:
-      - 2483:2181
+      - 21083:2181
       - 8083:8080
     environment:
       ZOO_MY_ID: 3

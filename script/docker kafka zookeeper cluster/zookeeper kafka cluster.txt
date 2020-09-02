@@ -59,3 +59,5 @@ kafka-console-consumer.bat --bootstrap-server localhost:9094 --topic test
 
 docker stop zk1 zk2 zk3 kafka1 kafka2 kafka3
 docker rm zk1 zk2 zk3 kafka1 kafka2 kafka3
+
+修改 了配置文件直接 docker-compose up -d 就可以 会自动删除
