@@ -5,7 +5,6 @@ create user 'ljl'@'localhost' identified by '123123';
 GRANT ALL ON *.* TO 'ljl'@'localhost';
 flush privileges;
 SHOW GRANTS FOR 'ljl'@'localhost';
-REVOKE SELECT ON *.* FROM ljl@localhost;
+REVOKE SELECT ON *.* FROM ljl@'localhost';
 SHOW GRANTS FOR 'ljl'@'localhost';
 drop user 'ljl'@'localhost';
-
