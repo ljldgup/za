@@ -1,0 +1,127 @@
+分布式锁,拿到以后还要检查值
+set lock uuid px 100 nx
+
+查找键值
+keys ?*[]\x
+
+这几个在具体元素里也可以使用
+del keys
+exists keys
+type kes
+--------------------------------------------
+string:
+
+set str1 string_value
+get str1 
+
+append str1 "_appenddddd"
+get str1
+
+strlen str1
+
+增加
+set str1 222
+incr str1
+get str1 
+
+增加33
+incrby str1 33
+get str1 
+
+多个设置
+mset a 1 b 2 c 3
+mget a b c 
+
+-------------------------------------------------------
+hash:
+
+hset hash1 a 1
+hget hash1 a
+hmset hash1 b 2 c 3 d 4
+hmget hash1 a b c 
+hgetall
+hsetnx hash1 lock 1
+-------------------------------------------------
+队列一边进一边出可做消息队列以及锁
+lpush list1 a b c 
+rpush list1 a b c
+lrange list1 0 99
+
+根据索引操作
+LINDEX list1 0
+lset key 0 b
+
+lpop list1
+rpop list1
+
+count删除个数，正负表示左右
+lrem list1 1 b
+
+保留位置0-2
+ltrim list1 0 2
+
+插入
+linsert list1 before b bb
+linsert list1 after bb bbb
+-------------------------------------------------------
+sadd set1 aaa
+sadd set1 bbb
+srem set1 aaa
+获得所有
+smembers set1
+是否是，注意redis中正确返回1
+sismember set1 aaa
+数量
+scard set1
+随机获得
+srandmember set1
+随机弹出
+spop set1
+
+sadd set2 aaa
+sadd set2 eee
+sadd set2 ddd
+集合操作
+sunion set1 set2
+setsinter set1 set2
+sdiff set1 set2
+-------------------------------------------------------------------
+zadd zset1 88 n1
+zadd zset1 99 n2
+zadd zset1 77 n3
+zadd zset1 55 n4
+zadd zset1 66 n5
+
+获得
+zscore zset1 n1
+获得1-2位
+zrange zset1 1 2
+zrange zset1 1 2 withscores
+
+按照分数范围获得
+zrangebyscore zset1 50 90
+
+zincrby zset1 n1 10000
+
+数量
+zcard zset1
+zrem zset1 n1
+范围删除
+zremrangebyrank zset1 0 2
+zremrangebyscore zset1 40 80
+
+排名
+zrank zset1 n2
+zrevrank zset1 n2
+
+-----------------------------------------------------------------------------
+watch key1 key2 ... : 监视一或多个key,如果在事务执行之前，被监视的key被其他命令改动，则事务被打断 （ 类似乐观锁 ）
+multi : 标记一个事务块的开始（ queued ）
+exec : 执行所有事务块的命令 （ 一旦执行exec后，之前加的监控锁都会被取消掉 ）　
+discard : 取消事务，放弃事务块中的所有命令
+unwatch : 取消watch对所有key的监控
+
+expire str1 2
+get str1
+
+sort set1
