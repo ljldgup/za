@@ -1,0 +1,305 @@
+standalone:
+
+spark 文件统一配置:
+cd $SPARK_HOME/conf
+cp spark-env.sh.template spark-env.sh
+
+在文件spark-env.sh末尾添加一下内容：
+export SPARK_MASTER_IP=173.18.0.2  #master的地址或主机名
+export SPARK_WORKER_MEMORY=1024M   #worker占用的内存
+export SPARK_WORKER_CORES=1       #worker占用的cpu核数
+export SPARK_WORKER_INSTANCES=1   #worker实例个数    
+export SPARK_EXECUTOR_MEMORY=800M #worker启动executor的内存
+export SPARK_DAEMON_MEMORY=500M #spark守护进程的内存数
+
+export SPARK_LAUNCH_WITH_SCALA=0
+export SPARK_LIBRARY_PATH=${SPARK_HOME}/lib
+export SCALA_LIBRARY_PATH=${SPARK_HOME}/lib
+export SPARK_MASTER_WEBUI_PORT=18080
+export SPARK_MASTER_PORT=7077
+export SPARK_WORKER_PORT=7078    #master与worker通信的端口，不一定是55555
+export SPARK_WORKER_DIR=/var/run/spark/work
+export SPARK_LOG_DIR=/var/log/spark
+export SPARK_PID_DIR='/var/run/spark/'
+if [ -n "$HADOOP_HOME" ]; then
+  export SPARK_LIBRARY_PATH=$SPARK_LIBRARY_PATH:${HADOOP_HOME}/lib/native
+fi
+export HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-/etc/hadoop/conf}
+
+webui的端口是18081
+注意这里SPARK_WORKER_MEMORY 一定要比 SPARK_EXECUTOR_MEMORY 大
+SPARK_WORKER_MEMORY，SPARK_EXECUTOR_MEMORY 起初是500M，executor一直失败，后面扩大到1000,800后可以正常计算
+
+配置工作节点
+cp slaves.template slaves
+写入节点名
+173.18.0.3
+173.18.0.4
+
+创建容器
+
+
+docker commit test sparkssh:v1
+
+docker network create --subnet=173.18.0.0/24 spark_net
+
+docker run --name spark_master -p 8080:18080 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.2 -it ubuntu bash
+
+
+
+apt-get update 
+apt-get install ssh
+
+master机器：
+安装ssh,spark需要ssh
+cp /ljl/sources.list /etc/apt/sources.list
+apt-get update 
+apt-get install ssh
+
+#adduser spark_user
+#su - spark_user
+ssh-keygen -t rsa
+
+cp ~/.ssh/id_rsa.pub /ljl
+
+
+
+
+配置环境变量，已经配好直接拷贝
+cp /etc/profile /ljl
+追加
+
+export JAVA_HOME=/ljl/jdk1.8.0_251
+export JRE_HOME=$JAVA_HOME/jre
+export SPARK_HOME=/ljl/spark-3.0.1-bin-hadoop3.2
+export HADOOP_HOME=/ljl/hadoop-3.3.0
+export SCALA_HOME=/ljl/scala-2.10.7
+export YARN_HOME=/ljl/hadoop-3.3.0
+export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+export YARN_CONF_DIR=${YARN_HOME}/etc/hadoop
+export PYSPARK_PYTHON=/usr/bin/python3.6
+export PATH=$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SCALA_HOME/bin:$PATH
+
+重新载入,需要root权限拷贝
+#exit
+cp /ljl/profile /etc
+source /etc/profile
+#su - spark_user
+echo $JAVA_HOME
+
+
+尝试启动spark，注意要在spark目录下执行
+cd $SPARK_HOME
+bin/spark-shell
+执行scala测试
+val rdd1=sc.parallelize(1 to 100,5)
+val rdd2=rdd1.map(_+4)
+rdd1.count
+
+-----------------------------------------------------------------------------------------
+docker commit spark_master myspark:v1
+docker run --name spark_node1 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.3 -it myspark:v1 bash
+docker run --name spark_node2 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.4 -it myspark:v1 bash
+
+slave机器：
+hostname -i
+
+添加到authorized_keys中
+mkdir ~/.ssh
+cat /ljl/id_rsa.pub >> ~/.ssh/authorized_keys
+cp /ljl/profile /etc
+source /etc/profile
+echo $JAVA_HOME
+
+启动服务
+mkdir /run/sshd
+/usr/sbin/sshd -D&
+
+-------------------------------------------------------------
+切到master尝试ssh连接
+ssh root@173.18.0.3
+ps -a 
+可以看到sshd
+
+启动集群
+cd $SPARK_HOME
+sbin/start-all.sh
+# sbin/stop-all.sh
+
+登录本机http://localhost:8080/可以看到web ui
+在web ui查看worker时会转到worker ip 进而导致失败
+
+提交pi，后面的100一定要带
+cluster模式，driver不运行在本地，没有输出
+bin/spark-submit --master spark://173.18.0.2:7077 --deploy-mode cluster --class org.apache.spark.examples.SparkPi examples/jars/spark-examples_2.12-3.0.1.jar 1
+
+client 端可以看到输出
+bin/spark-submit \
+--master spark://173.18.0.2:7077 \
+--deploy-mode client \
+--class org.apache.spark.examples.SparkPi examples/jars/spark-examples_2.12-3.0.1.jar 1
+
+这最后的1程序中10000*1
+无法正常运行大概率是docker分配的内存不够将worker，excutor的配置内存加大
+
+PYSPARK_PYTHON用于python运行，每个环境都需要有能运行的python环境
+删掉了原脚本中的需要numpy和pandas的内容
+
+spark-submit \
+--master spark://173.18.0.2:7077 \
+--num-executors 2 \
+/ljl/fms/fms_log_test.py
+
+##########################################################################################################
+
+添加环境变量
+export HDFS_NAMENODE_USER=root
+export HDFS_DATANODE_USER=root
+export HDFS_SECONDARYNAMENODE_USER=root
+export YARN_RESOURCEMANAGER_USER=root
+export YARN_NODEMANAGER_USER=root
+
+yarn
+
+在hadoop-env.sh中配置JAVA_HOME
+
+# The java implementation to use.
+export JAVA_HOME=/usr/lib/jvm/jdk1.8.0_77
+export HADOOP_LOG_DIR=/var/log/hadoop-hdfs
+
+在yarn-env.sh中配置JAVA_HOME
+
+# some Java parameters
+export JAVA_HOME=/usr/lib/jvm/jdk1.8.0_77
+
+core-site
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://173.18.0.2:9000/</value>
+    </property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>file:/home/hadoop/tmp</value>
+    </property>
+</configuration>
+
+
+hdfs-site.xml
+<configuration>
+    <property>
+        <name>dfs.namenode.secondary.http-address</name>
+        <value>173.18.0.2:9001</value>
+    </property>
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:/home/hadoop/dfs/name</value>
+    </property>
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>file:/home/hadoop/dfs/data</value>
+    </property>
+    <property>
+        <name>dfs.replication</name>
+        <value>3</value>
+    </property>
+</configuration>
+
+mapred-site.xml
+<configuration>
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+    </property>
+</configuration>
+
+yarn-site.xml
+<configuration>
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+        <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.address</name>
+        <value>173.18.0.2:8032</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.scheduler.address</name>
+        <value>173.18.0.2:8030</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.resource-tracker.address</name>
+        <value>173.18.0.2:8035</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.admin.address</name>
+        <value>173.18.0.2:8033</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.webapp.address</name>
+        <value>173.18.0.2:8088</value>
+    </property>
+</configuration>
+
+workers文件加入
+173.18.0.3
+173.18.0.4
+
+# 创建上面需要的文件
+mkdir -p /home/hadoop/{tmp,dfs}
+mkdir /home/hadoop/dfs/{name,data}
+
+#格式化namenode
+cd $HADOOP_HOME
+bin/hadoop namenode -format 
+
+#本机也用ssh。。。
+cat /ljl/id_rsa.pub >> ~/.ssh/authorized_keys
+mkdir /run/sshd
+/usr/sbin/sshd -D &
+
+cd $HADOOP_HOME
+sbin/start-dfs.sh              #启动dfs 
+sbin/start-yarn.sh              #启动yarn
+
+jps 能够看到
+1745 ResourceManager
+1473 SecondaryNameNode
+2232 Jps
+1224 NameNode
+1849 NodeManager
+
+cd $SPARK_HOME
+sbin/start-all.sh
+
+bin/spark-submit \
+--master yarn \
+--deploy-mode client \
+--class org.apache.spark.examples.SparkPi examples/jars/spark-examples_2.12-3.0.1.jar 1
+
+可以看到
+Connecting to ResourceManager at /0.0.0.0:8032
+
+如果hadoop namenode -format格式化多次会发现hdfs可用资源为空
+出现could only be written to 0 of the 1 minReplication nodes.
+hadoop dfsadmin -report 可以看到容量为0
+解决方法重新创建hadoop目录
+rm -rf /home/hadoop/*
+mkdir -p /home/hadoop/{tmp,dfs}
+mkdir /home/hadoop/dfs/{name,data}
+hadoop namenode -format
+
+使用yarn需要将文件上传至hdfs
+hdfs dfs -mkdir -p /ljl/fms
+hdfs dfs -put /ljl/fms/fms_log.txt /ljl/fms
+# 查看
+hdfs dfs -ls /ljl/fms
+
+bin/spark-submit \
+--master yarn \
+--num-executors 2 \
+/ljl/fms/fms_log_test.py
