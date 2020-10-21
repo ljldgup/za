@@ -303,3 +303,71 @@ bin/spark-submit \
 --master yarn \
 --num-executors 2 \
 /ljl/fms/fms_log_test.py
+------------------------------------------------------------------------
+hive:
+
+添加如下环境变量
+export HIVE_HOME=/ljl/apache-hive-3.1.2-bin
+export PATH=$PATH:$HIVE_HOME/bin
+
+cp hive-default.xml.template hive-site.xml
+添加如下配置,serverTimezone主要原因是本机采用的北京时间
+<configuration>
+    <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>hive</value>
+    </property>
+    <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>123123</value>
+    </property>
+   <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:mysql://192.168.0.105:3306/hive?serverTimezone=GMT%2B8</value>
+    </property>
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>mysql驱动程序
+        <value>com.mysql.jdbc.Driver</value>
+    </property>
+</configuration>
+
+在mysql中添加相应用户，赋予权限，创建数据库hive用于存放元数据
+CREATE USER 'hive'@'%' IDENTIFIED BY '123123';
+grant all privileges on *.*  to 'hive'@'%';
+flush privileges
+create database hive;
+
+cd $HIVE_HOME
+bin/schematool -dbType mysql -initSchema
+
+java.lang.NoSuchMethodError: com.google.common.base.Preconditions.checkArgument
+将hadoop hive 中guava.jar 删除版本低的，并拷贝高版本的
+
+Encountered "<EOF>" at line 1, column 64.
+没有在hive-site.xml而是在hive-default.xml中修改，hive-default.xml中任何修改都不生效
+
+进入mysql，能够看到表
+use hive
+show tables
+
+启动dfs
+/usr/sbin/sshd -D &
+cd $HADOOP_HOME
+sbin/./start-all.sh 
+
+
+启动hive
+cd $HIVE_HOME
+bin/hive
+
+create database hive_1;
+show databases;
+use hive_1;
+create table hive_01 (id int,name string);
+show tables;
+
+
+mysql下
+use hive;
+select * from DBS;
+select * from TBLS;
