@@ -1,3 +1,4 @@
+import urllib
 import uuid
 
 import rsa
@@ -59,47 +60,56 @@ def pkcs8_rsa2_sign(key_str: str, content: str):
     return signature
 
 
-def sorted_param_str(params: dict):
+# 排序,对字典类型json化，签名
+def json_sign_params(private_key:str, url, params: dict):
     rst = ""
     for key in sorted(params.keys()):
-        if type(params[key]) == str:
-            rst += "{}={}&".format(key, params[key])
-        else:
-            rst += "{}={}&".format(key, json.dumps(params["biz_content"]).replace(" ", ""))
-    return rst
+        if type(params[key]) != str:
+            params[key] = json.dumps(params["biz_content"]).replace(" ", "")
+        rst += "{}={}&".format(key, params[key])
+
+    params['sign'] = pkcs8_rsa2_sign(private_key, '?'.join([url,rst[:-1]])).decode()
 
 
 if __name__ == "__main__":
-    icbc_url = ""
-    url = "api/mybank/pay/digitalwallet/baseinfoquery/V1"
-    request_params = {"app_id": "10000000000000197026",
-                      "msg_id": str(uuid.uuid4()),
-                      "format": "json",
-                      "charset": "utf-8",
-                      "sign_type": "RSA2",
-                      "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                      "biz_content":
-                          {
-                              "cooperator_no": "1234567890",
-                              "agent_cooperator_no": "1122334455",
-                              "serial_no": "002000000201234567891200001",
-                              "related_serial_no": "",
-                              "original_serial_no": "",
-                              "work_date": "2020-12-12",
-                              "work_time": "12:12:12",
-                              "mac": "80:32:53:9E:3F:F9",
-                              "IP": "fe80::bda7:7d60:bc48:bd36%6",
-                              "wallet_id": "0022500497360019"
-                          }
-                      }
-
-    # 注意自己使用的秘钥
-    test_private_key = ""
-    request_content = sorted_param_str(request_params)
-    # print(sign(message.encode(), test_private_key, "RSA2"))
+    # print(sign("签名内容".encode(), test_private_key, "RSA2"))
     # print(sign("签名内容".encode("utf-8"), test_private_key, "RSA2"))
-    request_content += "sign=" + pkcs8_rsa2_sign(test_private_key, "?".join([url, request_content])).decode()
 
-    # print(request_content)
-    rst = requests.post(icbc_url + "?".join([url, request_content]))
+    # icbc_url = "https://gw.open.icbc.com.cn"
+    icbc_url = "https://apipcs3.dccnet.com.cn"
+    # icbc_url = "http://localhost"
+    url = "/api/mybank/pay/digitalwallet/submerchantquery/V1"
+    test_private_key = ""
+    request_params = {
+        "charset": "UTF-8",
+        "biz_content": {
+            "chantype": 39,
+            "merchant_id": "M00000022",
+            "instruction_id": "1",
+            "channel_id": "3324"
+        },
+        "format": "json",
+        "msg_id": 'd501c538ab7a4dc5863cbff448a2eba5',
+        "app_id": "10000000000000197026",
+        "sign_type": "RSA2",
+        "timestamp": "2021-01-10 00:22:41"
+        # "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    # 对字典类型json化，排序签名
+    json_sign_params(test_private_key,url, request_params)
+    body = urllib.parse.urlencode(request_params).replace("+", "%20")
+    rst = requests.post(icbc_url + url, data=request_params)
+
+    """
+    print(rst.request.headers)
+    print(rst.request.url)
+    print(rst.request.body)
+    """
+
+    """
+    data = urllib.parse.urlencode(request_params)
+    data = data.encode()
+    rst = urllib.request.urlopen(url=icbc_url + url, data=data)
+    """
     print(rst.json())
