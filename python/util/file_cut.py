@@ -15,4 +15,4 @@ def cut_file(src, dest, bytes_start, bytes_count=None):
 
 if __name__ == '__main__':
     os.chdir("C:/Users/kmhqumenglian/Desktop")
-    cut_file('password.tiff', '1.7z', 5503962)
+    cut_file('2.jpg', '2.7z', 331634)
