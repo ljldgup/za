@@ -3,14 +3,7 @@ inoremap " ""<ESC>i
 inoremap ( ()<ESC>i
 inoremap [ []<ESC>i
 inoremap { {<CR>}<ESC>O
-"设置跳出自动补全的括号
-"func SkipPair()  
-"    if getline('.')[col('.') - 1] == ')' || getline('.')[col('.') - 1] == ']' || getline('.')[col('.') - 1] == '"' || getline('.')[col('.') - 1] == "'" || getline('.')[col('.') - 1] == '}'  
-"            return "\<ESC>la"  
-"    else  
-"        return "\t"  
-"    endif  
-"endfunc  
+
 " 将tab键绑定为跳出括号  
 "inoremap <TAB> <c-r>=SkipPair()<CR>
 
@@ -122,6 +115,7 @@ endfunc
 map <F5> :call CompileRunGcc()<CR>
 func! CompileRunGcc()
         exec "w"
+		exec "clear"
         if &filetype == 'c'
                 exec "!g++ % -o %<"
                 exec "!time ./%<"
@@ -136,6 +130,7 @@ func! CompileRunGcc()
         elseif &filetype == 'python'
                 exec "!clear"
                 exec "!time python3 %"
+		endif
 endfunc
 
 "C,C++的调试
