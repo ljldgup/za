@@ -99,13 +99,19 @@ func SetTitle()
     call append(line(".")+4, "************************************************************************/") 
     call append(line(".")+5, "")
     if &filetype == 'cpp'
-        call append(line(".")+6, "#include<iostream>")
-        call append(line(".")+7, "using namespace std;")
-        call append(line(".")+8, "")
+		call append(line(".")+6, "#include<iostream>")
+		call append(line(".")+7, "#include<vector>")
+		call append(line(".")+8, "#include<ctime>")		
+        call append(line(".")+9, "using namespace std;")
+		call append(line(".")+10, "#define random(x) (rand()%(x))")
+        call append(line(".")+11, "")
     endif
     if &filetype == 'c'
         call append(line(".")+6, "#include<stdio.h>")
-        call append(line(".")+7, "")
+		call append(line(".")+7, "#include<stdlib.h>")
+		call append(line(".")+8, "#include<time.h>")		
+		call append(line(".")+9, "#define random(x) (rand()%(x))")
+        call append(line(".")+10, "")
     endif
     "新建文件后，自动定位到文件末尾（这个功能实际没有被实现，即下面的语句无效，暂不知道原因）
     autocmd BufNewFile * normal G

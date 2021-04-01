@@ -233,15 +233,15 @@ int main(int argc,char *argv[])
 	matrix_init(matrix2, length);
 	
 	
-	start=clock();		//程序开始计时
+	start = clock();		//程序开始计时
 	normal_square_matrix_mutiply(matrix1, matrix2, matrix3, length);
-	end=clock();
+	end = clock();
 	endtime = (double)(end-start)/CLOCKS_PER_SEC;
 	printf("normal time %f \n", endtime);
 	
-	start=clock();	
+	start = clock();	
 	Strassen(matrix1, matrix2, matrix4, length);
-	end=clock();
+	end = clock();
 	endtime = (double)(end-start)/CLOCKS_PER_SEC;
 	printf("Strassen time %f \n", endtime);
 	
