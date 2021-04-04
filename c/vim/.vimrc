@@ -103,14 +103,14 @@ func SetTitle()
 		call append(line(".")+7, "#include<vector>")
 		call append(line(".")+8, "#include<ctime>")		
         call append(line(".")+9, "using namespace std;")
-		call append(line(".")+10, "#define random(x) (rand()%(x))")
+		call append(line(".")+10, "#define random(x) (rand()%(x+1))")
         call append(line(".")+11, "")
     endif
     if &filetype == 'c'
         call append(line(".")+6, "#include<stdio.h>")
 		call append(line(".")+7, "#include<stdlib.h>")
 		call append(line(".")+8, "#include<time.h>")		
-		call append(line(".")+9, "#define random(x) (rand()%(x))")
+		call append(line(".")+9, "#define random(x) (rand()%(x+1))")
         call append(line(".")+10, "")
     endif
     "新建文件后，自动定位到文件末尾（这个功能实际没有被实现，即下面的语句无效，暂不知道原因）
@@ -123,7 +123,7 @@ func! CompileRunGcc()
         exec "w"
 		exec "clear"
         if &filetype == 'c'
-                exec "!g++ % -o %<"
+                exec "!g++ -I %:h % -o %"
                 exec "!time ./%<"
         elseif &filetype == 'cpp'
                 exec "!g++ -std=c++11 % -o %<"
@@ -140,7 +140,7 @@ func! CompileRunGcc()
 endfunc
 
 "C,C++的调试
-map <F8> :call Rungdb()<CR>
+map <C-F5> :call Rungdb()<CR>
 func! Rungdb()
 exec "w"
 exec "!g++ % -g -o %<"

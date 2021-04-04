@@ -9,7 +9,7 @@
 #include<vector>
 #include<ctime>
 using namespace std;
-#define random(x) (rand()%(x))
+#define random(x) (rand()%(x + 1))
 
 class Node{
 	public:
@@ -41,21 +41,40 @@ class LinkedList{
 			}
 			return NULL;
 		}
+
+		Node* get(int n){
+			Node *head = nil->next;
+			int i = 0;
+			while(i < n){
+				head = head -> next;
+				i++;
+			}
+			return head;
+		}
 		
 		void insert(int n, int v){
-			Node *head = nil->next;
-			insert(head, v);
+			cout<<"insert "<<v<<" postion "<<n<<endl;
+			Node *node = get(n);
+			cout<<node->value<<endl;
+			insert(node, v);
 		}
 		
 		void insert(Node *pos, int v){
 			Node *node = new Node(v);
-			pos->prev->next = node;
-			pos->next->prev = node;
 			node->prev = pos->prev;
 			node->next = pos;
+			node->prev->next = node;
+			pos->prev = node;
 			length++;
 		}
 
+		void remove(int n){
+			cout<<"remove postion "<<n<<endl;
+			Node *node = get(n);
+			cout<<node->value<<endl;
+			remove(node);
+		}
+		
 		void remove(Node *pos){
 			pos->prev->next = pos->next;
 			pos->next->prev = pos->prev;
@@ -63,7 +82,7 @@ class LinkedList{
 		}
 		
 		void print(){
-			cout<<length<<endl;
+			cout<<"length:"<<length<<endl;
 			Node *head = nil->next;
 			while(head!= nil){
 				cout<<head->value<<' ';
@@ -88,9 +107,13 @@ class LinkedList{
 int main(){
 	LinkedList linkedList;
 	for(int i = 0; i < 20; i++){
-		linkedList.insert(i, random(100));
+		linkedList.print();
+		linkedList.insert(random(i), random(100));
+		linkedList.print();
+		if(i%5==1){
+			linkedList.remove(random(i));
+		}
 	}
-	linkedList.print();
 }
 
 
