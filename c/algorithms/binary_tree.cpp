@@ -110,16 +110,16 @@ void BinaryTree::insert(int value){
 //使用y节点替换x节点
 void BinaryTree::transplant(TreeNode* x, TreeNode* y){
 
-	cout<<"transplant"<<x<<" "<<y<<endl;
+	//cout<<"transplant"<<x<<" "<<y<<endl;
 	if(x == root){
 		root = y;
 	}
 	else if(x == x->parent->left){
 		x->parent->left = y;
-		cout<<"x->parent->left"<<y<<" "<<y<<endl;
+		//cout<<"x->parent->left"<<y<<" "<<y<<endl;
 	}else{
 		x->parent->right = y;
-		cout<<"x->parent->right"<<y<<" "<<y<<endl;
+		//cout<<"x->parent->right"<<y<<" "<<y<<endl;
 	}
 	if(y != nullptr) y->parent = x->parent;
 }
