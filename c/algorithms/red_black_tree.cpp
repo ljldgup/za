@@ -9,6 +9,8 @@
 #include<vector>
 #include<ctime>
 #include<queue>
+#include<tuple>
+#include<set>  
 using namespace std;
 #define random(x) (rand()%(x+1))
 
@@ -51,6 +53,8 @@ class BlackRedTree{
 		void transplant(TreeNode* u, TreeNode* v);	
 		void remove(TreeNode* n);
 		void removeFixUp(TreeNode* n);
+		
+		void validate();
 		void print();
 		void print(TreeNode* node);
 		void print_level();
@@ -312,6 +316,7 @@ void BlackRedTree::remove(TreeNode* n){
 	if(y_ori_color == BLACK){
 		removeFixUp(x);
 	}
+	delete n;
 	size--;
 }
 
@@ -413,6 +418,52 @@ bool BlackRedTree::isNil(TreeNode* n){
 	return nil==n;
 }
 
+void BlackRedTree::validate(){
+	queue<tuple<int, TreeNode*>> nodeQueue;
+	set<int> blackHeigt;
+	TreeNode *node;
+	int length;
+	
+	nodeQueue.push(make_tuple(1, root));
+	while(nodeQueue.size()>0){
+		tuple<int, TreeNode*> t = nodeQueue.front();
+		nodeQueue.pop();
+		
+		node = get<1>(t);
+		length = get<0>(t);
+		if(node->c == BLACK) length++;
+
+		if(node->right == nil && node->left == nil){
+			blackHeigt.insert(length);
+			continue;
+		} 
+		
+		if(node->left != nil){
+			if(node->c == RED && node->left->c == RED ){
+				cout<<node->value<<"处连续出现红色，违规"<<endl;
+				print_level();
+				return;
+			}
+			nodeQueue.push(make_tuple(length, node->left));
+		}
+		
+		if(node->right != nil){
+			if(node->c == RED && node->right->c == RED ){
+				cout<<node->value<<"处连续出现红色，违规"<<endl;
+				print_level();
+				return;
+			}
+			nodeQueue.push(make_tuple(length, node->right));
+		}
+	}
+	
+	if(blackHeigt.size() != 1) {
+		cout<<"黑高不相同,违规"<<endl;
+	}else{
+		cout<<"红黑树合规"<<endl;
+	}
+}
+
 void BlackRedTree::print(){
 	print(root);
 	cout<<endl;
@@ -483,6 +534,7 @@ int main(){
 	for(int i = length; i > 0; i--){
 		brTree.insert(new TreeNode(i));
 		//brTree.print_level();
+		brTree.validate();
 	}
 
 	if(length < 20){
@@ -496,6 +548,7 @@ int main(){
 		node =  brTree.search(i);
 		if(!brTree.isNil(node)){
 			brTree.remove(node);
+			brTree.validate();
 			//brTree.print();
 			//brTree.print_level();
 		}

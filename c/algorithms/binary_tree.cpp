@@ -143,6 +143,7 @@ void BinaryTree::remove(TreeNode *node){
 		y->left = node->left;
 		y->left->parent = y;
 	}
+	delete node;
 }
 
 TreeNode* BinaryTree::minimum(TreeNode *node){
