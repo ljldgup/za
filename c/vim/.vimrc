@@ -101,10 +101,11 @@ func SetTitle()
     if &filetype == 'cpp'
 		call append(line(".")+6, "#include<iostream>")
 		call append(line(".")+7, "#include<vector>")
-		call append(line(".")+8, "#include<ctime>")		
-        call append(line(".")+9, "using namespace std;")
-		call append(line(".")+10, "#define random(x) (rand()%(x+1))")
-        call append(line(".")+11, "")
+		call append(line(".")+8, "#include<ctime>")	
+ 		call append(line(".")+9, "#include<algorithm>")			
+        call append(line(".")+10, "using namespace std;")
+		call append(line(".")+11, "#define random(x) (rand()%(x+1))")
+        call append(line(".")+12, "")
     endif
     if &filetype == 'c'
         call append(line(".")+6, "#include<stdio.h>")
