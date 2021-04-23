@@ -41,8 +41,9 @@ class BTree{
 		~BTree();
 		void insert(int key);
 		void remove(BTreeNode* node);
-		void search(int key);
+		BTreeNode* search(int key);
 		void release(BTreeNode* node);
+		void remove(int key);
 		void print();
 		void print_in_order(BTreeNode* node);
 		void print_by_node(BTreeNode* node);
@@ -81,16 +82,20 @@ void BTree::release(BTreeNode *node){
 	delete node;
 }
 
-void BTree::search(int key){
+BTreeNode* BTree::search(int key){
 	BTreeNode *node = root;
 	cout<<"search "<<key<<endl;
 	int i = 0;
-	while(node != nullptr && *(node->keys + i) != key){
+	while(node != nullptr){
 		i = 0;
-		while(i < node->size && *(node->keys + i) < key ) i++;
+		while(i < node->size && *(node->keys + i) < key ) {
+			i++;
+			cout<<*(node->keys + i)<<" ";
+		}
+		cout<<endl;
 		//或如果越界下一个条件不会走
 		if( i == node->size || *(node->keys + i) > key) {
-			cout<<"search "<<node<<" ";
+			cout<<"search "<<node<<" "<<node->size<<" ";
 			if(i == 0){
 				cout<<"-∞,"<<*(node->keys + i)<<endl;
 			}else if(i == node->size){
@@ -99,13 +104,15 @@ void BTree::search(int key){
 				cout<<*(node->keys + i - 1)<<","<<*(node->keys + i)<<endl;
 			}
 			node = *(node->children + i);
+			//cout<<"search "<<node<<" "<<node->size<<" ";
 		}else{
 			cout<<"找到"<<key<<endl;
-			return;
+			return node;
 		}
 	}
 	
 	cout<<"未找到"<<endl;
+	return nullptr;
 }
 
 //x父节点，y分裂节点，z分裂出的y右侧节点
@@ -154,6 +161,11 @@ void BTree::insert(int k){
 	}
 }
 
+void BTree::remove(int key){
+
+}
+
+
 void BTree::insertNotFull(BTreeNode* x, int k){
 	//cout<<"insert not full:"<<x<<" key:"<<k<<endl;
 	int i;
@@ -182,10 +194,12 @@ void BTree::insertNotFull(BTreeNode* x, int k){
 }
 
 void BTree::print(){
+	// count = 0;
+	// print_in_order(root);
+	// cout<<endl<<"记录数量"<<size<<",实际打印数量"<<count<<endl;
 	count = 0;
-	//print_in_order(root);
-	//cout<<endl<<"记录数量"<<size<<",实际打印数量"<<count<<endl;
 	print_by_node(root);
+	cout<<endl<<"记录数量"<<size<<",实际打印数量"<<count<<endl;
 	cout<<endl<<"------------------------------"<<endl;
 }
 
@@ -214,6 +228,7 @@ void BTree::print_by_node(BTreeNode* node){
 	if(node == nullptr) return;
 	cout<<node<<" 深度:"<<depth<<", 数量:"<<node->size<<" ";
 	for(int i = 0; i < node->size; i++){
+		count++;
 		cout<< *(node->keys + i) << " ";
 	}
 	cout<<endl;
@@ -230,14 +245,14 @@ void BTree::print_by_node(BTreeNode* node){
 int main(){
 	BTree btree(4);
 	
-	for(int i = 0; i < 1000; i++){
-		btree.insert(random(10000));
+for(int i = 0; i < 1000; i++){
+		btree.insert(i);
 	}
 	
 	btree.print();
 		
 	for(int i = 0; i < 10; i++){
-		btree.search(random(10000));
+		btree.search(random(2000));
 	}
 
 
