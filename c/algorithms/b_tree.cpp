@@ -40,18 +40,23 @@ class BTree{
 		BTree(int d);
 		~BTree();
 		void insert(int key);
-		
 		BTreeNode* search(int key);
 		void release(BTreeNode* node);
 		void remove(int key);
 		void print();
 		void printInOrder(BTreeNode* node);
 		void printByNode(BTreeNode* node);
+		void check();
 	private:
-		void remove(BTreeNode* node, int key);
-		void ajust(BTreeNode* node, int pos);
+		void removeChild(BTreeNode* node, int pos);
+		void merge(BTreeNode* node, int pos);
+		void leftRotate(BTreeNode* node, int pos);
+		void rightRotate(BTreeNode* node, int pos);
+		void remove(BTreeNode* preNode, int prePos, BTreeNode* node, int key);
+		int ajust(BTreeNode* node, int pos);
 		void splitChild(BTreeNode* node ,int pos);
 		void insertNotFull(BTreeNode* node, int key);
+		void check(BTreeNode* node);
 		BTreeNode* root;
 		unsigned int size;
 };
@@ -109,12 +114,12 @@ BTreeNode* BTree::search(int key){
 			node = *(node->children + i);
 			//cout<<"search "<<node<<" "<<node->size<<" ";
 		}else{
-			cout<<"找到"<<key<<endl;
+			//cout<<"找到"<<key<<endl;
 			return node;
 		}
 	}
 	
-	cout<<"未找到"<<key<<endl;
+	//cout<<"未找到"<<key<<endl;
 	return nullptr;
 }
 
@@ -167,7 +172,7 @@ void BTree::insert(int k){
 void BTree::remove(int key){
 	BTreeNode* node = search(key);
 	BTreeNode* preNode = nullptr;
-	
+	int prePos;
 	if(node == nullptr){
 		cout<<key<<"不存在"<<endl;
 		return;
@@ -175,8 +180,7 @@ void BTree::remove(int key){
 	
 	int i = 0;
 	while(node != nullptr){
-		if(node->size < degree) ajust(preNode, i);
-		
+
 		i = 0;
 		while(i < node->size && *(node->keys + i) < key ) i++;
 		
@@ -185,66 +189,147 @@ void BTree::remove(int key){
 			
 		{	
 			preNode = node;
+			prePos = i;
 			node = *(preNode->children + i);
 		}
-		else break;
+		else {
+			break;
+		}
 	}
 	
-	remove(node, i);
+	remove(preNode, prePos, node, i);
 	size--;
 }
 
-
-//针对算法导论3的情况对x.ci进行调整
-void BTree::ajust(BTreeNode* x, int pos){
-	cout<<"ajust"<<endl;
-	BTreeNode* left = *()
+//将当前父节点关键字左右俩孩合并，将关键字下移
+void BTree::merge(BTreeNode* node, int pos){
+	BTreeNode* left;
+	BTreeNode* right;
+	left = *(node->children + pos);
+	right = *(node->children + pos + 1);
+	*(left->keys + left->size) = *(node->keys + pos);	
+	for(int i = 0; i < right->size; i++){
+		*(left->keys + left->size + i) = *(right->keys + i);
+		*(left->children + left->size + i + 1) = *(right->children + i);
+	}
+	*(left->children + left->size + right->size) = *(right->children + right->size);
+	left->size += right->size + 1;
+	delete right;
 	
+	//当前节点删除key
+	for(int i = pos; i < node->size - 1; i++){
+		*(node->keys + i) = *(node->keys + i + 1);
+		*(node->children + i + 1) = *(node->children + i + 2);
+	}
+	node->size--;
+}
+
+void BTree::leftRotate(BTreeNode* node, int pos){
+	BTreeNode* left = *(node->children + pos);
+	BTreeNode* right = *(node->children + pos + 1);
+	//将支点关键字移到左侧，将右节点内侧（第一个）的子孩放到左侧节点内侧
+	*(left->keys + left->size) = *(node->keys + pos);
+	*(left->children + left->size + 1) = *(right->children);
+	left->size++;
+	
+	//将右侧内侧（第一个）关键字 代替支点关键字
+	*(node->keys + pos) = *(right->keys);
+	
+	//右节点缩减
+	int i;
+	for(i = 1; i < right->size ; i++){
+		*(right->keys + i - 1) = *(right->keys + i);
+		*(right->children + i - 1) = *(right->children + i);
+	}
+	*(right->children + i - 1) = *(right->children + i);
+	right->size--;
+}
+
+void BTree::rightRotate(BTreeNode* node, int pos){
+	BTreeNode* left = *(node->children + pos);
+	BTreeNode* right = *(node->children + pos + 1);
+	//将支点关键字移到右子节点，将左子节点内侧（第一个）的子孩放到左侧节点内侧
+	int i;
+	for(i = right->size; i > 0 ; i--){
+		*(right->keys + i) = *(right->keys + i - 1);
+		*(right->children + i + 1) = *(right->children + i);
+	}
+	*(right->children + i + 1) = *(right->children + i);
+	
+	*(right->keys) = *(node->keys + pos);
+	*(right->children) = *(left->children + left->size);
+	right->size++;
+	
+	//将做侧内侧（第一个）关键字 代替支点关键字
+	*(node->keys + pos) = *(left->keys + left->size - 1);
+	
+	//左节点缩减
+	left->size--;
+}
+
+//针对算法导论3的情况对x.ci进行调整,返回的整数用于重新定位key
+int BTree::ajust(BTreeNode* node, int pos){
+	
+	BTreeNode* left, *cur, *right;
+
+	int key;
+	left = cur = right = nullptr;
+	cout<<"ajust "<<node<<endl;
+	
+	
+	if(pos >= 0) left = *(node->children + pos - 1);
+	cur = *(node->children + pos);
+	if(pos <= node->size) right = *(node->children + pos + 1);
+	
+	//判断兄弟节点数量，能否旋转
+	//左旋
+	if(right != nullptr && right->size >= degree){
+		leftRotate(node, pos);
+		return 0;
+	}
+	else if(left != nullptr && left->size >= degree) {
+		rightRotate(node, pos - 1);
+		return 1;
+	}
+	else{
+		merge(node, pos);
+		return 0;
+	}
 }
 
 
-void BTree::remove(BTreeNode* x, int pos){
+void BTree::remove(BTreeNode* preNode, int prePos, BTreeNode* node, int pos){
+	//移除之前如果长度不够需要先调整，否则会导致不合规
+	// if(node!=root && node->size == degree - 1) {
+		// int offset = ajust(preNode, prePos);
+		// pos += offset;
+	// }
+	
 	BTreeNode* left;
 	BTreeNode* right;
-	left = *(x->children + pos);
-	right = *(x->children + pos + 1);
-	if(x->isLeaf){
-		for(int i = pos; i < x->size - 1; i++){
-			*(x->keys + i) = *(x->keys + i + 1);
-			*(x->children + i + 1) = *(x->children + i + 2);
+	left = *(node->children + pos);
+	right = *(node->children + pos + 1);
+	if(node->isLeaf){
+		//叶子结点直接删
+		for(int i = pos; i < node->size; i++){
+			*(node->keys + i) = *(node->keys + i + 1);
 		}
-		x->size--;
+		node->size--;
 	}
 	else if(left->size > degree - 1){
 		//左侧最右边节点上移,再递归
-		*(x->keys + pos) = *(left->keys + left->size - 1);
-		remove(left, left->size-1);
+		*(node->keys + pos) = *(left->keys + left->size - 1);
+		remove(node, pos, left, left->size - 1);
 	}
 	else if(right->size > degree - 1){
 		//右侧最左边节点上移，再递归
-		*(x->keys + pos) = *(right->keys);
-		remove(right, 0);
+		*(node->keys + pos) = *(right->keys);
+		remove(node, pos + 1, right, 0);
 	}
 	else{
-		//删除key下移,合并左右， 再递归
-		*(left->keys + left->size) = *(x->keys + pos);	
-		for(int i = 0; i < right->size; i++){
-			*(left->keys + left->size + i) = *(right->keys + i);
-			*(left->children + left->size + i + 1) = *(right->children + i);
-		}
-		*(left->children + left->size + right->size) = *(right->children + right->size);
-		left->size += right->size + 1;
-		delete right;
-		
-		//当前节点删除key
-		for(int i = pos; i < x->size - 1; i++){
-			*(x->keys + i) = *(x->keys + i + 1);
-			*(x->children + i + 1) = *(x->children + i + 2);
-		}
-		x->size--;
-		
+		merge(node, pos);
 		//合并后总长2*degree-1, key位于中间
-		remove(left, degree - 1);
+		remove(node, pos, left, degree - 1);
 	}
 }
 
@@ -277,12 +362,12 @@ void BTree::insertNotFull(BTreeNode* x, int k){
 }
 
 void BTree::print(){
-	count = 0;
-	printInOrder(root);
-	cout<<endl<<"记录数量"<<size<<",实际打印数量"<<count<<endl;
 	// count = 0;
-	// printByNode(root);
+	// printInOrder(root);
 	// cout<<endl<<"记录数量"<<size<<",实际打印数量"<<count<<endl;
+	count = 0;
+	printByNode(root);
+	cout<<endl<<"记录数量"<<size<<",实际打印数量"<<count<<endl;
 	cout<<endl<<"------------------------------"<<endl;
 }
 
@@ -309,7 +394,7 @@ void BTree::printInOrder(BTreeNode* node){
 void BTree::printByNode(BTreeNode* node){
 	depth++;
 	if(node == nullptr) return;
-	cout<<node<<" 深度:"<<depth<<", 数量:"<<node->size<<" ";
+	cout<<node<<" 深度:"<<depth<<", 数量:"<<node->size<<", ";
 	for(int i = 0; i < node->size; i++){
 		count++;
 		cout<< *(node->keys + i) << " ";
@@ -323,20 +408,45 @@ void BTree::printByNode(BTreeNode* node){
 	depth--;
 }
 
+void BTree::check(){
+	cout<<"自由度"<<degree<<endl;
+	cout<<"宽度上限"<<2*degree - 1<<endl;
+	cout<<"宽度下限"<<degree - 1<<endl;
+	check(root);
+}
+
+void BTree::check(BTreeNode* node){
+	depth++;
+	if(node == nullptr) return;
+	if(node->size > 2*degree - 1 || node->size < degree - 1){
+		cout<<"深度"<<depth<<",节点"<<node<<"不合法 尺寸"<<node->size<<":";
+		for(int i = 0; i < node->size; i++)cout<< *(node->keys + i) << " ";	
+		cout<<endl;
+	}
+	
+	if(!node->isLeaf){
+		for(int  i = 0; i < node->size + 1; i++){
+			check(*(node->children + i));
+		}
+	}
+	depth--;
+}
 
 
 int main(){
-	BTree btree(4);
+	BTree btree(2);
 	
-	for(int i = 0; i < 1000; i++){
+	for(int i = 0; i < 40; i++){
 		btree.insert(i);
 	}
 	
-	for(int i = 0; i < 10; i++){
+	for(int i = 0; i < 40; i++){
 		//btree.search(random(2000));
-		btree.remove(random(2000));
+		btree.remove(random(40));
+		btree.print();
 	}
 	
 	btree.print();
+	btree.check();
 	return 1;
 }
