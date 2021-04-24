@@ -26,7 +26,8 @@ struct BTreeNode{
 	}
 	~BTreeNode(){
 		delete keys;
-		//注意这里不需要delete子孩指针，有外部函数递归操作就可以了
+		//注意这里不需要delete子孩指针，因为子孩指针还指向子孩的子孩，
+		//有外部函数递归操作就可以了
 		// for(int i = 0; i< size + 1;i++){
 			// delete *(children + i);
 		// }
@@ -85,7 +86,7 @@ void BTree::release(BTreeNode *node){
 			release(*(node->children + i));
 		}
 	}
-	//delete会调用node内部的析构，释放空间
+	//delete会调用node内部的析构，释放空间,不需要再释放
 	delete node;
 }
 
@@ -124,6 +125,7 @@ BTreeNode* BTree::search(int key){
 }
 
 //x父节点，y分裂节点，z分裂出的y右侧节点
+//将y的中间节点上移，然后y右侧内容移入新建节点z中，z左右上移关键字右侧子孩
 void BTree::splitChild(BTreeNode* x, int pos){
 	//cout<<"splitChild:"<<x<<" pos:"<<pos<<endl;
 	BTreeNode* z = new BTreeNode(2*degree - 1);
@@ -131,6 +133,7 @@ void BTree::splitChild(BTreeNode* x, int pos){
 	int midPos = y->size/2;
 	int midKey = *(y->keys + midPos);
 
+	//注意叶节点属性要保持
 	z->isLeaf = y->isLeaf;
 	for(int i = x->size; i > pos; i--){
 		*(x->keys + i) = *(x->keys + i - 1);
@@ -153,7 +156,9 @@ void BTree::splitChild(BTreeNode* x, int pos){
 	//print();
 }
 
+//先看根目录是否需要分裂
 void BTree::insert(int k){
+	cout<<"insert "<<k<<endl;
 	size++;
 	//cout<<"insert "<<k<<endl;
 	BTreeNode* node = root;
@@ -166,6 +171,150 @@ void BTree::insert(int k){
 		insertNotFull(s, k);
 	}else{
 		insertNotFull(node, k);
+	}
+}
+
+//插入非根目录，搜索到叶节点再插入，搜索途径满的节点进行分裂。
+void BTree::insertNotFull(BTreeNode* x, int k){
+	//cout<<"insert not full:"<<x<<" key:"<<k<<endl;
+	int i;
+	BTreeNode* child;
+	if(x->isLeaf){
+		i = x->size;
+		while(i >= 1 && *(x->keys + i - 1) > k) {
+			*(x->keys + i) = *(x->keys + i - 1);
+			i--;
+		}
+		*(x->keys + i) = k;
+		x->size += 1;
+	}
+	else{
+		i = x->size - 1;
+		//注意这个循环对于最左侧节点也有效
+		while(i >= 0 && *(x->keys + i) > k) i--;
+		child = *(x->children + i + 1);
+		if(child->size == 2*degree - 1){
+			splitChild(x, i+1);
+			//分裂后新增关键字小于k，则k对应的区间后移一个
+			if(*(x->keys + i + 1) < k) i++;
+		}
+		insertNotFull(*(x->children + i + 1), k);
+	}
+}
+
+//将当前父节点关键字左右俩孩合并，将关键字下移
+//splitChild的相反操作
+void BTree::merge(BTreeNode* node, int pos){
+	// cout<<"merge "<<node<<" pos "<<pos<<" "<<*(node->children + pos)<<endl;
+	BTreeNode* left;
+	BTreeNode* right;
+	left = *(node->children + pos);
+	right = *(node->children + pos + 1);
+	*(left->keys + left->size) = *(node->keys + pos);	
+	for(int i = 0; i < right->size; i++){
+		*(left->keys + left->size + i + 1) = *(right->keys + i);
+		*(left->children + left->size + i + 1) = *(right->children + i);
+	}
+	*(left->children + left->size + right->size + 1) = *(right->children + right->size);
+	left->size =left->size + right->size + 1;
+	delete right;
+	
+	// for(int i = 0; i < left->size; i++)cout<<" "<<*(left->keys + i);
+	// cout<<endl;
+	// for(int i = 0; i < left->size + 1; i++)cout<<left->children + i<<" ";
+	// cout<<endl;
+	
+	//当前节点删除key
+	for(int i = pos; i < node->size - 1; i++){
+		*(node->keys + i) = *(node->keys + i + 1);
+		*(node->children + i + 1) = *(node->children + i + 2);
+	}
+	node->size--;
+}
+
+void BTree::leftRotate(BTreeNode* node, int pos){
+	// cout<<"leftRotate "<<node<<" pos "<<pos<<" "<<*(node->children + pos)<<endl;
+	
+	BTreeNode* left = *(node->children + pos);
+	BTreeNode* right = *(node->children + pos + 1);
+	
+	// cout<<"leftRotate left:"<<left<<" right:"<<right<<endl;
+	//将支点关键字移到左侧，将右节点内侧（第一个）的子孩放到左侧节点内侧
+	*(left->keys + left->size) = *(node->keys + pos);
+	*(left->children + left->size + 1) = *(right->children);
+	left->size++;
+	
+	//将右侧内侧（第一个）关键字 代替支点关键字
+	*(node->keys + pos) = *(right->keys);
+	
+	//右节点缩减
+	int i;
+	for(i = 1; i < right->size ; i++){
+		*(right->keys + i - 1) = *(right->keys + i);
+		*(right->children + i - 1) = *(right->children + i);
+	}
+	*(right->children + i - 1) = *(right->children + i);
+	right->size--;
+}
+
+void BTree::rightRotate(BTreeNode* node, int pos){
+	// cout<<"rightRotate "<<node<<" pos "<<pos<<" "<<*(node->children + pos)<<endl;
+	BTreeNode* left = *(node->children + pos);
+	BTreeNode* right = *(node->children + pos + 1);
+	//将支点关键字移到右子节点，将左子节点内侧（第一个）的子孩放到左侧节点内侧
+	int i;
+	for(i = right->size; i > 0 ; i--){
+		*(right->keys + i) = *(right->keys + i - 1);
+		*(right->children + i + 1) = *(right->children + i);
+	}
+	*(right->children + i + 1) = *(right->children + i);
+	
+	*(right->keys) = *(node->keys + pos);
+	*(right->children) = *(left->children + left->size);
+	right->size++;
+	
+	//将做侧内侧（第一个）关键字 代替支点关键字
+	*(node->keys + pos) = *(left->keys + left->size - 1);
+	
+	//左节点缩减
+	left->size--;
+}
+
+//针对算法导论3的情况对x.ci进行调整,对途径的节点宽度等于degree-1的通过旋转或合并加宽
+//返回的整数用于重新定位key，返回-1则说明节点与前一个节点合并, 需要调整
+int BTree::ajust(BTreeNode* node, int pos){
+	
+	BTreeNode *left, *cur, *right;
+
+	int key;
+	left = cur = right = nullptr;
+	// cout<<"ajust "<<node<<" pos "<<pos<<" "<<*(node->children + pos)<<endl;
+	
+	if(pos > 0) left = *(node->children + pos - 1);
+	cur = *(node->children + pos);
+	if(pos < node->size) right = *(node->children + pos + 1);
+	
+	//判断兄弟节点数量，能否旋转
+	//左旋
+	if(right != nullptr && right->size >= degree){
+		leftRotate(node, pos);
+		return 0;
+	}
+	else if(left != nullptr && left->size >= degree) {
+		rightRotate(node, pos - 1);
+		return 1;
+	}
+	else{
+		//此处需要父节点下移
+		if(right != nullptr){
+			merge(node, pos);
+			return 0;
+		}else{
+			//合并当前节点+左侧节点，需要向右偏移degree-1+1
+			merge(node, pos - 1);
+			return -1;
+		}
+		
 	}
 }
 
@@ -213,125 +362,9 @@ void BTree::remove(int key){
 	size--;
 }
 
-//将当前父节点关键字左右俩孩合并，将关键字下移
-//split的相反操作
-void BTree::merge(BTreeNode* node, int pos){
-	cout<<"merge "<<node<<" pos "<<pos<<" "<<*(node->children + pos)<<endl;
-	BTreeNode* left;
-	BTreeNode* right;
-	left = *(node->children + pos);
-	right = *(node->children + pos + 1);
-	*(left->keys + left->size) = *(node->keys + pos);	
-	for(int i = 0; i < right->size; i++){
-		*(left->keys + left->size + i + 1) = *(right->keys + i);
-		*(left->children + left->size + i + 1) = *(right->children + i);
-	}
-	*(left->children + left->size + right->size + 1) = *(right->children + right->size);
-	left->size =left->size + right->size + 1;
-	delete right;
-	
-	for(int i = 0; i < left->size; i++)cout<<" "<<*(left->keys + i);
-	cout<<endl;
-	for(int i = 0; i < left->size + 1; i++)cout<<left->children + i<<" ";
-	cout<<endl;
-	
-	//当前节点删除key
-	for(int i = pos; i < node->size - 1; i++){
-		*(node->keys + i) = *(node->keys + i + 1);
-		*(node->children + i + 1) = *(node->children + i + 2);
-	}
-	node->size--;
-}
-
-void BTree::leftRotate(BTreeNode* node, int pos){
-	cout<<"leftRotate "<<node<<" pos "<<pos<<" "<<*(node->children + pos)<<endl;
-	
-	BTreeNode* left = *(node->children + pos);
-	BTreeNode* right = *(node->children + pos + 1);
-	
-	cout<<"leftRotate left:"<<left<<" right:"<<right<<endl;
-	//将支点关键字移到左侧，将右节点内侧（第一个）的子孩放到左侧节点内侧
-	*(left->keys + left->size) = *(node->keys + pos);
-	*(left->children + left->size + 1) = *(right->children);
-	left->size++;
-	
-	//将右侧内侧（第一个）关键字 代替支点关键字
-	*(node->keys + pos) = *(right->keys);
-	
-	//右节点缩减
-	int i;
-	for(i = 1; i < right->size ; i++){
-		*(right->keys + i - 1) = *(right->keys + i);
-		*(right->children + i - 1) = *(right->children + i);
-	}
-	*(right->children + i - 1) = *(right->children + i);
-	right->size--;
-}
-
-void BTree::rightRotate(BTreeNode* node, int pos){
-	cout<<"rightRotate "<<node<<" pos "<<pos<<" "<<*(node->children + pos)<<endl;
-	BTreeNode* left = *(node->children + pos);
-	BTreeNode* right = *(node->children + pos + 1);
-	//将支点关键字移到右子节点，将左子节点内侧（第一个）的子孩放到左侧节点内侧
-	int i;
-	for(i = right->size; i > 0 ; i--){
-		*(right->keys + i) = *(right->keys + i - 1);
-		*(right->children + i + 1) = *(right->children + i);
-	}
-	*(right->children + i + 1) = *(right->children + i);
-	
-	*(right->keys) = *(node->keys + pos);
-	*(right->children) = *(left->children + left->size);
-	right->size++;
-	
-	//将做侧内侧（第一个）关键字 代替支点关键字
-	*(node->keys + pos) = *(left->keys + left->size - 1);
-	
-	//左节点缩减
-	left->size--;
-}
-
-//针对算法导论3的情况对x.ci进行调整,返回的整数用于重新定位key
-int BTree::ajust(BTreeNode* node, int pos){
-	
-	BTreeNode *left, *cur, *right;
-
-	int key;
-	left = cur = right = nullptr;
-	cout<<"ajust "<<node<<" pos "<<pos<<" "<<*(node->children + pos)<<endl;
-	
-	if(pos > 0) left = *(node->children + pos - 1);
-	cur = *(node->children + pos);
-	if(pos < node->size) right = *(node->children + pos + 1);
-	
-	//判断兄弟节点数量，能否旋转
-	//左旋
-	if(right != nullptr && right->size >= degree){
-		leftRotate(node, pos);
-		return 0;
-	}
-	else if(left != nullptr && left->size >= degree) {
-		rightRotate(node, pos - 1);
-		return 1;
-	}
-	else{
-		//此处需要父节点下移
-		if(right != nullptr){
-			merge(node, pos);
-			return 0;
-		}else{
-			//合并当前节点+左侧节点，需要向右偏移degree-1+1
-			merge(node, pos - 1);
-			return -1;
-		}
-		
-	}
-}
-
-
+//删除node节点pos位置的关键字
 void BTree::remove(BTreeNode* preNode, int prePos, BTreeNode* node, int pos){
-	cout<<"remove node "<<node<<" pos "<<pos<<endl;
-	cout<<(node->isLeaf?"isLeaf":"notLeaf")<<endl;
+	// cout<<"remove node "<<node<<" pos "<<pos<<endl;
 	//移除之前如果长度不够需要先调整，否则会导致不合规
 	if(node!=root && node->size == degree - 1) {
 		int offset = ajust(preNode, prePos);
@@ -373,32 +406,6 @@ void BTree::remove(BTreeNode* preNode, int prePos, BTreeNode* node, int pos){
 }
 
 
-void BTree::insertNotFull(BTreeNode* x, int k){
-	//cout<<"insert not full:"<<x<<" key:"<<k<<endl;
-	int i;
-	BTreeNode* child;
-	if(x->isLeaf){
-		i = x->size;
-		while(i >= 1 && *(x->keys + i - 1) > k) {
-			*(x->keys + i) = *(x->keys + i - 1);
-			i--;
-		}
-		*(x->keys + i) = k;
-		x->size += 1;
-	}
-	else{
-		i = x->size - 1;
-		//注意这个循环对于最左侧节点也有效
-		while(i >= 0 && *(x->keys + i) > k) i--;
-		child = *(x->children + i + 1);
-		if(child->size == 2*degree - 1){
-			splitChild(x, i+1);
-			//分裂后新增关键字小于k，则k对应的区间后移一个
-			if(*(x->keys + i + 1) < k) i++;
-		}
-		insertNotFull(*(x->children + i + 1), k);
-	}
-}
 
 void BTree::print(){
 	// count = 0;
@@ -459,13 +466,16 @@ void BTree::check(){
 	cout<<"自由度"<<degree<<endl;
 	cout<<"宽度上限"<<2*degree - 1<<endl;
 	cout<<"宽度下限"<<degree - 1<<endl;
+	count = 0;
 	check(root);
+	if(count == 0) cout<<"b树合规"<<endl;
 }
 
 void BTree::check(BTreeNode* node){
 	depth++;
 	if(node == nullptr) return;
 	if(node->size > 2*degree - 1 || node->size < degree - 1){
+		count++;
 		cout<<"深度"<<depth<<",节点"<<node<<"不合法 尺寸"<<node->size<<":";
 		for(int i = 0; i < node->size; i++)cout<< *(node->keys + i) << " ";	
 		cout<<endl;
