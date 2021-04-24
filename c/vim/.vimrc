@@ -101,11 +101,10 @@ func SetTitle()
     if &filetype == 'cpp'
 		call append(line(".")+6, "#include<iostream>")
 		call append(line(".")+7, "#include<vector>")
-		call append(line(".")+8, "#include<ctime>")	
- 		call append(line(".")+9, "#include<algorithm>")			
-        call append(line(".")+10, "using namespace std;")
-		call append(line(".")+11, "#define random(x) (rand()%(x+1))")
-        call append(line(".")+12, "")
+		call append(line(".")+8, "#include<ctime>")		
+        call append(line(".")+9, "using namespace std;")
+		call append(line(".")+10, "#define random(x) (rand()%(x+1))")
+        call append(line(".")+11, "")
     endif
     if &filetype == 'c'
         call append(line(".")+6, "#include<stdio.h>")
@@ -124,15 +123,19 @@ func! CompileRunGcc()
         exec "w"
 		exec "clear"
         if &filetype == 'c'
+			exec "!clear"
                 exec "!g++ -I %:h % -o %"
                 exec "!time ./%<"
         elseif &filetype == 'cpp'
+				exec "!clear"
                 exec "!g++ -std=c++11 % -o %<"
                 exec "!time ./%<"
         elseif &filetype == 'java'
+				exec "!clear"
                 exec "!javac %"
                 exec "!time java %<"
         elseif &filetype == 'sh'
+				exec "!clear"
                 :!time bash %
         elseif &filetype == 'python'
                 exec "!clear"
@@ -144,6 +147,7 @@ endfunc
 map <C-F5> :call Rungdb()<CR>
 func! Rungdb()
 exec "w"
+exec "!clear"
 exec "!g++ % -g -o %<"
 exec "!gdb ./%<"
 endfunc
