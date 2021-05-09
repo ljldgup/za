@@ -28,21 +28,21 @@ struct Node{
 };
 
 
-struct edge{
+struct Edge{
 	Node* fromNode;
 	Node* toNode;
 	int weight;
-	edge(Node* f, Node* t, int w){
+	Edge(Node* f, Node* t, int w){
 		fromNode = f;
 		toNode = t;
 		weight = w;
 	}
 };
 
-void print(unordered_map<char, Node*> vertexMap, unordered_map<char, vector<edge*>*> graph){	
-	for(auto edge:graph){
-		cout<<"edge:"<<edge.first<<" ";
-		for(auto e:*edge.second){
+void print(unordered_map<char, Node*> vertexMap, unordered_map<char, vector<Edge*>*> graph){	
+	for(auto Edge:graph){
+		cout<<"Edge:"<<Edge.first<<" ";
+		for(auto e:*Edge.second){
 			cout<<e->fromNode->name<<' '<<e->toNode->name<<' '<<e->toNode->key<<' '<<e->weight<<" ";
 		}
 		cout<<endl;
@@ -58,7 +58,7 @@ set<Node*>* findSet(set<set<Node*>*> vertexSet, Node* node){
 }
 
 void kruskal(unordered_map<char, Node*> vertexMap, 
-			unordered_map<char, vector<edge*>*> graph){	 
+			unordered_map<char, vector<Edge*>*> graph){	 
 			
 	int sum = 0;
 	set<set<Node*>*> resultSet;
@@ -66,19 +66,19 @@ void kruskal(unordered_map<char, Node*> vertexMap,
 		resultSet.insert(new set<Node*>{n.second});
 	}
 	
-	vector<edge*> edgeList;
+	vector<Edge*> EdgeList;
 	for(auto v:graph){
 		for(auto e:*v.second){
-			edgeList.push_back(e);
+			EdgeList.push_back(e);
 		}
 	}
 	
-	auto comparator = [](edge* e1, edge* e2)->bool{return e1->weight < e2->weight;};
+	auto comparator = [](Edge* e1, Edge* e2)->bool{return e1->weight < e2->weight;};
 	
-	sort(edgeList.begin(), edgeList.end(), comparator);
+	sort(EdgeList.begin(), EdgeList.end(), comparator);
 	
 	set<Node*> *s1, *s2;
-	for(auto e: edgeList){
+	for(auto e: EdgeList){
 		s1 = findSet(resultSet, e->fromNode);
 		s2 = findSet(resultSet, e->toNode);
 
@@ -102,7 +102,7 @@ void kruskal(unordered_map<char, Node*> vertexMap,
 }
 
 void prim(unordered_map<char, Node*> vertexMap, 
-			unordered_map<char, vector<edge*>*> graph){	  
+			unordered_map<char, vector<Edge*>*> graph){	  
 	cout<<"prim"<<endl;
 	int sum = 0;
 	vector<Node*> minHeap;
@@ -152,7 +152,7 @@ void prim(unordered_map<char, Node*> vertexMap,
 
 int main(){
 	unordered_map<char, Node*> vertexMap;
-	unordered_map<char, vector<edge*>*> graph;
+	unordered_map<char, vector<Edge*>*> graph;
 	
 	vector<tuple<char, char, int>> data{
 		{'a', 'b', 4},
@@ -173,25 +173,25 @@ int main(){
 	
 	for(char c:{'a','b','c','d','e','f','g','h', 'i'}){
 		vertexMap[c] = new Node(c, MAX);
-		graph[c]  = new vector<edge*>();
+		graph[c]  = new vector<Edge*>();
 	}
 	
 	for(auto d:data){
-		edge* e = new edge(vertexMap[get<0>(d)], vertexMap[get<1>(d)], get<2>(d));
+		Edge* e = new Edge(vertexMap[get<0>(d)], vertexMap[get<1>(d)], get<2>(d));
 		graph[get<0>(d)]->push_back(e);
-		e = new edge(vertexMap[get<1>(d)], vertexMap[get<0>(d)], get<2>(d));
+		e = new Edge(vertexMap[get<1>(d)], vertexMap[get<0>(d)], get<2>(d));
 		graph[get<1>(d)]->push_back(e);
 	}
 
 	kruskal(vertexMap, graph);
 	//prim(vertexMap, graph);
 	
-	for(auto edge:graph){
-		for(auto e:*edge.second){
+	for(auto Edge:graph){
+		for(auto e:*Edge.second){
 			delete e;
 		}
-		delete graph[edge.first];
-		delete vertexMap[edge.first];
+		delete graph[Edge.first];
+		delete vertexMap[Edge.first];
 	}
 	
 	return 1;
