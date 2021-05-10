@@ -302,7 +302,7 @@ int BTree::ajust(BTreeNode* node, int pos){
 	}
 	else if(left != nullptr && left->size >= degree) {
 		rightRotate(node, pos - 1);
-		return 1;
+		return 0;
 	}
 	else{
 		//此处需要父节点下移
@@ -510,5 +510,5 @@ int main(){
 	}
 	btree.print();
 	btree.check();
-	return 1;
+	return 0;
 }

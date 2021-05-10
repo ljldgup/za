@@ -194,5 +194,5 @@ int main(){
 		delete vertexMap[Edge.first];
 	}
 	
-	return 1;
+	return 0;
 }

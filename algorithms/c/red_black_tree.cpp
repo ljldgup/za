@@ -555,5 +555,5 @@ int main(){
 
 	}
 	cout<<"size "<<brTree.getSize()<<endl<<"height: "<<brTree.getHeight()<<endl;
-	return 1;
+	return 0;
 }

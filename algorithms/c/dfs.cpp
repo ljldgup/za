@@ -157,5 +157,5 @@ int main(){
 	for(auto n:vertex){
 		delete n.second;
 	}
-	return 1;
+	return 0;
 }

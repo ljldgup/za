@@ -120,5 +120,5 @@ int main(){
 	set_prefix(root);
 	string prefix = "";
 	tree_print_delete(root, prefix);
-	return 1;
+	return 0;
 }

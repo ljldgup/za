@@ -272,5 +272,5 @@ int main(){
 			delete node;
 		}
 	}
-	return 1;
+	return 0;
 }

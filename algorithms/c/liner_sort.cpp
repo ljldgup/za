@@ -87,6 +87,6 @@ int main(){
 
 	// count_sort(11, array, [=](int n)->int{return n/100;});
 	print_array(array);
-	return 1;
+	return 0;
 	
 }
