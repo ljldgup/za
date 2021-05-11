@@ -26,6 +26,7 @@ void generateNext(const string &p, vector<int> &next){
 	}
 }
 
+
 int kmpMatch(const string &s, const string &p, vector<int> &next, vector<int> &rst){
 	
 	int i,j,count;
@@ -44,6 +45,7 @@ int kmpMatch(const string &s, const string &p, vector<int> &next, vector<int> &r
 				i++,j++;
 			}
 			else{
+				//注意这里如果不匹配移动的匹配字符串p的位置，当前s[i]不变，这和有限自动机是有区别的
 				j = next[j];
 			}
 		}
@@ -52,7 +54,8 @@ int kmpMatch(const string &s, const string &p, vector<int> &next, vector<int> &r
 			rst.push_back(i - j);
 			count++;
 			//移到最大匹配
-			j = next[j];
+			
+			j = next[p.length()];
 		}
 	}
 	return count;
