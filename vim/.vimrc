@@ -2,7 +2,10 @@ inoremap ' ''<ESC>i
 inoremap " ""<ESC>i
 inoremap ( ()<ESC>i
 inoremap [ []<ESC>i
-inoremap { {<CR>}<ESC>O
+
+"inoremap { {<CR>}<ESC>O 大括号不要自动换行
+"大括号不要自动换行
+inoremap { {}<ESC>i
 
 " 将tab键绑定为跳出括号  
 "inoremap <TAB> <c-r>=SkipPair()<CR>
@@ -50,7 +53,7 @@ set smarttab
 set nobackup
 set noswapfile
 "搜索忽略大小写
-set ignorecase
+"set ignorecase
 "搜索逐字符高亮
 set hlsearch
 set incsearch
@@ -89,30 +92,51 @@ filetype plugin indent on
 
 filetype on "打开文件类型检测功能
 
-autocmd BufNewFile *.cpp,*.[ch] exec ":call SetTitle()"
+autocmd BufNewFile *.java,*.c* exec ":call SetTitle()"
 func SetTitle()
-    call setline(1,"/************************************************************************")
-    call append(line("."), "    > File Name: ".expand("%")) 
-    call append(line(".")+1, "    > Author: ljl") 
-    call append(line(".")+2, "    > Mail: ") 
-    call append(line(".")+3, "    > Created Time: ".strftime("%c")) 
-    call append(line(".")+4, "************************************************************************/") 
-    call append(line(".")+5, "")
+
     if &filetype == 'cpp'
+	    call setline(1,"/************************************************************************")
+		call append(line("."), "   File Name: ".expand("%:t")) 
+		call append(line(".")+1, "   Author: ljl") 
+		call append(line(".")+2, "   Mail: ") 
+		call append(line(".")+3, "   Created Time: ".strftime("%c")) 
+		call append(line(".")+4, "************************************************************************/") 
+		call append(line(".")+5, "")
 		call append(line(".")+6, "#include<iostream>")
-		call append(line(".")+7, "#include<vector>")
+		call append(line(".")+7, "#include<algorithm>")
 		call append(line(".")+8, "#include<ctime>")		
         call append(line(".")+9, "using namespace std;")
 		call append(line(".")+10, "#define random(x) (rand()%(x+1))")
         call append(line(".")+11, "")
+		call append(line(".")+12, "int main(){")
+		call append(line(".")+13, "	return 0;")
+		call append(line(".")+14, "}")
     endif
     if &filetype == 'c'
+	    call setline(1,"/************************************************************************")
+		call append(line("."), "   File Name: ".expand("%:t")) 
+		call append(line(".")+1, "   Author: ljl") 
+		call append(line(".")+2, "   Mail: ") 
+		call append(line(".")+3, "   Created Time: ".strftime("%c")) 
+		call append(line(".")+4, "************************************************************************/") 
+		call append(line(".")+5, "")
         call append(line(".")+6, "#include<stdio.h>")
 		call append(line(".")+7, "#include<stdlib.h>")
 		call append(line(".")+8, "#include<time.h>")		
 		call append(line(".")+9, "#define random(x) (rand()%(x+1))")
         call append(line(".")+10, "")
+		call append(line(".")+11, "int main(){")
+		call append(line(".")+12, "	return 1;")
+		call append(line(".")+13, "}")
     endif
+	if &filetype == 'java'
+        call append(line(".")+1, "public class ".expand("%:r").expand("{")) 
+        call append(line(".")+2, "	public static void main(String[] args) {") 
+        call append(line(".")+3, "	}") 
+        call append(line(".")+4, "}") 
+    endif
+	
     "新建文件后，自动定位到文件末尾（这个功能实际没有被实现，即下面的语句无效，暂不知道原因）
     autocmd BufNewFile * normal G
 endfunc
@@ -128,7 +152,7 @@ func! CompileRunGcc()
                 exec "!time ./%<"
         elseif &filetype == 'cpp'
 				exec "!clear"
-                exec "!g++ -std=c++11 % -o %<"
+                exec "!g++ -std=c++17 % -o %<"
                 exec "!time ./%<"
         elseif &filetype == 'java'
 				exec "!clear"
