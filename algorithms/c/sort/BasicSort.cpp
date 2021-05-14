@@ -51,6 +51,7 @@ void bubbleSort(int *nums, int length){
 		if(flag == 0) return;
 		
 		//优化2，记录最后冒泡的位置，后面的数字已经排序，不需要再操作
+		//pos初始值设成k, 可以直接代替flag
 		k = pos;
 	}
 }
@@ -72,7 +73,7 @@ void selectSort(int *nums, int length){
     */
 
     //优化，采用下标记录最值，同时查找最大值和最小值
-    
+    //感觉这种优化没有用，循环中执行的步数没有变，
     //最小值下标
 	int minpos = 0;
 	//最大值下标
