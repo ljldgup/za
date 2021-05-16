@@ -47,6 +47,7 @@ void max_heapify(heap *hp, int i){
 	}
 	if(smallest != i){
 		exchange(hp->array, i, smallest);
+		//子树被交换后已经不满足堆的性质了
 		max_heapify(hp, smallest);
 	}
 }
@@ -80,8 +81,9 @@ int extract_first(heap *hp){
 	return t;
 }
 
+//这里应该是替换，将原来i位置，替换为key, key值必须比原来的值大
 void heap_insert_key(heap *hp, int i, int key){
-	if(key < *(hp->array + i - 1)){
+	if(hp->size < i || key < *(hp->array + i - 1)){
 		return;
 	}
 	
@@ -92,6 +94,7 @@ void heap_insert_key(heap *hp, int i, int key){
 	}
 }
 
+//堆的插入都是吧数据放在数组的最后，然后再调整
 void max_heap_insert(heap *hp, int key){
 		hp->size += 1;
 		*(hp->array + hp->size - 1) = -100;
@@ -102,8 +105,9 @@ int main(){
 	int i = 0;
 	int size = 0;
 	heap hp;
+	printf("输入尺寸 ");
 	scanf("%d", &size);
-
+	
 	hp.size = size;
 	hp.array = (int*)malloc(sizeof(int) * size * 10);
 	
