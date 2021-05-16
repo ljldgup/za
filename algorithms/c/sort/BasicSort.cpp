@@ -18,6 +18,7 @@ void directInsertSort(int *nums, int length){
 		j = i - 1;
 		t = *(nums + i);
         
+		//插入排序是从尾部开始比较的，这样当数组本身有序是，可以接近线性时间
         //优化, 不使用冒泡左移，直接一次性往后移动
 		while( j >= 0 && *(nums + j) > t){
 			*(nums + j + 1) = *(nums + j);

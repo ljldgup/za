@@ -15,8 +15,8 @@ void maxHeapify(int *nums, int start, int end)
     int dad = start;
     int son = dad * 2 + 1;
     while (son <= end)  //若子节点指标在范围内才做比较
-        {
-            if (son + 1 <= end && *(nums + son) < *(nums +son + 1)) 
+    {
+        if (son + 1 <= end && *(nums + son) < *(nums +son + 1)) 
             //先比较两个子节点大小，选择最大的
             son++;
         if (*(nums + dad) > *(nums +son)) 
@@ -40,6 +40,7 @@ void heapSort(int *nums, int len)
     //先将第一个元素和已排好元素前一位做交换，再重新调整，直到排序完毕
     for (i = len - 1; i > 0; i--) 
     {
+		//这里 nums + i 就是 
         swap(nums, nums + i);
         maxHeapify(nums, 0, i - 1);
     }

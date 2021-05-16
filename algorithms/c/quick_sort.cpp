@@ -24,6 +24,7 @@ int partition(int *array, int q, int r){
 	x = *(array + r);
 	while(j < r){
 		if(*(array + j) < x){
+			//这里>i位置的都 >x， 保持了循环不变量的正确性
 			i += 1;
 			exchange(array, i, j);
 		}
