@@ -22,7 +22,7 @@ class HashMap{
 	private: 
 		vector<vector<tuple<string, string>>> buckets;
 		double a;
-		int b,p,bucket_num;
+		int b,p,bucket_num,size;
 	public:
 		HashMap(int);
 		void put(string key, string value);
@@ -33,6 +33,7 @@ class HashMap{
 };
 
 HashMap::HashMap(int num){
+	size = 0;
 	p = 49999; 
 	a = (sqrt(5.0) - 1)/2.0;
 	b = 1 + random(p - 2);
@@ -45,50 +46,55 @@ HashMap::HashMap(int num){
 
 int HashMap::hash(string key){
 	unsigned int acc = 0;
+	
 	for(auto c:key){
-		acc = acc*63689  + c;
+		acc = (acc*63689  + c)%bucket_num;
 	}
-	//乘法取模
-	cout<<int(acc*a)%bucket_num<<endl;
-	return int(acc*a)%bucket_num;
+	
+	//cout<<acc<<endl;
+	return acc;
 }
 
 void HashMap::put(string key, string value){
 	int location = hash(key);
-	cout<<buckets[location].size()<<endl;
-	auto index=find_if(buckets[location].begin(), buckets[location].end(), [=](tuple<string,string> t)->bool{return get<0>(t) == key;});
-	if(index==buckets[location].end()){
+	//cout<<buckets[location].size()<<endl;
+	auto index = find_if(buckets[location].begin(), buckets[location].end(), [=](tuple<string,string> t)->bool{return get<0>(t) == key;});
+	if(index == buckets[location].end()){
 		buckets[location].insert(buckets[location].begin(), make_tuple(key, value));
+		size++;
 	}else{
 		cout<<key<<"已存在\n";
 	}
-	cout<<"put finished"<<endl;
+
+	//cout<<"put finished"<<endl;
 	
 }
 
 string HashMap::search(string key){
 	int location = hash(key);
-	auto index=find_if(buckets[location].begin(), buckets[location].end(), [=](tuple<string,string> t)->bool{return get<0>(t) == key;});
+	auto index = find_if(buckets[location].begin(), buckets[location].end(), [=](tuple<string,string> t)->bool{return get<0>(t) == key;});
 	if(index==buckets[location].end()){
 		cout<<key<<"不存在\n";
+		return "null";
 	}else{
-		return get<0>(*index);
+		return get<1>(*index);
 	}
-		cout<<"search finished"<<endl;
 }
 
 void HashMap::remove(string key){
 	int location = hash(key);
-	auto index=find_if(buckets[location].begin(), buckets[location].end(), [=](tuple<string,string> t)->bool{return get<0>(t) == key;});
+	auto index = find_if(buckets[location].begin(), buckets[location].end(), [=](tuple<string,string> t)->bool{return get<0>(t) == key;});
 	if(index==buckets[location].end()){
 		cout<<key<<"不存在\n";
 	}else{      
 		buckets[location].erase(index);
+		size--;
 	}
-			cout<<"remove finished"<<endl;
+	//cout<<"remove finished"<<endl;
 }
 
 void HashMap::print(){
+	cout<<"尺寸："<<size<<endl;
 	for(int i = 0; i < buckets.size(); i++){
 		cout<<i<<": ";
 		auto list = buckets[i];
@@ -100,7 +106,7 @@ void HashMap::print(){
 }
 
 int main(){
-	int length = random(65);
+	int length = 23;
 	HashMap map(length);
 	
 	// vector<vector<int>> test(length);
@@ -108,11 +114,20 @@ int main(){
 		// cout<<test[i].size()<<endl;
 	// }
 	
-	for(int i = 0; i < length; i++){
+	for(int i = 0; i < length * 5; i++){
 		map.put(to_string(i*10),to_string(i*100));
 	}
-	
+	cout<<"-----------"<<endl;
+	cout<<length/2*10<<" "<<map.search(to_string(length/2*10))<<endl;
+	map.print();
+		
 	map.put("test","test");
+	
+	//这里random为0的时候，会重复删除，出现不存在提示
+	for(int i = 0; i < length * 5; i += random(5)){
+		map.remove(to_string(i*10));
+	}
+
 	map.print();
 }
 

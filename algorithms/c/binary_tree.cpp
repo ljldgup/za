@@ -34,6 +34,7 @@ class BinaryTree{
 		TreeNode* minimum(TreeNode* node);
 		TreeNode* maximum(TreeNode* node);
 		TreeNode* successor(TreeNode* node);
+		TreeNode* predecessor(TreeNode* node);
 		TreeNode* search(int value);
 		void transplant(TreeNode* u, TreeNode* v);
 		void remove(TreeNode* node);
@@ -126,6 +127,7 @@ void BinaryTree::transplant(TreeNode* x, TreeNode* y){
 
 //这里只是返回当前节点为根的最大值
 void BinaryTree::remove(TreeNode *node){
+	cout<<"remove:"<<node->value<<endl;
 	if(node->left == nullptr){
 		transplant(node, node->right);
 	}else if(node->right == nullptr){
@@ -169,6 +171,19 @@ TreeNode* BinaryTree::successor(TreeNode* x){
 	
 	TreeNode* y = x->parent;
 	while(y != nullptr && x == y->right){
+		x = y;
+		y = y->parent;
+	}
+	return y;
+}
+
+TreeNode* BinaryTree::predecessor(TreeNode* x){
+	if(x->left != nullptr){
+		return maximum(x->left);
+	}
+	
+	TreeNode* y = x->parent;
+	while(y != nullptr && x == y->left){
 		x = y;
 		y = y->parent;
 	}
@@ -232,19 +247,36 @@ void BinaryTree::print_level(){
 	}
 }
 
+void exchange(int *array, int x, int y){
+	cout<<x<<' '<<y<<endl;
+	*(array + x) = *(array + y)^*(array + x);
+	*(array + y) = *(array + x)^*(array + y);
+	*(array + x) = *(array + y)^*(array + x);
+}
+
 int main(){
 	srand(time(0));
 	BinaryTree tree;
-	int length = random(20);
+	int length = 10;
+	int *array = new int[length];
+	int t;
+	
+	for(int i = 0; i < length; i++) *(array + i) = i;
+	
+	//随机化
+	for(int i = length - 1; i >= 1; i--){
+		t = random(i - 1);
+		exchange(array, t, i);
+	}
+	
 	for(int i = 0; i < length; i++){
-		cout<<i<<' ';
-		tree.insert(random(length));
+		tree.insert(*(array + i));
 	}
 	
 	tree.print();
 	tree.print_level();
 	
-	int x = length/3;
+	int x = length/2;
 	cout<<"x:"<<x<<endl;
 	TreeNode *n = tree.search(x);
 	if(n != nullptr){
@@ -252,9 +284,10 @@ int main(){
 			cout<<"left "<<n->left<<endl;
 			cout<<"right "<<n->right<<endl;
 			cout<<"parent "<<n->parent<<endl;
-			cout<<"maximum"<<tree.maximum(n)->value<<endl;
-			cout<<"minimum"<<tree.minimum(n)->value<<endl;
-			cout<<"successor"<<tree.successor(n)->value<<endl;
+			cout<<"maximum "<<tree.maximum(n)->value<<endl;
+			cout<<"minimum "<<tree.minimum(n)->value<<endl;
+			cout<<"successor "<<tree.successor(n)->value<<endl;
+			cout<<"predecessor "<<tree.predecessor(n)->value<<endl;
 			tree.remove(n);
 			tree.print();
 	}
