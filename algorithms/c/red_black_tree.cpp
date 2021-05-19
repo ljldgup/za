@@ -25,6 +25,7 @@ class TreeNode{
 	public:
 		color c;
 		int value;
+		int size;
 		TreeNode* p;
 		TreeNode* left;
 		TreeNode* right;
@@ -34,6 +35,7 @@ class TreeNode{
 TreeNode::TreeNode(int v){
 	value = v;
 	c = RED;
+	size = 1;
 }
 
 class BlackRedTree{
@@ -43,6 +45,8 @@ class BlackRedTree{
 		TreeNode* maximum(TreeNode* n);
 		TreeNode* minimum(TreeNode* n);
 		TreeNode* search(int value);
+		TreeNode* osSelect(int n);
+		int osRank(TreeNode* n);
 		
 		void leftRotate(TreeNode* n);
 		void rightRotate(TreeNode* n);
@@ -61,6 +65,7 @@ class BlackRedTree{
 		int getHeight();
 		int getSize();
 		bool isNil(TreeNode* node);
+		
 	private:
 		TreeNode* root;
 		TreeNode* nil;
@@ -71,8 +76,9 @@ class BlackRedTree{
 BlackRedTree::BlackRedTree(){
 	nil = new TreeNode(-137946285);
 	nil->c = BLACK;
-	root = nil;
+	nil->size = 0;
 	size = 0;
+	root = nil;
 }
 
 BlackRedTree::~BlackRedTree(){
@@ -124,15 +130,51 @@ TreeNode* BlackRedTree::search(int value){
 	return node;
 }
 
+TreeNode* BlackRedTree::osSelect(int n){
+	if(root->size < n) return nil;
+	
+	TreeNode* r = root;
+	while(r->size >= n){
+		//cout<<r->value<<' '<<r->left->size<<' '<<n<<endl;
+		if(r->left->size + 1 == n){
+			return r;
+		}
+		
+		else if(r->left->size >= n) {
+			r = r->left;
+		}
+		else{
+			n = n - r->left->size - 1;
+			r = r->right;
+		}
+	}
+	//cout<<r->value<<' '<<r->left->size<<' '<<n<<endl;
+	return r;
+}
+
+int BlackRedTree::osRank(TreeNode* node){
+	int rank = node->left->size + 1;
+	while(node != root){
+		if(node == node->p->right){
+			rank += node->p->left->size + 1;
+		}
+		node = node->p;
+	}
+	return rank;
+}
+
+
 void BlackRedTree::rightRotate(TreeNode* n){
 	//cout<<"rightRotate "<<n->value<<endl;
 	if(n->left == nil) return;
 	TreeNode* m = n->left;
+	int t = 0;
 	
 	//取父节点时先排除根节点
 	if(n == root){
 		root = m;
 	}
+	
 	else if(n == n->p->left) n->p->left = m;
 	if(n == n->p->right) n->p->right = m;
 	m->p = n->p;
@@ -142,6 +184,11 @@ void BlackRedTree::rightRotate(TreeNode* n){
 	n->left->p = n;
 	m->right = n;
 	//print_level();
+		
+	//旋转后n，m size 需要调整, n 变成了m的右节点， 先更新n，再更新m
+	n->size = n->left->size + n->right->size + 1;
+	m->size = n->left->size + m->right->size + 1;
+
 		
 }
 
@@ -161,6 +208,10 @@ void BlackRedTree::leftRotate(TreeNode* n){
 	n->right->p = n;
 	m->left = n;
 	//print_level();
+	
+	//旋转后n，m size 需要调整, n 变成了m的左节点， 先更新n，再更新m
+	n->size = n->left->size + n->right->size + 1;
+	m->size = n->left->size + m->right->size + 1;
 }
 
 
@@ -201,6 +252,11 @@ void BlackRedTree::insert(TreeNode* n){
 		n->p = y;
 		y->right = n;
 	}
+	
+	while(y!=nil){
+		y->size = y->left->size + y->right->size + 1;
+		y = y->p;
+	}
 	//print_level();
 	insertFixUp(n);
 	//print_level();
@@ -225,7 +281,7 @@ void BlackRedTree::insertFixUp(TreeNode* n){
 				n = n->p->p;
 			}
 			else {
-				if(n == n->p->right){
+				if(n == n->p->right){//n为内侧节点则外旋至case3
 					//cout<<"left case 2"<<endl;
 					n = n->p;
 					leftRotate(n);
@@ -274,6 +330,7 @@ void BlackRedTree::transplant(TreeNode* x, TreeNode* y){
 	}else{
 		x->p->right = y;
 	}
+	x->p->size = x->p->left->size +  x->p->right->size + 1;
 	//这里不能加这个判断，因为nil也会进入removefixup，这样就造成了无法找到父节点。
 	//if(y != nil) 
 	y->p = x->p;
@@ -298,6 +355,8 @@ void BlackRedTree::remove(TreeNode* n){
 	}else{
 		y = minimum(n->right);
 		y_ori_color = y->c;
+		
+		//右子树的最小节点，必然没有左子树，肯定是右子树上移
 		x = y->right;
 		if(y->p == n){
 			x->p = y;
@@ -313,6 +372,10 @@ void BlackRedTree::remove(TreeNode* n){
 		y->c = n->c;
 	}
 	
+	while(y!=nil){
+		y->size = y->left->size + y->right->size + 1;
+		y = y->p;
+	}
 	if(y_ori_color == BLACK){
 		removeFixUp(x);
 	}
@@ -326,6 +389,7 @@ void BlackRedTree::removeFixUp(TreeNode* x){
 	while(x != root && x->c == BLACK){
 		if(x == x->p->left){
 			TreeNode* w = x->p->right;
+			//w为红，则w->p必为黑，
 			if(w->c == RED){
 				w->p->c = RED;
 				w->c = BLACK;
@@ -335,10 +399,11 @@ void BlackRedTree::removeFixUp(TreeNode* x){
 			}
 			if(w->left->c == BLACK && w->right->c == BLACK){
 				w->c = RED;
+				//如果x->p为红，则下一轮会被直接置黑，循环结束
 				x = x->p;
 			}else {
 				if(w->right->c == BLACK){
-					//w内侧子孩为红，颜色互换后外旋,
+					//w内侧子孩为红，颜色互换后外旋,使外侧节点为红
 					w->left->c = BLACK;
 					w->c = RED;
 					rightRotate(w);
@@ -422,7 +487,7 @@ void BlackRedTree::validate(){
 	queue<tuple<int, TreeNode*>> nodeQueue;
 	set<int> blackHeigt;
 	TreeNode *node;
-	int length;
+	int black_length;
 	
 	nodeQueue.push(make_tuple(1, root));
 	while(nodeQueue.size()>0){
@@ -430,11 +495,12 @@ void BlackRedTree::validate(){
 		nodeQueue.pop();
 		
 		node = get<1>(t);
-		length = get<0>(t);
-		if(node->c == BLACK) length++;
+		black_length = get<0>(t);
+		if(node->c == BLACK) black_length++;
 
+		//没有子树以后计入黑高
 		if(node->right == nil && node->left == nil){
-			blackHeigt.insert(length);
+			blackHeigt.insert(black_length);
 			continue;
 		} 
 		
@@ -444,7 +510,7 @@ void BlackRedTree::validate(){
 				print_level();
 				return;
 			}
-			nodeQueue.push(make_tuple(length, node->left));
+			nodeQueue.push(make_tuple(black_length, node->left));
 		}
 		
 		if(node->right != nil){
@@ -453,7 +519,7 @@ void BlackRedTree::validate(){
 				print_level();
 				return;
 			}
-			nodeQueue.push(make_tuple(length, node->right));
+			nodeQueue.push(make_tuple(black_length, node->right));
 		}
 	}
 	
@@ -504,7 +570,7 @@ void BlackRedTree::print_level(){
 				tCount++;
 				//红黑树颜色
 				color = tNode->c == RED ? 'R':'B';
-				cout<<tNode->value<<" "<<tNode->p->value<<" "<<color<<" ";
+				cout<<tNode->value<<" "<<tNode->p->value<<" "<<color<<" "<<tNode->size;
 				nodeQueue.push(tNode->left);
 				nodeQueue.push(tNode->right);
 			}else{
@@ -533,27 +599,38 @@ int main(){
 	
 	for(int i = length; i > 0; i--){
 		brTree.insert(new TreeNode(i));
-		//brTree.print_level();
+		// brTree.print_level();
 		brTree.validate();
 	}
-
-	if(length < 20){
+	
+	cout<<"size "<<brTree.getSize()<<endl<<"height: "<<brTree.getHeight()<<endl;
+	if(brTree.getSize() < 20){
 		//brTree.print();
 		brTree.print_level();
+		brTree.print();
 	}
 
-	cout<<"size "<<brTree.getSize()<<endl<<"height: "<<brTree.getHeight()<<endl;
-	
-	for(int i = 0; i < length; i+= 4){
-		node =  brTree.search(i);
+	cout<<endl<<endl;
+	//这里有删除动作，边界要用brTree.size判断
+	for(int i = 1; i < brTree.getSize(); i*=2){
+		//node =  brTree.search(i);
+		node =  brTree.osSelect(i);
+		cout<<"rank("<<i<<")="<<node->value<<endl;
+		cout<<node->value<<"=rank("<<brTree.osRank(node)<<")"<<endl;
 		if(!brTree.isNil(node)){
 			brTree.remove(node);
 			brTree.validate();
-			//brTree.print();
-			//brTree.print_level();
+			brTree.print();
+			brTree.print_level();
 		}
 
 	}
+	
 	cout<<"size "<<brTree.getSize()<<endl<<"height: "<<brTree.getHeight()<<endl;
+	if(brTree.getSize() < 20){
+		//brTree.print();
+		brTree.print_level();
+		brTree.print();
+	}
 	return 0;
 }
