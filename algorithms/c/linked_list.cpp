@@ -42,6 +42,7 @@ class LinkedList{
 			return NULL;
 		}
 
+		//超限了就循环
 		Node* get(int n){
 			Node *head = nil->next;
 			int i = 0;
@@ -98,7 +99,7 @@ class LinkedList{
 				t = head->next;
 				delete head;
 				head = t;
-				head = head->next;
+				//head = head->next;
 			}
 			delete nil;
 		}

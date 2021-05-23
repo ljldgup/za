@@ -12,11 +12,14 @@
 using namespace std;
 #define random(x) (rand()%(x+1))
 
+//p 是 关键字概率， q是关键字间隙概率，  q0 p0 q1 p1 .... pn qn+1
 void optimal_bst(float *p,float *q, int n){
 	cout<<p<<' '<<q<<' '<<n<<endl;
+	//e[i][j] i-j最优解，w[i][j] i-j 概率累积值 pos[i][j] i-j最优解的根
 	float* e = new float[(n+1)*(n+1)];
 	float* w = new float[(n+1)*(n+1)];
 	int* pos = new int[(n+1)*(n+1)];
+	//这里i>i-1意味没有关键字，只有qi
 	for(int i = 1; i <= n; i++){
 		*(e + i*(n+1) + (i-1)) = *(q + i);
 		*(w + i*(n+1) + (i-1)) = *(q + i);
@@ -27,6 +30,10 @@ void optimal_bst(float *p,float *q, int n){
 		//cout<<"len:"<<len<<endl;
 		for(int i = 1; i < n - len + 2; i++){
 			int j = i + len - 1;
+			
+			//w[i][j] 意思 q[i-1] p[i] q[i].....p[j] q[j] 的和，w可以用一个一位数组代替
+			//因为根目录加两子树相当于所有概率都加1个深度, 所以需要加w[i][j]
+			//w[i][j]与分割的位置无关,所以求最大值时不加也无所谓
 			//cout<<"i:"<<i<<",j:"<<j<<endl;;
 			*(w + i*(n+1) + j) = *(w + i*(n+1) + j - 1) + *(p + j) + *(q + j); 
 			float expection = numeric_limits<float>::max();
