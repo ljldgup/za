@@ -174,7 +174,7 @@ void BTree::insert(int k){
 	}
 }
 
-//插入非根目录，搜索到叶节点再插入，搜索途径满的节点进行分裂。
+//插入非根目录，搜索到叶节点再插入，搜索途径满的节点进行分裂，分裂完需要重新判断插入子节点。
 void BTree::insertNotFull(BTreeNode* x, int k){
 	//cout<<"insert not full:"<<x<<" key:"<<k<<endl;
 	int i;
@@ -239,7 +239,7 @@ void BTree::leftRotate(BTreeNode* node, int pos){
 	BTreeNode* right = *(node->children + pos + 1);
 	
 	// cout<<"leftRotate left:"<<left<<" right:"<<right<<endl;
-	//将支点关键字移到左侧，将右节点内侧（第一个）的子孩放到左侧节点内侧
+	//将支点关键字移到左侧，将右节点内侧（第一个）的子孩放到左侧节点内侧，父节点的子孩就是左右节点，不变
 	*(left->keys + left->size) = *(node->keys + pos);
 	*(left->children + left->size + 1) = *(right->children);
 	left->size++;
@@ -354,6 +354,7 @@ void BTree::remove(int key){
 			node = *(preNode->children + i);
 		}
 		else {
+			//当关键字就是所要找的元素时，跳出循环开始删除
 			break;
 		}
 	}
@@ -389,12 +390,12 @@ void BTree::remove(BTreeNode* preNode, int prePos, BTreeNode* node, int pos){
 		node->size--;
 	}
 	else if(left->size > degree - 1){
-		//左侧最右边节点上移,再递归
+		//左侧最右边节点上移,再递归删除此时左树多出来的节点
 		*(node->keys + pos) = *(left->keys + left->size - 1);
 		remove(node, pos, left, left->size - 1);
 	}
 	else if(right->size > degree - 1){
-		//右侧最左边节点上移，再递归
+		//右侧最左边节点上移，再递归删除此时右树多出来的节点
 		*(node->keys + pos) = *(right->keys);
 		remove(node, pos + 1, right, 0);
 	}
@@ -402,7 +403,7 @@ void BTree::remove(BTreeNode* preNode, int prePos, BTreeNode* node, int pos){
 		merge(node, pos);
 		//合并后总长2*degree-1, key位于中间
 		remove(node, pos, left, degree - 1);
-	}
+	} 
 }
 
 
