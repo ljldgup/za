@@ -62,6 +62,7 @@ void dfs(unordered_map<char, vector<char>*> &graph, unordered_map<char, Node*> v
 	}
 }
 
+//翻转方向
 void generateTranposeGraph(unordered_map<char, vector<char>*> &graph, unordered_map<char, vector<char>*> &graphT){
 	for(auto p:graph) graphT[p.first] = new vector<char>{};
 	

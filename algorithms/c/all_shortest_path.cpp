@@ -48,6 +48,7 @@ void show_all_shortest_path(int *weights, int size){
     int* pathRecord = new int[size*size*size];
     int* pathWeight = new int[size*size*size];
     
+    //初始化，第一步
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){
             *(pathWeight + i*size + j) = *(weights + i*size + j);
@@ -65,6 +66,7 @@ void show_all_shortest_path(int *weights, int size){
         // cout<<endl;
     // }
     
+    //这里实际上可以直接迭代
     for(int i = 1; i < size; i++){
         extend_shortest_path(weights, size, pathWeight + (i - 1)*size*size, pathWeight + i*size*size, 
             pathRecord + (i - 1)*size*size,  pathRecord + i*size*size);
@@ -154,6 +156,7 @@ void floydWarshall(int *weights, int size){
                 dkj = *(pathWeight + (k - 1)*size*size + (k - 1)*size + j);
                 if( dij > dik + dkj ) {
                     *(pathWeight + k*size*size + i*size + j) = dik + dkj;
+                    //如果dik + dkj更优，则保存的是dkj记录中的上一个元素
                     *(pathRecord + k*size*size + i*size + j) = *(pathRecord + (k - 1)*size*size + (k - 1)*size + j);
                 }else{
                     *(pathWeight + k*size*size + i*size + j) = dij;

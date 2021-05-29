@@ -9,6 +9,7 @@
 #include<algorithm>
 #include<vector>
 #include<tuple>
+#include<stack>
 #include<unordered_map>
 using namespace std;
 #define random(x) (rand()%(x+1))
@@ -16,6 +17,7 @@ int MAX = 10000000;
 int time = 0;
 
 struct Node{
+    //这里的前驱实际上可以用Node*替代，这里表达方式不一致
 	char pi;
 	char name;
 	char color;
@@ -30,6 +32,7 @@ struct Edge{
 	Node* from;
 	Node* to;
 	int weight;
+    int new_weight;
 	Edge(Node* n1, Node* n2, int w){
 		from = n1;
 		to = n2;
@@ -65,12 +68,21 @@ void relax(Edge* edge){
 }
 
 void print_path(unordered_map<char, Node*> vertex, Node* v){
+    stack<Node*> nodeStack;
+    
 	cout<<"逆向路径:";
 	while(v->pi != '?'){
-		cout<<v->name<<" ";
+        nodeStack.push(v);
 		v = vertex[v->pi];
 	}
-	cout<<v->name<<endl;
+    nodeStack.push(v);
+    
+	while(!nodeStack.empty()) {
+        Node *n = nodeStack.top();
+        nodeStack.pop();
+        if(n != nullptr) cout<<n->name<<' ';
+    }
+    cout<<endl;
 }
 
 bool bellmanFord(unordered_map<Node*, vector<Edge*>*> graph, Node* s){
@@ -160,11 +172,11 @@ bool dijkstra(unordered_map<Node*, vector<Edge*>*> graph, Node* s){
 	make_heap(nodes.begin(), nodes.begin() + length, cmp);
 	for(int i = 0; i < graph.size(); i++){
 		Node* n = nodes[0];
-		cout<<n->name<<endl;
-		for(auto [n, e]: graph) {
-			cout<<n->name<<" "<<n->d<<" "<<n->pi<<endl;
-		}
-		cout<<"-------------------------"<<endl;
+		// cout<<n->name<<endl;
+		// for(auto [n, e]: graph) {
+			// cout<<n->name<<" "<<n->d<<" "<<n->pi<<endl;
+		// }
+		// cout<<"-------------------------"<<endl;
 		
 		pop_heap(nodes.begin(), nodes.begin() + length, cmp);
 		length--;
@@ -180,6 +192,39 @@ bool dijkstra(unordered_map<Node*, vector<Edge*>*> graph, Node* s){
 
 	}
 	return true;
+}
+
+//基于bellmanFord和dijkstra的多源头最短路径
+bool johnson(unordered_map<Node*, vector<Edge*>*> graph, unordered_map<char, Node*> vertex){
+    cout<<"johnson 求所有节点最短路径"<<endl;
+    //定义一个新起始节点，到其他节点权重均为0
+    Node* s = new Node('?');
+    graph[s] = new vector<Edge*>();
+    for(auto [v, edges]:graph){
+        graph[s]->push_back(new Edge(s, v, 0));
+    }
+    
+    initialize_single_source(graph, s);
+    bellmanFord(graph, s);
+    for(auto [v, edges]: graph){
+        for(auto edge:*edges){
+            edge->weight = edge->weight + edge->from->d - edge->to->d;
+        }
+    }
+    
+    for(auto [v, edges]:graph){
+        if(v != s) {
+            initialize_single_source(graph, v);
+            cout<<v->name<<"到所有节点最短路径"<<endl;
+            if(!bellmanFord(graph, v)){
+                cout<<"有权重负值的环路"<<endl;	
+            }else{
+                for(auto [v, e]:graph){
+                    if(v->name != '?') print_path(vertex, v);  
+                }
+            }
+        }
+    }
 }
 
 
@@ -247,15 +292,17 @@ int main(){
 	//cout<<"不存在的索引（返回0）："<<vertex['?']<<endl;
 	//if(vertex['?']){}
 
-	if(!dijkstra(graph, vertex['s'])){
+	//if(!dijkstra(graph, vertex['s'])){
 	// if(!get_by_dfs(graph, vertex['s'])){
-	// if(!bellmanFord(graph, vertex['s'])){
+	if(!bellmanFord(graph, vertex['s'])){
 		cout<<"有权重负值的环路"<<endl;	
 	}else{
-		print_path(vertex, vertex['z']);
+        for(auto [v, e]:graph){
+            print_path(vertex, v);  
+        }
 	}
 	
-	
+	johnson(graph, vertex);
 
 	//释放
 	for(auto [name, edgeList]: graph){
