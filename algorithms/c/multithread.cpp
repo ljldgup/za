@@ -14,45 +14,49 @@ using namespace std;
 
 //效果并不好。。
 int mutithread_fib(int n){
-	if(n == 1) return 0;
-	else if(n == 2) return 0;
+	if(n == 1) return 1;
+	else if(n == 2) return 1;
 	else{
 		future<int> f1 = async(mutithread_fib, n-1);
-		future<int> f2 = async(mutithread_fib, n-2);
-		return f1.get() + f2.get();
+		//future<int> f2 = async(mutithread_fib, n-2);
+		//return f2.get() + f1.get();
+		return mutithread_fib(n-2) + f1.get();
 	}
 }
 
 int fib(int n){
-	if(n == 1) return 0;
-	else if(n == 2) return 0;
+	if(n == 1) return 1;
+	else if(n == 2) return 1;
 	else return fib(n-1) + fib(n-2);
 }
 
+//这里应该是在编译时就替换成常数相加的表达式，如fib(3) = fib(2) + fib(1) = 1 + 1
 constexpr int const_fib(int n){
-	if(n == 1) return 0;
-	if(n == 2) return 0;
+	if(n == 1) return 1;
+	if(n == 2) return 1;
 	return const_fib(n-1) + const_fib(n-2);
 }
 
 int main(){
 	clock_t start,end;
     double endtime;
+	int steps;
+	cin >> steps;
 	
 	start=clock();
-	cout<<fib(10)<<endl;
+	cout<<fib(steps)<<endl;
 	end=clock();
 	endtime = (double)(end-start)/CLOCKS_PER_SEC;	
     cout<<"fib time:"<<endtime<<endl;
 
 	start=clock();
-	cout<<const_fib(10)<<endl;
+	cout<<const_fib(steps)<<endl;
 	end=clock();
 	endtime = (double)(end-start)/CLOCKS_PER_SEC;		
     cout<<"const_fib time:"<<endtime<<endl;
 	
 	start=clock();	
-	cout<<mutithread_fib(10)<<endl;
+	cout<<mutithread_fib(steps)<<endl;
 	end=clock();
 	endtime = (double)(end-start)/CLOCKS_PER_SEC;		
     cout<<"mutithread_fib time:"<<endtime<<endl;

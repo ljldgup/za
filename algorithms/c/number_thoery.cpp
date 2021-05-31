@@ -11,6 +11,25 @@
 using namespace std;
 #define random(x) (rand()%(x+1))
 int MAX = 999999;
+
+//推论31.22的测试,a*i%b 随着i的增加等分布在0-b之间，按0-b周期分布,
+void distributeTest(){
+	cout<<"a*i%b 周期分布测试"<<endl;
+	int a = random(50);
+	int b = random(100) + 30;
+	int st = random(100);
+	cout<<"a:"<<a<<" b:"<<b<<endl;
+	
+	vector<int> rst;
+	//for(int i = 0; i < b + 1; i++){
+	for(int i = st; i < st + b; i++){
+		rst.push_back(i*a%b);
+	}
+	sort(rst.begin(), rst.end(), [](int x, int y)->bool{return x>y;});
+	for_each(rst.begin(), rst.end(), [](int x)->void{cout<<x<<' ';});
+	cout<<endl;
+}
+
 //最大公约数
 int gcb(int a, int b){
 	if(a < b){
@@ -121,7 +140,7 @@ int main(){
 	// cin>>a>>b>>n;
 	// cout<<modular_exponentiation(a, b, n)<<endl;
 	
-	
+	distributeTest();
 	
 	cout<<"rsa测试 a^b mod n"<<endl;;
 	int q,p,e,t,d;
