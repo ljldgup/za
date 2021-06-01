@@ -22,18 +22,20 @@ using namespace std;
 	 for(int i = 0; i < 26; i++){
 		 shift[i] = p.length();
 	 }
-	 //memset只能设成0，-1
+	 //memset只能设成0，-1，因为memset是一个一个比特位设值得
 	 //memset(shift, p.length(), sizeof(shift));  
 	 //for(int i = 0; i < 26; i++) shift[i] = p.length();
 	 // for(i = 0; i < 26; i++) cout<<shift[i]<<' ';
 	 // cout<<endl;
-	 //对于字符c，s中和p尾部对应的是c，此时将p向前移动shift[c]个位置，相同字母选择移动两最小的值
+	 //对于字符c，s中和p尾部对应的是c，此时将p向前移动shift[c]个位置
+	 //相同字母选择移动最小的值,即移动到最靠近尾部的位置
      for(i = 0; i < p.length();i++) shift[p[i] - 'a'] = p.length() - i;
 	 for(i = 0; i < 26; i++) cout<<shift[i]<<' ';
 	 cout<<endl;
      i = j = count = 0;
      while(i < s.length()){
          
+		 //注意这里匹配是从首部匹配，而移动是从尾部进行移动  
          while(i < s.length() && j < p.length()){
              if(s[i] == p[j]){
                  i++,j++;
@@ -47,7 +49,8 @@ using namespace std;
          }
 		 
 		 //移动s,无论是否匹配
-		 //s中对应p尾部字符下标
+		 //s中对应p尾部+1的字符下标，这里Sunday的算法是根据尾部+1位置移动的，
+		 //因为无论成功还是失败，当前这个p.length-1长度的s子串都无法再用，尾部+1位置必然下次会匹配到
 		 t = i + (p.length() - j);
 		 
 		 //这行貌似是多余的应为下面已经判断过了，循环开始 i和j同步增加，这个值始终不变

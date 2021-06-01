@@ -39,7 +39,7 @@ int kmpMatch(const string &s, const string &p, vector<int> &next, vector<int> &r
 		//cout<<i<<'<'<<s.length()<<'='<<(i<s.length())<<endl;
 		//cout<<j<<'<'<<p.length()<<'='<<(j<p.length())<<endl;
 		
-		//s.length() 返回的是unsigned int 和负数比较时会发生错误（负数由于占位符而大于无符号型）,所以单独判断j == -1
+		//s.length() 返回的是unsigned int 和负数比较时会发生错误！！（负数由于占位符而大于无符号型）,所以单独判断j == -1
 		while(i < s.length() && (j < p.length() || j == -1)){
 			if(j == -1 || s[i] == p[j]){
 				i++,j++;
@@ -53,7 +53,7 @@ int kmpMatch(const string &s, const string &p, vector<int> &next, vector<int> &r
 		if(j == p.length()){
 			rst.push_back(i - j);
 			count++;
-			//移到最大匹配
+			//完整匹配后也可以继续使用，这里根据结尾移到最大匹配
 			
 			j = next[p.length()];
 		}

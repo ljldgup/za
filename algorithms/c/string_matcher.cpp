@@ -41,14 +41,16 @@ void rabinKrap(string s, string p){
 	
 	hashValues.push_back(tHashValue);
 	for(int i = pLen; i< sLen; i++){
-		tHashValue = tHashValue - times*int(s[i-pLen]);
-		tHashValue = (tHashValue*NUM)%P + (s[i])%P;
+		//减掉最左侧字符影响直接取模即可
+		tHashValue = tHashValue - times*int(s[i-pLen])%P;
+		//这里外层必须在mod一次，不然会超限
+		tHashValue = ((tHashValue*NUM)%P + (s[i])%P)%P;
 		if(tHashValue < 0) tHashValue += P;
 		hashValues.push_back(tHashValue);
 	}
 	
 	for(auto v:hashValues)cout<<v<<' ';
-	cout<<endl<<"---------------------"<<endl<<s<<"哈希值"<<pHashValue<<' 倍数'<<times<<endl;
+	cout<<endl<<"---------------------"<<endl<<s<<"哈希值"<<pHashValue<<" 倍数"<<times<<endl;
 
 	bool flag;
 	for(int i = 0; i < hashValues.size(); i++){
@@ -65,7 +67,7 @@ void rabinKrap(string s, string p){
 	}
 }
 
-bool isPrefix(string x, string y){
+bool isPostfix(string x, string y){
 	if( x.length() > y.length()) return false;
 	if(x.length() == 0) return true;
 	
@@ -91,7 +93,7 @@ void finiteAutomata(string s, string p){
 			k = q + 1 <= p.length() ? q + 1 : p.length();
 			while(k >= 0){
 				//k==0 的时候必然是后缀
-				if(isPrefix(p.substr(0,k), p.substr(0,q) + c)){
+				if(isPostfix(p.substr(0,k), p.substr(0,q) + c)){
 					break;
 				}
 				k--;
