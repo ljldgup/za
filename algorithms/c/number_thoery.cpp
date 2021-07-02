@@ -144,7 +144,7 @@ int main(){
 	
 	cout<<"rsa测试 a^b mod n"<<endl;;
 	int q,p,e,t,d;
-	q = 23 , p = 29;
+	q = 7 , p = 11;
 	n = q*p;
 	t = (p-1)*(q-1);
 	d = -1;
@@ -156,6 +156,7 @@ int main(){
 		}
 	}
 	
+	//如果加密字节，输出的范围有些大于字节范围，需要根据用多个字节存储
 	cout<<" q:"<<q<<" p:"<<p<<" n:"<<n<<" t:"<<t<<" e:"<<e<<" d:"<<d<<endl; 
 	cout<<e*d<<endl;
 	//这里由于是mod n 所以输入要小于n
