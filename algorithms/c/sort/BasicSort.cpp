@@ -20,6 +20,7 @@ void directInsertSort(int *nums, int length){
         
 		//插入排序是从尾部开始比较的，这样当数组本身有序是，可以接近线性时间
         //优化, 不使用冒泡左移，直接一次性往后移动
+		//循环不变式j + 1 ~ i 均 >= t
 		while( j >= 0 && *(nums + j) > t){
 			*(nums + j + 1) = *(nums + j);
 			j--;
@@ -37,7 +38,8 @@ void bubbleSort(int *nums, int length){
 		
 		flag = 0;
 		pos = 0;
-
+		
+		//循环不变式 j 是j~length - 1最小元素
 		for(j = length - 1; j > k; j--){ 
 			if(*(nums + j) < *(nums + j - 1) ){
 				t = *(nums + j);

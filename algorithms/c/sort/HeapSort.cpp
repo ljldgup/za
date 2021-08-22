@@ -16,6 +16,7 @@ void maxHeapify(int *nums, int start, int end)
     int son = dad * 2 + 1;
     while (son <= end)  //若子节点指标在范围内才做比较
     {
+		//这里外部输入的start 最大为 length/2 - 1，son不可能超限
         if (son + 1 <= end && *(nums + son) < *(nums +son + 1)) 
             //先比较两个子节点大小，选择最大的
             son++;

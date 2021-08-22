@@ -11,16 +11,15 @@ void randgeMergeSort(int *arrays, int st, int ed, int *temp){
 	
 	//printf("%d %d\n", st, ed);
 	if(st == ed) return;
-	if(st == ed - 1) {
-		if(*(arrays + st) > *(arrays + ed)){
-			int t = *(arrays + st);
-			*(arrays + st) = *(arrays + ed);
-			*(arrays + ed) = t;
-			}
-		return;
-		}
+//	if(st == ed - 1) {
+//		if(*(arrays + st) > *(arrays + ed)){
+//			int t = *(arrays + st);
+//			*(arrays + st) = *(arrays + ed);
+//			*(arrays + ed) = t;
+//			}
+//		return;
+//		}
 
-	int len = ed - st;
 	int pt1 = st;
 	int pt2 = st + (ed - st)/2 + 1;
 
@@ -31,8 +30,11 @@ void randgeMergeSort(int *arrays, int st, int ed, int *temp){
 	
 	//merge 
 	while(pt1 < st + (ed - st)/2 + 1 || pt2 < ed + 1){
+		//先进行边界判断
 		if(pt1 == st + (ed - st)/2 + 1) *(temp + t ) = *(arrays + pt2++);
 		else if(pt2 == ed + 1) *(temp + t) = *(arrays + pt1++);
+		
+		//均位到达边界
 		else if( *(arrays + pt1) > *(arrays + pt2)) *(temp + t) = *(arrays + pt2++);
 		else *(temp + t) = *(arrays + pt1++);
 		t++;
@@ -50,7 +52,7 @@ void mergeSort(int *arrays, int length){
 	randgeMergeSort(arrays, 0, length - 1, t);
     free(t);
 	}
-/* 
+
 int main(){
 	srand((int)time(0));
 	int len = random(MAX_NUMS) + 10;
@@ -72,5 +74,5 @@ int main(){
 	printf("\n\n");
 
 	free(num1);
-} */
+} 
 

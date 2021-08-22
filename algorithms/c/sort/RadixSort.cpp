@@ -53,9 +53,9 @@ void radixSort(int *nums, int length)
         if( *(nums + i) > max) max = *(nums + i);
     }
     
-    max = getDigits(max);
+    int digits = getDigits(max);
     int *digitCount = (int*)malloc(sizeof(int) * length * 10);
-    for(i = 0; i < max; i++){
+    for(i = 0; i < digits; i++){
         radixSortN(nums, length, i, digitCount);
     }
 }

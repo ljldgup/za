@@ -15,6 +15,7 @@ void quickSortRange(int *nums, int st, int ed){
 	int left, right;
 	left = st;
 	right = ed;
+	//循环不变式 st~left-1 的值均小于t， right + 1 ~ ed 的值均大于t
 	while(left < right){
 
 		//必须分成左右两轮，没法合并成一个循环
@@ -31,6 +32,7 @@ void quickSortRange(int *nums, int st, int ed){
 			right--;
 		}
 	}
+	//最终left==right 这里left right都无所谓；
 	*(nums + left) = t;
 
 	quickSortRange(nums, st, left - 1);

@@ -32,6 +32,7 @@ void rabinKrap(string s, string p){
 	}
 	
 	//注意每次乘完都取mod， 不然溢出成为负数的时候会出问题
+	//提前算好取模的n次方
 	for(int i = 0; i< pLen - 1;i++){
 		times = (times * NUM)%P;
 	}
