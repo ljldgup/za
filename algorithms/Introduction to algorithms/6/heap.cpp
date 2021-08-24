@@ -88,6 +88,7 @@ void heap_insert_key(heap *hp, int i, int key){
 	}
 	
 	*(hp->array + i - 1) = key;
+	//第n个节点的子元素 为 2n, 2n+1 故子节点的父节点必然为i/2
 	while( i > 1 && *(hp->array + i/2 - 1) < key){
 		exchange(hp->array, i/2, i);
 		i /= 2;
