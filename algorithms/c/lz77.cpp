@@ -10,7 +10,7 @@
 #include<ctime>
 #include<cstring>
 #include<vector>
-#include <unistd.h>
+#include <unordered_map>
 using namespace std;
 #define random(x) (rand()%(x+1))
 
@@ -22,51 +22,97 @@ struct CompressUnit{
 	char nextChar;
 };
 
+unordered_map<char, vector<int>> position_record;
+int searchStartPostion = 0;
+
+void updateMap(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit){
+//	cout<<"updateMap"<<endl;
+//	cout<<"move "<<unit.longestMatchLength + 1<<endl;
+//	cout<<unit.nextChar<<" "<<unit.longestMatchLength<<" "<<unit.offset<<endl;
+	char *oldSearchBufferStart = lookaheadBuffer - searchBufferLength;
+	int deleteLength = min(searchBufferLength + unit.longestMatchLength + 1 - windowSize, searchBufferLength);
+	for(int i = 0; i < deleteLength; i++){
+		char key = *(oldSearchBufferStart + i);
+//		cout<<"delete "<<key<<" at "<< *(position_record[key].begin())<<endl;
+		position_record[key].erase(position_record[key].begin());	
+	}
+	
+	for(int i = 0; i < unit.longestMatchLength + 1; i++){
+
+		char key = *(lookaheadBuffer + i);
+		if(position_record.find(key) == position_record.end()){
+			position_record[key] = {};
+		}
+//		cout<<"add "<<key<<" at "<< searchStartPostion + searchBufferLength + i<<endl;
+		position_record[key].push_back(searchStartPostion + searchBufferLength + i);
+	}
+	
+	if(searchBufferLength + unit.longestMatchLength + 1 > windowSize) 
+		searchStartPostion += unit.longestMatchLength + 1;
+}
 
 CompressUnit getCommonLongestMatch(char *lookaheadBuffer, 
 	int lookaheadBufferLength, int searchBufferLength){
+//	cout<<"getCommonLongestMatch"<<endl;
 
 	char *searchBuffer = lookaheadBuffer - searchBufferLength;
-//	cout<<"getCommonLongestMatch"<<endl;
+
 //	cout<<"lookaheadBufferLength "<<lookaheadBufferLength<<endl;
 //	cout<<"searchBufferLength    "<<searchBufferLength<<endl;
 //	cout<<"lookaheadBuffer:"<<endl;
 //	for(int i = 0; i < lookaheadBufferLength; i++) cout<<*(lookaheadBuffer+i);
 //	cout<<endl;
 	
-//	cout<<"searchBuffer:"<<endl;
-//	for(int i = 0; (searchBuffer + i) != lookaheadBuffer; i++) cout<<*(searchBuffer+i);
-//	cout<<endl;
+	// cout<<"searchBuffer:"<<endl;
+	// for(int i = 0; (searchBuffer + i) != lookaheadBuffer; i++) cout<<*(searchBuffer+i);
+	// cout<<endl;
 	
 	int longestMatchLength = 0;
 	int offset = 0;
 	int left = 0;
+	char startChar = *lookaheadBuffer;
+	// cout<<"postition_map:"<<endl;
+	// for(auto [key, positions]: position_record){
+		// cout<<key<<":";
+		// for(auto position:positions) cout<<position<<" ";
+		// cout<<endl;
+	// }
+	// cout<<endl;
+	
+	if(position_record.find(startChar) != position_record.end() && position_record[startChar].size() > 0){
+		for(auto left: position_record[startChar]){
+			left = left - searchStartPostion;
+//			cout<<startChar<<" left "<<left<<endl;
+			int i = 0;
+			while(i < lookaheadBufferLength && left + i < searchBufferLength 
+				&& *(lookaheadBuffer + i) == *(searchBuffer + left + i)) i++;
 
-	while(left < searchBufferLength - longestMatchLength ){
-		int i = 0;
-		while(i < lookaheadBufferLength && left + i < searchBufferLength 
-			&& *(lookaheadBuffer + i) == *(searchBuffer + left + i)) i++;
-//		//cout<< *(lookaheadBuffer + left + i)<<" "<< *(searchBuffer + i)<<endl;
-//		//cout<<left<<" "<<i<<" "<<endl;
-		if(i > longestMatchLength){
-			longestMatchLength = i;
-			offset = searchBufferLength - left;
-//			if(offset > 1000) cout<<"??!!"<<searchBufferLength<<" "<<left<<endl;
+			if(i > longestMatchLength){
+				longestMatchLength = i;
+				offset = searchBufferLength - left;
+			}
+//			cout<< *(lookaheadBuffer + left + i)<<" "<< *(searchBuffer + i)<<endl;
+//			cout<<left<<" "<<i<<" "<<endl;
+			left++;
+
 		}
-		left++;
 	}
+
 
 	CompressUnit unit;
 	unit.offset = offset;
 	unit.longestMatchLength = longestMatchLength;
 	unit.nextChar = *(lookaheadBuffer + longestMatchLength);
+	
 	return unit;
 }
+
 
 //连续压缩一个windowSize的数据，searchBuffer 在lookaheadBuffer左侧
 //读取文件压缩，每轮windowSize压缩一次，压缩完将原来的字节右边移动一个windowSize,读取下一个windows补充 
 vector<CompressUnit> compressOneRound(char *lookaheadBuffer, int aheadLength, int searchLength){ 
-//		//cout<<lookaheadBuffer<<" "<<aheadLength<<" "<<searchLength<<endl;
+//		cout<<"compressOneRound"<<endl;
+//		cout<<lookaheadBuffer<<" "<<aheadLength<<" "<<searchLength<<endl;
 		vector<CompressUnit> compressResult;
 
 		int lookaheadBufferLength, searchBufferLength;
@@ -77,14 +123,16 @@ vector<CompressUnit> compressOneRound(char *lookaheadBuffer, int aheadLength, in
 			searchBufferLength = min(windowSize, searchLength);
 			CompressUnit unit = getCommonLongestMatch(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
 			compressResult.push_back(unit);
-//			//cout<<lookaheadBuffer<<endl;
+//			cout<<lookaheadBuffer<<endl;
 //			cout<<unit.longestMatchLength<<" "<<unit.offset<<" "<<unit.nextChar<<endl;
+			updateMap(lookaheadBuffer, searchBufferLength ,unit);
 			lookaheadBuffer += unit.longestMatchLength + 1;
 			searchLength += unit.longestMatchLength + 1;
 			aheadLength -= unit.longestMatchLength + 1;
 			compressedCount += unit.longestMatchLength + 1;
 		}
 		return compressResult;
+//		cout<<"compressOneRound finished"<<endl;
 }
 
 
@@ -157,7 +205,7 @@ void compressFile(char *srcPath, char* targetPath){
 		count += readLength;
 		unitCount += result.size();
 		searchLength = windowSize;
-		//cout<<count<<endl;
+//		cout<<count<<endl;
 	}
 	
 	
@@ -179,8 +227,8 @@ void compressFile(char *srcPath, char* targetPath){
 
 	//仅剩下小于等于一个窗口的内容，使用最后一次读出的量
 	vector<CompressUnit> &&result = compressOneRound(compressBuffer + windowSize, lookaheadLength, searchLength);
-	cout<<"总字节"<<count<<endl;
-	cout<<"压缩点"<<unitCount<<endl;
+//	cout<<"总字节"<<count<<endl;
+//	cout<<"压缩点"<<unitCount<<endl;
 	
 	count = 0;
 	for(auto unit: result) {
@@ -188,7 +236,7 @@ void compressFile(char *srcPath, char* targetPath){
 		count += unit.longestMatchLength + 1;
 	}
 	//最后一个为0的话需要减掉
-	cout<<"还原总长度"<<count<<endl;
+//	cout<<"还原总长度"<<count<<endl;
 
 	fclose(src);
 	fclose(target);	
@@ -197,6 +245,9 @@ void compressFile(char *srcPath, char* targetPath){
 
 
 void deCompressFile(char *srcPath, char* targetPath){
+	searchStartPostion = 0;
+	position_record.clear();
+	
 //	cout<<srcPath<<endl<<targetPath<<endl;
 	FILE* src;
 	FILE* target;
