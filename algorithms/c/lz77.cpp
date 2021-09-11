@@ -7,7 +7,7 @@
 
 #include<iostream>
 #include<algorithm>
-#include<ctime>
+#include<list>
 #include<cstring>
 #include<vector>
 #include <unordered_map>
@@ -22,8 +22,56 @@ struct CompressUnit{
 	char nextChar;
 };
 
-unordered_map<char, vector<int>> position_record;
+//单独用map记录位置优化效果很一般，并且windowSize 大于第一轮文本长度时，
+unordered_map<char, vector<int>> positionRecord;
 int searchStartPostion = 0;
+
+//采用链表记录没hashLength的hash值
+list<int> hashList;
+int hashLength = 3;
+int p = 996109;
+int q = 1181;
+int qp = 1;
+
+
+
+int getHashValue(char* buffer){
+	int hashValue = 0;
+	int i = 0; 
+	for(; i < hashLength; i++){
+		 hashValue = (hashValue * q + (int)*(buffer + i))%p;
+	}
+	return hashValue;
+}
+
+
+CompressUnit getCommonLongestMatch(char *lookaheadBuffer, 
+	int lookaheadBufferLength, int searchBufferLength){
+	CompressUnit unit{0,0,*lookaheadBuffer};
+	char *searchBuffer = lookaheadBuffer - searchBufferLength;
+
+//	cout<<"searchBuffer:"<<endl;
+//	for(int i = 0; (searchBuffer + i) != lookaheadBuffer; i++) cout<<*(searchBuffer+i);
+//	cout<<endl;
+	
+	int longestMatchLength = 0;
+	int offset = 0;
+	int left = 0;
+
+	while(left < searchBufferLength - longestMatchLength ){
+		int i = 0;
+		while(i < lookaheadBufferLength && left + i < searchBufferLength 
+			&& *(lookaheadBuffer + i) == *(searchBuffer + left + i)) i++;
+
+		if(i > unit.longestMatchLength){
+			unit.offset = searchBufferLength - left;
+			unit.longestMatchLength = i;
+			unit.nextChar = *(lookaheadBuffer + unit.longestMatchLength);
+		}
+		left++;
+	}
+	return unit;
+}
 
 void updateMap(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit){
 //	cout<<"updateMap"<<endl;
@@ -33,77 +81,161 @@ void updateMap(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit
 	int deleteLength = min(searchBufferLength + unit.longestMatchLength + 1 - windowSize, searchBufferLength);
 	for(int i = 0; i < deleteLength; i++){
 		char key = *(oldSearchBufferStart + i);
-//		cout<<"delete "<<key<<" at "<< *(position_record[key].begin())<<endl;
-		position_record[key].erase(position_record[key].begin());	
+//		cout<<"delete "<<key<<" at "<< *(positionRecord[key].begin())<<endl;
+		positionRecord[key].erase(positionRecord[key].begin());	
 	}
 	
 	for(int i = 0; i < unit.longestMatchLength + 1; i++){
 
 		char key = *(lookaheadBuffer + i);
-		if(position_record.find(key) == position_record.end()){
-			position_record[key] = {};
+		if(positionRecord.find(key) == positionRecord.end()){
+			positionRecord[key] = {};
 		}
 //		cout<<"add "<<key<<" at "<< searchStartPostion + searchBufferLength + i<<endl;
-		position_record[key].push_back(searchStartPostion + searchBufferLength + i);
+		positionRecord[key].push_back(searchStartPostion + searchBufferLength + i);
 	}
 	
+	
 	if(searchBufferLength + unit.longestMatchLength + 1 > windowSize) 
-		searchStartPostion += unit.longestMatchLength + 1;
+		searchStartPostion += searchBufferLength + unit.longestMatchLength + 1 - windowSize;
+	
+	// int size = 0; 
+	// cout<<"postition_map:"<<endl;
+	// for(auto [key, positions]: positionRecord){
+		// cout<<key<<":";
+		// for(auto position:positions) cout<<position<<"  ";
+		// cout<<endl;
+		// size += positions.size();
+	// }
+	
+	// cout<<"searchStartPostion "<<searchStartPostion<<endl;
+//	cout<<"map size "<<size<<endl;
+//	cout<<"list size:"<<hashList.size()<<" "<<endl;
+//	cout<<"updateMap ended"<<endl<<endl<<endl;
 }
 
-CompressUnit getCommonLongestMatch(char *lookaheadBuffer, 
+
+CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer, 
 	int lookaheadBufferLength, int searchBufferLength){
 //	cout<<"getCommonLongestMatch"<<endl;
-
+	CompressUnit unit{0,0,*lookaheadBuffer};
 	char *searchBuffer = lookaheadBuffer - searchBufferLength;
 
-//	cout<<"lookaheadBufferLength "<<lookaheadBufferLength<<endl;
-//	cout<<"searchBufferLength    "<<searchBufferLength<<endl;
-//	cout<<"lookaheadBuffer:"<<endl;
-//	for(int i = 0; i < lookaheadBufferLength; i++) cout<<*(lookaheadBuffer+i);
-//	cout<<endl;
-	
 	// cout<<"searchBuffer:"<<endl;
 	// for(int i = 0; (searchBuffer + i) != lookaheadBuffer; i++) cout<<*(searchBuffer+i);
 	// cout<<endl;
-	
+		
 	int longestMatchLength = 0;
 	int offset = 0;
 	int left = 0;
 	char startChar = *lookaheadBuffer;
-	// cout<<"postition_map:"<<endl;
-	// for(auto [key, positions]: position_record){
-		// cout<<key<<":";
-		// for(auto position:positions) cout<<position<<" ";
-		// cout<<endl;
-	// }
-	// cout<<endl;
 	
-	if(position_record.find(startChar) != position_record.end() && position_record[startChar].size() > 0){
-		for(auto left: position_record[startChar]){
+	if(positionRecord.find(startChar) != positionRecord.end() && positionRecord[startChar].size() > 0){
+		for(auto left: positionRecord[startChar]){
 			left = left - searchStartPostion;
 //			cout<<startChar<<" left "<<left<<endl;
 			int i = 0;
 			while(i < lookaheadBufferLength && left + i < searchBufferLength 
 				&& *(lookaheadBuffer + i) == *(searchBuffer + left + i)) i++;
 
-			if(i > longestMatchLength){
-				longestMatchLength = i;
-				offset = searchBufferLength - left;
+			if(i > unit.longestMatchLength){
+				unit.offset = searchBufferLength - left;
+				unit.longestMatchLength = i;
+				unit.nextChar = *(lookaheadBuffer + unit.longestMatchLength);
 			}
-//			cout<< *(lookaheadBuffer + left + i)<<" "<< *(searchBuffer + i)<<endl;
-//			cout<<left<<" "<<i<<" "<<endl;
-			left++;
-
 		}
 	}
 
+	updateMap(lookaheadBuffer, searchBufferLength ,unit);
+	return unit;
+}
 
-	CompressUnit unit;
-	unit.offset = offset;
-	unit.longestMatchLength = longestMatchLength;
-	unit.nextChar = *(lookaheadBuffer + longestMatchLength);
+
+void updateList(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit){
+ 
+ 	//cout<<"updateMap"<<endl;
+	//if(searchBufferLength + unit.longestMatchLength + 1 < hashLength) return;
+		
+	char currentChar;
+	int length; 
+	char lastFirstChar,firstChar;
+	int hashValue;
+	for(int i = 0; i < unit.longestMatchLength + 1; i++){
+
+		currentChar = *(lookaheadBuffer + i);
+		length = searchBufferLength + i + 1; 
+		if(length > hashLength){
+			lastFirstChar = *(lookaheadBuffer - hashLength + i);
+			firstChar = *(lookaheadBuffer - hashLength + i + 1);
+			int lastHashVule = hashList.back();
+			lastHashVule -= lastFirstChar*qp%p;
+			if(lastHashVule < 0) lastHashVule += p; 
+			hashValue = (lastHashVule*q%p + (int)currentChar)%p;
+			hashList.push_back(hashValue);
+		}
+		
+		//第一个 
+		else if(length == hashLength){
+			firstChar = *(lookaheadBuffer - searchBufferLength);
+			hashValue = getHashValue(lookaheadBuffer - searchBufferLength);
+			hashList.push_back(hashValue);
+		}
+		
+
+	}
 	
+	
+	char *searchBuffer = lookaheadBuffer - searchBufferLength;
+	int deleteLength = searchBufferLength + unit.longestMatchLength + 1 - windowSize;
+	for(int i = 0; i < deleteLength; i++) hashList.pop_front();
+
+	// for(auto v:hashList) cout<<v<<" ";
+	// cout<<endl;
+	// cout<<"list size:"<<hashList.size()<<" "<<endl;
+//	cout<<"updateMap ended"<<endl<<endl<<endl;
+}
+
+
+CompressUnit getCommonLongestMatchWithList(char *lookaheadBuffer, 
+	int lookaheadBufferLength, int searchBufferLength){
+//	cout<<"getCommonLongestMatch"<<endl;
+
+	CompressUnit unit{0,0,*lookaheadBuffer};
+	if(lookaheadBufferLength < hashLength) return unit;
+	
+	char *searchBuffer = lookaheadBuffer - searchBufferLength;
+
+	//cout<<"searchBuffer "<<searchBufferLength<<":"<<endl;
+	//for(int i = 0; (searchBuffer + i) != lookaheadBuffer; i++) cout<<*(searchBuffer+i);
+	//cout<<endl;	
+	int hashValue = getHashValue(lookaheadBuffer);
+	//cout<<"hashValue "<<hashValue<<endl;
+	char startChar = *lookaheadBuffer;
+	int position = 0;
+	for(auto hValue:hashList){
+		//cout<<hValue<<" ";
+		
+
+		if(hValue != hashValue) {
+			position++;
+			continue;
+		}
+		
+		int left = position;
+		int i = 0;
+		while(i < lookaheadBufferLength && left + i < searchBufferLength 
+			&& *(lookaheadBuffer + i) == *(searchBuffer + left + i)) i++;
+
+		if(i > unit.longestMatchLength){
+			unit.offset = searchBufferLength - left;
+			unit.longestMatchLength = i;
+			unit.nextChar = *(lookaheadBuffer + unit.longestMatchLength);
+		}
+		position ++;
+	}
+	
+	updateList(lookaheadBuffer, searchBufferLength ,unit);
+//	cout<<"getCommonLongestMatch ended"<<endl<<endl<<endl;		
 	return unit;
 }
 
@@ -121,11 +253,14 @@ vector<CompressUnit> compressOneRound(char *lookaheadBuffer, int aheadLength, in
 			lookaheadBufferLength = min(windowSize, aheadLength);
 
 			searchBufferLength = min(windowSize, searchLength);
+			//map速度相对快一点点，效果和正常的一样，
+			//list使用网上说的hash比对但是，反而速度最慢，压缩效果也不好。。
+			CompressUnit unit = getCommonLongestMatchWithMap(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
+			CompressUnit unit = getCommonLongestMatchWithList(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
 			CompressUnit unit = getCommonLongestMatch(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
 			compressResult.push_back(unit);
 //			cout<<lookaheadBuffer<<endl;
-//			cout<<unit.longestMatchLength<<" "<<unit.offset<<" "<<unit.nextChar<<endl;
-			updateMap(lookaheadBuffer, searchBufferLength ,unit);
+			//cout<<unit.longestMatchLength<<" "<<unit.offset<<" "<<unit.nextChar<<endl;
 			lookaheadBuffer += unit.longestMatchLength + 1;
 			searchLength += unit.longestMatchLength + 1;
 			aheadLength -= unit.longestMatchLength + 1;
@@ -210,6 +345,7 @@ void compressFile(char *srcPath, char* targetPath){
 	
 	
 	lookaheadLength = lookaheadLength - compressedCount;
+	if(searchLength == 0) lookaheadLength = count;
 //	cout<<"lookaheadLength"<<lookaheadLength<<endl;
 //	cout<<"searchPart ";
 //	for(int i = windowSize - searchLength; i < windowSize; i++){
@@ -227,7 +363,7 @@ void compressFile(char *srcPath, char* targetPath){
 
 	//仅剩下小于等于一个窗口的内容，使用最后一次读出的量
 	vector<CompressUnit> &&result = compressOneRound(compressBuffer + windowSize, lookaheadLength, searchLength);
-//	cout<<"总字节"<<count<<endl;
+	cout<<"总字节"<<count<<endl;
 //	cout<<"压缩点"<<unitCount<<endl;
 	
 	count = 0;
@@ -246,7 +382,7 @@ void compressFile(char *srcPath, char* targetPath){
 
 void deCompressFile(char *srcPath, char* targetPath){
 	searchStartPostion = 0;
-	position_record.clear();
+	positionRecord.clear();
 	
 //	cout<<srcPath<<endl<<targetPath<<endl;
 	FILE* src;
@@ -337,6 +473,10 @@ void testCompressFile(){
 }
 
 int main(){
+	for(int i = 0; i < hashLength - 1;i++){
+		qp *= q;
+		qp %= p;
+	}
 	//testGetCommonLongestMatch();
 	//testCompressOneRound();
 	testCompressFile();
