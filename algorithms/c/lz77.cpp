@@ -15,7 +15,7 @@ using namespace std;
 #define random(x) (rand()%(x+1))
 
 //窗口开大以后，压缩效果会好很多，但时间增长较大，可以考虑用map+滑窗优化
-int windowSize = 8096;
+int windowSize = 16192;
 struct CompressUnit{
 	int offset;
 	int longestMatchLength;
@@ -23,22 +23,23 @@ struct CompressUnit{
 };
 
 //单独用map记录位置优化效果很一般，并且windowSize 大于第一轮文本长度时，
-unordered_map<char, vector<int>> positionRecord;
+unordered_map<int, vector<int>> positionRecord;
+int mapHashLength = 1;
 int searchStartPostion = 0;
 
 //采用链表记录没hashLength的hash值
 list<int> hashList;
-int hashLength = 3;
+int listHashLength = 3;
 int p = 996109;
 int q = 1181;
 int qp = 1;
 
 
 
-int getHashValue(char* buffer){
+int getHashValue(char* buffer, int length){
 	int hashValue = 0;
 	int i = 0; 
-	for(; i < hashLength; i++){
+	for(; i < length; i++){
 		 hashValue = (hashValue * q + (int)*(buffer + i))%p;
 	}
 	return hashValue;
@@ -73,26 +74,28 @@ CompressUnit getCommonLongestMatch(char *lookaheadBuffer,
 	return unit;
 }
 
+//这里将两个字符直接转成int存到map，而不是嵌套map
 void updateMap(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit){
 //	cout<<"updateMap"<<endl;
 //	cout<<"move "<<unit.longestMatchLength + 1<<endl;
 //	cout<<unit.nextChar<<" "<<unit.longestMatchLength<<" "<<unit.offset<<endl;
-	char *oldSearchBufferStart = lookaheadBuffer - searchBufferLength;
-	int deleteLength = min(searchBufferLength + unit.longestMatchLength + 1 - windowSize, searchBufferLength);
+	char *searchBuffer = lookaheadBuffer - searchBufferLength;
+	int deleteLength = searchBufferLength + unit.longestMatchLength + 1 - windowSize;
 	for(int i = 0; i < deleteLength; i++){
-		char key = *(oldSearchBufferStart + i);
+		int key = getHashValue(searchBuffer + i, mapHashLength);
 //		cout<<"delete "<<key<<" at "<< *(positionRecord[key].begin())<<endl;
 		positionRecord[key].erase(positionRecord[key].begin());	
 	}
 	
 	for(int i = 0; i < unit.longestMatchLength + 1; i++){
-
-		char key = *(lookaheadBuffer + i);
+		if(i + 1 + searchBufferLength < 2) continue;
+		
+		int key = getHashValue(lookaheadBuffer +  i - 1, mapHashLength);
 		if(positionRecord.find(key) == positionRecord.end()){
 			positionRecord[key] = {};
 		}
-//		cout<<"add "<<key<<" at "<< searchStartPostion + searchBufferLength + i<<endl;
-		positionRecord[key].push_back(searchStartPostion + searchBufferLength + i);
+//		cout<<"add "<<key<<" at "<< searchStartPostion + searchBufferLength + i - 1<<endl;
+		positionRecord[key].push_back(searchStartPostion + searchBufferLength + i - 1);
 	}
 	
 	
@@ -119,6 +122,8 @@ CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer,
 	int lookaheadBufferLength, int searchBufferLength){
 //	cout<<"getCommonLongestMatch"<<endl;
 	CompressUnit unit{0,0,*lookaheadBuffer};
+	if(lookaheadBufferLength < mapHashLength) return unit;
+	
 	char *searchBuffer = lookaheadBuffer - searchBufferLength;
 
 	// cout<<"searchBuffer:"<<endl;
@@ -128,10 +133,10 @@ CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer,
 	int longestMatchLength = 0;
 	int offset = 0;
 	int left = 0;
-	char startChar = *lookaheadBuffer;
+	int key = getHashValue(lookaheadBuffer, mapHashLength);
 	
-	if(positionRecord.find(startChar) != positionRecord.end() && positionRecord[startChar].size() > 0){
-		for(auto left: positionRecord[startChar]){
+	if(positionRecord.find(key) != positionRecord.end() && positionRecord[key].size() > 0){
+		for(auto left: positionRecord[key]){
 			left = left - searchStartPostion;
 //			cout<<startChar<<" left "<<left<<endl;
 			int i = 0;
@@ -154,7 +159,7 @@ CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer,
 void updateList(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit){
  
  	//cout<<"updateMap"<<endl;
-	//if(searchBufferLength + unit.longestMatchLength + 1 < hashLength) return;
+	//if(searchBufferLength + unit.longestMatchLength + 1 < listHashLength) return;
 		
 	char currentChar;
 	int length; 
@@ -164,9 +169,9 @@ void updateList(char *lookaheadBuffer, int searchBufferLength, CompressUnit &uni
 
 		currentChar = *(lookaheadBuffer + i);
 		length = searchBufferLength + i + 1; 
-		if(length > hashLength){
-			lastFirstChar = *(lookaheadBuffer - hashLength + i);
-			firstChar = *(lookaheadBuffer - hashLength + i + 1);
+		if(length > listHashLength){
+			lastFirstChar = *(lookaheadBuffer - listHashLength + i);
+			firstChar = *(lookaheadBuffer - listHashLength + i + 1);
 			int lastHashVule = hashList.back();
 			lastHashVule -= lastFirstChar*qp%p;
 			if(lastHashVule < 0) lastHashVule += p; 
@@ -175,9 +180,9 @@ void updateList(char *lookaheadBuffer, int searchBufferLength, CompressUnit &uni
 		}
 		
 		//第一个 
-		else if(length == hashLength){
+		else if(length == listHashLength){
 			firstChar = *(lookaheadBuffer - searchBufferLength);
-			hashValue = getHashValue(lookaheadBuffer - searchBufferLength);
+			hashValue = getHashValue(lookaheadBuffer - searchBufferLength, listHashLength);
 			hashList.push_back(hashValue);
 		}
 		
@@ -201,14 +206,14 @@ CompressUnit getCommonLongestMatchWithList(char *lookaheadBuffer,
 //	cout<<"getCommonLongestMatch"<<endl;
 
 	CompressUnit unit{0,0,*lookaheadBuffer};
-	if(lookaheadBufferLength < hashLength) return unit;
+	if(lookaheadBufferLength < listHashLength) return unit;
 	
 	char *searchBuffer = lookaheadBuffer - searchBufferLength;
 
 	//cout<<"searchBuffer "<<searchBufferLength<<":"<<endl;
 	//for(int i = 0; (searchBuffer + i) != lookaheadBuffer; i++) cout<<*(searchBuffer+i);
 	//cout<<endl;	
-	int hashValue = getHashValue(lookaheadBuffer);
+	int hashValue = getHashValue(lookaheadBuffer, listHashLength);
 	//cout<<"hashValue "<<hashValue<<endl;
 	char startChar = *lookaheadBuffer;
 	int position = 0;
@@ -256,8 +261,8 @@ vector<CompressUnit> compressOneRound(char *lookaheadBuffer, int aheadLength, in
 			//map速度相对快一点点，效果和正常的一样，
 			//list使用网上说的hash比对但是，反而速度最慢，压缩效果也不好。。
 			CompressUnit unit = getCommonLongestMatchWithMap(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
-			CompressUnit unit = getCommonLongestMatchWithList(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
-			CompressUnit unit = getCommonLongestMatch(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
+//			CompressUnit unit = getCommonLongestMatchWithList(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
+//			CompressUnit unit = getCommonLongestMatch(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
 			compressResult.push_back(unit);
 //			cout<<lookaheadBuffer<<endl;
 			//cout<<unit.longestMatchLength<<" "<<unit.offset<<" "<<unit.nextChar<<endl;
@@ -473,7 +478,7 @@ void testCompressFile(){
 }
 
 int main(){
-	for(int i = 0; i < hashLength - 1;i++){
+	for(int i = 0; i < listHashLength - 1;i++){
 		qp *= q;
 		qp %= p;
 	}
