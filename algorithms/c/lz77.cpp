@@ -15,7 +15,7 @@ using namespace std;
 #define random(x) (rand()%(x+1))
 
 //窗口开大以后，压缩效果会好很多，但时间增长较大，可以考虑用map+滑窗优化
-int windowSize = 16192;
+int windowSize = 1024*16;
 struct CompressUnit{
 	int offset;
 	int longestMatchLength;
@@ -24,7 +24,7 @@ struct CompressUnit{
 
 //单独用map记录位置优化效果很一般，并且windowSize 大于第一轮文本长度时，
 unordered_map<int, vector<int>> positionRecord;
-int mapHashLength = 1;
+int mapHashLength = 2;
 int searchStartPostion = 0;
 
 //采用链表记录没hashLength的hash值
@@ -118,6 +118,32 @@ void updateMap(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit
 }
 
 
+unordered_map<int, double> increaseFactorMap;
+unordered_map<int, int> longestMatchLengthMap;
+
+
+//根据已经处理的数据量，来设置窗口增大的提升因子
+//随着匹配进行，逐渐减小最大匹配长度增长量，来提前结束匹配
+double increaseFactor = 1;
+void setIncreaseFactor(double unitCount){
+	increaseFactor =  40.0/unitCount + 0.6;
+}
+
+
+bool matchLengthEnough(int key, int matchLength){
+	if(longestMatchLengthMap.find(key) == longestMatchLengthMap.end()){
+		longestMatchLengthMap[key] = matchLength;
+		return false;
+	}
+
+	int expectLength = longestMatchLengthMap[key] * increaseFactor;
+	if(expectLength > matchLength) return false;
+	else if(expectLength < matchLength){
+		longestMatchLengthMap[key] = matchLength;
+	}
+	return true;
+}
+
 CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer, 
 	int lookaheadBufferLength, int searchBufferLength){
 //	cout<<"getCommonLongestMatch"<<endl;
@@ -139,6 +165,12 @@ CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer,
 		for(auto left: positionRecord[key]){
 			left = left - searchStartPostion;
 //			cout<<startChar<<" left "<<left<<endl;
+			
+			//先从最长的地方开始比对，效果反而更差，因为有些是中间或者开始的地方不一样，并不能带来提升
+			//int i = longestMatchLength - 1;
+			//while(i >= 0 && left + i < searchBufferLength && *(lookaheadBuffer + i) == *(searchBuffer + left + i)) i--;
+			//if(i >= 0) continue;
+
 			int i = 0;
 			while(i < lookaheadBufferLength && left + i < searchBufferLength 
 				&& *(lookaheadBuffer + i) == *(searchBuffer + left + i)) i++;
@@ -147,7 +179,9 @@ CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer,
 				unit.offset = searchBufferLength - left;
 				unit.longestMatchLength = i;
 				unit.nextChar = *(lookaheadBuffer + unit.longestMatchLength);
+				if(matchLengthEnough(key, unit.longestMatchLength)) break;
 			}
+			
 		}
 	}
 
@@ -292,6 +326,9 @@ void deCompress(vector<CompressUnit> &result, char *buffer){
 }
 
 void compressFile(char *srcPath, char* targetPath){
+	positionRecord.clear();
+	hashList.clear();
+	
 //	cout<<srcPath<<endl<<targetPath<<endl;
 	FILE* src;
 	FILE* target;
@@ -345,10 +382,11 @@ void compressFile(char *srcPath, char* targetPath){
 		count += readLength;
 		unitCount += result.size();
 		searchLength = windowSize;
+
+//		setIncreaseFactor(unitCount);
 //		cout<<count<<endl;
 	}
-	
-	
+		
 	lookaheadLength = lookaheadLength - compressedCount;
 	if(searchLength == 0) lookaheadLength = count;
 //	cout<<"lookaheadLength"<<lookaheadLength<<endl;
