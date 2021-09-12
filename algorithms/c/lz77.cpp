@@ -10,7 +10,8 @@
 #include<list>
 #include<cstring>
 #include<vector>
-#include <unordered_map>
+#include<unordered_map>
+#include<time.h>
 using namespace std;
 #define random(x) (rand()%(x+1))
 
@@ -22,8 +23,11 @@ struct CompressUnit{
 	char nextChar;
 };
 
-//单独用map记录位置优化效果很一般，并且windowSize 大于第一轮文本长度时，
-unordered_map<int, vector<int>> positionRecord;
+//单独用map记录位置优化效果很一般，并且windowSize 大于第一轮文本长度时
+//直接设定其容量有一定效果
+unordered_map<int, list<int>> positionRecord(256*256);
+
+//这里经过测试2比1，在寻找最长匹配有明显提升，到3后updateMap使用时间变长，总体变差
 int mapHashLength = 2;
 int searchStartPostion = 0;
 
@@ -34,7 +38,17 @@ int p = 996109;
 int q = 1181;
 int qp = 1;
 
+//计时,无法多线程，这里所有涉及全局变量的除了hash用的一些值，其他都不能多线程
+clock_t start;
+double usedSeconds = 0;
+void startCount(){
+	start = clock();
+}
 
+//这里经过测试发现，updateMap中更新位置列表的的过程及其耗时
+void endCount(){
+	usedSeconds += (double)(clock()-start)/CLOCKS_PER_SEC;
+}
 
 int getHashValue(char* buffer, int length){
 	int hashValue = 0;
@@ -77,43 +91,40 @@ CompressUnit getCommonLongestMatch(char *lookaheadBuffer,
 //这里将两个字符直接转成int存到map，而不是嵌套map
 void updateMap(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit){
 //	cout<<"updateMap"<<endl;
-//	cout<<"move "<<unit.longestMatchLength + 1<<endl;
-//	cout<<unit.nextChar<<" "<<unit.longestMatchLength<<" "<<unit.offset<<endl;
+	startCount();
 	char *searchBuffer = lookaheadBuffer - searchBufferLength;
 	int deleteLength = searchBufferLength + unit.longestMatchLength + 1 - windowSize;
 	for(int i = 0; i < deleteLength; i++){
 		int key = getHashValue(searchBuffer + i, mapHashLength);
-//		cout<<"delete "<<key<<" at "<< *(positionRecord[key].begin())<<endl;
 		positionRecord[key].erase(positionRecord[key].begin());	
+
 	}
 	
 	for(int i = 0; i < unit.longestMatchLength + 1; i++){
 		if(i + 1 + searchBufferLength < 2) continue;
 		
 		int key = getHashValue(lookaheadBuffer +  i - 1, mapHashLength);
+
 		if(positionRecord.find(key) == positionRecord.end()){
 			positionRecord[key] = {};
 		}
+
 //		cout<<"add "<<key<<" at "<< searchStartPostion + searchBufferLength + i - 1<<endl;
 		positionRecord[key].push_back(searchStartPostion + searchBufferLength + i - 1);
 	}
-	
+	endCount();
+
 	
 	if(searchBufferLength + unit.longestMatchLength + 1 > windowSize) 
 		searchStartPostion += searchBufferLength + unit.longestMatchLength + 1 - windowSize;
 	
-	// int size = 0; 
 	// cout<<"postition_map:"<<endl;
 	// for(auto [key, positions]: positionRecord){
 		// cout<<key<<":";
 		// for(auto position:positions) cout<<position<<"  ";
 		// cout<<endl;
-		// size += positions.size();
 	// }
 	
-	// cout<<"searchStartPostion "<<searchStartPostion<<endl;
-//	cout<<"map size "<<size<<endl;
-//	cout<<"list size:"<<hashList.size()<<" "<<endl;
 //	cout<<"updateMap ended"<<endl<<endl<<endl;
 }
 
@@ -146,6 +157,7 @@ bool matchLengthEnough(int key, int matchLength){
 
 CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer, 
 	int lookaheadBufferLength, int searchBufferLength){
+
 //	cout<<"getCommonLongestMatch"<<endl;
 	CompressUnit unit{0,0,*lookaheadBuffer};
 	if(lookaheadBufferLength < mapHashLength) return unit;
@@ -185,16 +197,17 @@ CompressUnit getCommonLongestMatchWithMap(char *lookaheadBuffer,
 		}
 	}
 
+	start=clock();
 	updateMap(lookaheadBuffer, searchBufferLength ,unit);
+
 	return unit;
 }
 
 
 void updateList(char *lookaheadBuffer, int searchBufferLength, CompressUnit &unit){
  
- 	//cout<<"updateMap"<<endl;
-	//if(searchBufferLength + unit.longestMatchLength + 1 < listHashLength) return;
-		
+ 	//cout<<"updateList"<<endl;
+	
 	char currentChar;
 	int length; 
 	char lastFirstChar,firstChar;
@@ -228,10 +241,7 @@ void updateList(char *lookaheadBuffer, int searchBufferLength, CompressUnit &uni
 	int deleteLength = searchBufferLength + unit.longestMatchLength + 1 - windowSize;
 	for(int i = 0; i < deleteLength; i++) hashList.pop_front();
 
-	// for(auto v:hashList) cout<<v<<" ";
-	// cout<<endl;
-	// cout<<"list size:"<<hashList.size()<<" "<<endl;
-//	cout<<"updateMap ended"<<endl<<endl<<endl;
+//	cout<<"updateList ended"<<endl<<endl<<endl;
 }
 
 
@@ -248,13 +258,10 @@ CompressUnit getCommonLongestMatchWithList(char *lookaheadBuffer,
 	//for(int i = 0; (searchBuffer + i) != lookaheadBuffer; i++) cout<<*(searchBuffer+i);
 	//cout<<endl;	
 	int hashValue = getHashValue(lookaheadBuffer, listHashLength);
-	//cout<<"hashValue "<<hashValue<<endl;
 	char startChar = *lookaheadBuffer;
 	int position = 0;
 	for(auto hValue:hashList){
 		//cout<<hValue<<" ";
-		
-
 		if(hValue != hashValue) {
 			position++;
 			continue;
@@ -283,7 +290,6 @@ CompressUnit getCommonLongestMatchWithList(char *lookaheadBuffer,
 //读取文件压缩，每轮windowSize压缩一次，压缩完将原来的字节右边移动一个windowSize,读取下一个windows补充 
 vector<CompressUnit> compressOneRound(char *lookaheadBuffer, int aheadLength, int searchLength){ 
 //		cout<<"compressOneRound"<<endl;
-//		cout<<lookaheadBuffer<<" "<<aheadLength<<" "<<searchLength<<endl;
 		vector<CompressUnit> compressResult;
 
 		int lookaheadBufferLength, searchBufferLength;
@@ -298,8 +304,7 @@ vector<CompressUnit> compressOneRound(char *lookaheadBuffer, int aheadLength, in
 //			CompressUnit unit = getCommonLongestMatchWithList(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
 //			CompressUnit unit = getCommonLongestMatch(lookaheadBuffer, lookaheadBufferLength, searchBufferLength);
 			compressResult.push_back(unit);
-//			cout<<lookaheadBuffer<<endl;
-			//cout<<unit.longestMatchLength<<" "<<unit.offset<<" "<<unit.nextChar<<endl;
+			
 			lookaheadBuffer += unit.longestMatchLength + 1;
 			searchLength += unit.longestMatchLength + 1;
 			aheadLength -= unit.longestMatchLength + 1;
@@ -326,10 +331,10 @@ void deCompress(vector<CompressUnit> &result, char *buffer){
 }
 
 void compressFile(char *srcPath, char* targetPath){
+	searchStartPostion = 0;
 	positionRecord.clear();
 	hashList.clear();
-	
-//	cout<<srcPath<<endl<<targetPath<<endl;
+
 	FILE* src;
 	FILE* target;
 	if((src = fopen(srcPath,"rb"))==NULL){
@@ -347,26 +352,13 @@ void compressFile(char *srcPath, char* targetPath){
 	
 	//先读取一个窗口的内容，在循环中前移，循环内压缩必须要有2缓冲窗口以上，否则跳至结尾
 	int readLength  = fread(compressBuffer + windowSize, sizeof(char), windowSize, src);
-	int previousReadLength = readLength;
 	int count = readLength;
-	int unitCount = 0;
 	int searchLength = 0;
 	int compressedCount = windowSize;
 	int lookaheadLength = 0;
 	
 	while(readLength = fread(compressBuffer + windowSize * 3 - compressedCount, sizeof(char), compressedCount, src)){
 		lookaheadLength = windowSize * 2 - compressedCount + readLength;
-//		cout<<"searchPart ";
-//		for(int i = windowSize - searchLength; i < windowSize; i++){
-//			cout<<*(compressBuffer+i);
-//		}
-//		cout<<endl<<endl;
-//		
-//		cout<<"lookaheadPart ";
-//		for(int i = windowSize; i < windowSize + lookaheadLength; i++){
-//			cout<<*(compressBuffer+i);
-//		}
-//		cout<<endl<<endl;
 		
 		vector<CompressUnit> &&result = compressOneRound(compressBuffer + windowSize, lookaheadLength, searchLength);
 		compressedCount = 0;
@@ -375,48 +367,20 @@ void compressFile(char *srcPath, char* targetPath){
 			compressedCount += unit.longestMatchLength + 1;
 		}
 
-//		cout<<"compressedCount "<<compressedCount<<endl;
 		memcpy(compressBuffer, compressBuffer + compressedCount, windowSize * 3 - compressedCount);
-
-		previousReadLength = readLength;
+		
 		count += readLength;
-		unitCount += result.size();
 		searchLength = windowSize;
-
-//		setIncreaseFactor(unitCount);
-//		cout<<count<<endl;
 	}
 		
 	lookaheadLength = lookaheadLength - compressedCount;
 	if(searchLength == 0) lookaheadLength = count;
-//	cout<<"lookaheadLength"<<lookaheadLength<<endl;
-//	cout<<"searchPart ";
-//	for(int i = windowSize - searchLength; i < windowSize; i++){
-//		cout<<*(compressBuffer+i);
-//	}
-//	cout<<endl<<endl;
-	
-//	cout<<"lookaheadPart ";
-//	for(int i = windowSize; i < windowSize + lookaheadLength; i++){
-//		cout<<*(compressBuffer+i);
-//	}
-//	cout<<endl<<endl;
-	
-	
+
 
 	//仅剩下小于等于一个窗口的内容，使用最后一次读出的量
 	vector<CompressUnit> &&result = compressOneRound(compressBuffer + windowSize, lookaheadLength, searchLength);
 	cout<<"总字节"<<count<<endl;
-//	cout<<"压缩点"<<unitCount<<endl;
 	
-	count = 0;
-	for(auto unit: result) {
-		fwrite((void*)&unit, sizeof(CompressUnit), 1, target);
-		count += unit.longestMatchLength + 1;
-	}
-	//最后一个为0的话需要减掉
-//	cout<<"还原总长度"<<count<<endl;
-
 	fclose(src);
 	fclose(target);	
 	delete compressBuffer;
@@ -424,8 +388,6 @@ void compressFile(char *srcPath, char* targetPath){
 
 
 void deCompressFile(char *srcPath, char* targetPath){
-	searchStartPostion = 0;
-	positionRecord.clear();
 	
 //	cout<<srcPath<<endl<<targetPath<<endl;
 	FILE* src;
@@ -444,35 +406,23 @@ void deCompressFile(char *srcPath, char* targetPath){
 	//最多需要一个窗口search，一个窗口匹配 + nextChar
 	char *deCompressBuffer = new char[windowSize*3];
 	int localOffset = 0;
-	int unitCount = 0;
 	int count = 0;
 	while(fread((void*)unit, sizeof(CompressUnit), 1, src)){
-//		cout<<unit->nextChar<<" "<<unit->offset<<" "<<unit->longestMatchLength<<endl;
-
 		if(localOffset + unit->longestMatchLength >= windowSize*3){
-//			cout<<"write "<<windowSize<<" chars"<<endl;
-			fwrite((void*)deCompressBuffer, sizeof(char), windowSize, target);
-			memcpy(deCompressBuffer, deCompressBuffer + windowSize, localOffset - windowSize);
+			fwrite((void*)deCompressBuffer, sizeof(char), windowSize, target);			
+			memcpy(deCompressBuffer, deCompressBuffer + windowSize, localOffset - windowSize);		
 			localOffset -= windowSize;
 		}
-		if(unit->longestMatchLength > 0)
+		
+		if(unit->longestMatchLength > 0){
 			memcpy(deCompressBuffer + localOffset, deCompressBuffer + localOffset - unit->offset, unit->longestMatchLength);
-		
+		}
 		*(deCompressBuffer + localOffset + unit->longestMatchLength) = unit->nextChar;
-		
-//		cout<<"deCompressResult ";
-//		for(int i = localOffset; i < localOffset + unit->longestMatchLength + 1; i++) cout<<*(deCompressBuffer + i);
-//		cout<<endl;
 		
 		localOffset += unit->longestMatchLength + 1;
 		count += unit->longestMatchLength + 1;
-		unitCount++;
 	}
 
-//	cout<<unitCount<<endl;
-//	cout<<count<<endl;
-
-//	cout<<"write "<<localOffset<<" chars"<<endl;
 	//最后一个字符有可能会多处理起来比较麻烦，可以考虑吧源文件大小写入到压缩文件里，后面直接截断
 	fwrite((void*)deCompressBuffer,sizeof(char), localOffset, target);
 	fclose(target);
@@ -491,16 +441,16 @@ void testGetCommonLongestMatch(){
 	
 	char *searchBuffer = lookaheadBuffer - strlen(lookaheadBuffer)/2;
 //	for(int i = 0, j = strlen(searchBuffer) - unit.offset; i < unit.longestMatchLength;i++)
-//		cout<<*(searchBuffer + i + j);
+//	cout<<*(searchBuffer + i + j);
 }
 
 void testCompressAndDecompressOneRound(){
 	char *lookaheadBuffer = "124235123542341234213412342541241254";
 	windowSize = strlen(lookaheadBuffer); 
 	vector<CompressUnit> &&result = compressOneRound(lookaheadBuffer, strlen(lookaheadBuffer), 0);
-	for(auto unit: result){
+//	for(auto unit: result){
 //		 cout<<unit.longestMatchLength<<" "<<unit.offset<<" "<<unit.nextChar<<endl;
-	}
+//	}
 
 	char *deCompressedBuffer = new char[strlen(lookaheadBuffer)];
 	deCompress(result, deCompressedBuffer);
@@ -511,8 +461,8 @@ void testCompressAndDecompressOneRound(){
 
 
 void testCompressFile(){
-	compressFile("D:/BaiduNetdiskDownload/test.txt", "D:/BaiduNetdiskDownload/test.txt.lz77");
-	deCompressFile("D:/BaiduNetdiskDownload/test.txt.lz77", "D:/BaiduNetdiskDownload/test.txt.de");
+	compressFile("D:/BaiduNetdiskDownload/test.txt", "D:/BaiduNetdiskDownload/test.txt.en77");
+	deCompressFile("D:/BaiduNetdiskDownload/test.txt.en77", "D:/BaiduNetdiskDownload/test.txt.78.de");
 }
 
 int main(){
@@ -523,5 +473,9 @@ int main(){
 	//testGetCommonLongestMatch();
 	//testCompressOneRound();
 	testCompressFile();
+	cout<<"test part used seconds "<<usedSeconds<<endl;
+	// for(auto [key,positions]:positionRecord){
+		// cout<<key<<" "<<positions.size()<<endl;
+	// }
 	return 0;
 }
