@@ -151,21 +151,26 @@ func! CompileRunGcc()
 			exec "!rm ./%<"
 			exec "!g++ -I %:h % -o %"
 			exec "!time ./%<"
+			exec "!sleep 0.2"
         elseif &filetype == 'cpp'
 			exec "!clear"
 			exec "!rm ./%<"
 			exec "!g++ -std=c++17 % -o %<"
 			exec "!time ./%<"
+			exec "!sleep 0.2"
         elseif &filetype == 'java'
 			exec "!clear"
 			exec "!javac %"
 			exec "!time java %<"
+			exec "!sleep 0.2"
         elseif &filetype == 'sh'
 			exec "!clear"
-			:!time bash %
+			exec "!time bash %"
+			exec "!sleep 0.2"
         elseif &filetype == 'python'
 			exec "!clear"
 			exec "!time python3 %"
+			exec "!sleep 0.2"
 		endif
 endfunc
 
