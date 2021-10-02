@@ -35,7 +35,7 @@ using namespace std;
      i = j = count = 0;
      while(i < s.length()){
          
-		 //注意这里匹配是从首部匹配，而移动是从尾部进行移动  
+		 //注意这里匹配是从首部匹配，而移动是按当前尾部后一个字符匹配进行移动  
          while(i < s.length() && j < p.length()){
              if(s[i] == p[j]){
                  i++,j++;
