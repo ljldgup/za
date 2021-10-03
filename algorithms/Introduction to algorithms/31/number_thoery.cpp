@@ -58,7 +58,8 @@ int extended_euclid(int a, int b, int &x, int &y){
 	else{
 		int new_x, new_y, result;
 		result = extended_euclid(b, a%b, new_x, new_y);
-		//注意最大公约数值不变，new_x，new_y是b, a%b得到的解，这里针对当前a,b的参数做调整
+		// 注意最大公约数值不变，new_x，new_y是b, a%b得到的解，这里针对当前a,b的参数做调整
+		//（new_x*b + new_y*(a%b) = xa + yb）
 		x = new_y;
 		y = -a/b*new_y + new_x;
 		return result;

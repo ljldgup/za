@@ -71,7 +71,9 @@ void printTree(Node *root){
 }
 
 void reverseTree(Node *root){
-	//递归入栈 是函数，入参，行数，这里函数已经定了，如后两个，行数用标志替代
+	//递归入栈 是函数，变量，行数，这里函数已经定了，保存后两个，
+	//行数用标志替代根据标志决定运行逻辑，
+	//参数这里只有节点，如果有返回值理论上也需要入栈，不过也可以保存变量，再弹出上层操作
 	stack<Node*> nodes;
 	stack<int> flags;
 	Node *cur = root;

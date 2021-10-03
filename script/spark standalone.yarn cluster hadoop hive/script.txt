@@ -98,24 +98,49 @@ rdd1.count
 
 -----------------------------------------------------------------------------------------
 docker commit spark_master myspark:v1
-docker run --name spark_node1 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.3 -it myspark:v1 bash
-docker run --name spark_node2 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.4 -it myspark:v1 bash
+docker run -m 2g  --name spark_node1 -p 8081:8081  -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.3 -it myspark:v1 bash
+docker run -m 2g --name spark_node2 -v -p 8082:8082  /d/Temp/:/ljl --net=spark_net --ip 173.18.0.4 -it myspark:v1 bash
+docker run -m 2g --name spark_node3 -v -p 8083:8083  /d/Temp/:/ljl --net=spark_net --ip 173.18.0.5 -it myspark:v1 bash
 
-slave机器：
+#slave机器：
 hostname -i
 
-添加到authorized_keys中
+#添加到authorized_keys中
 mkdir ~/.ssh
 cat /ljl/id_rsa.pub >> ~/.ssh/authorized_keys
 cp /ljl/profile /etc
 source /etc/profile
 echo $JAVA_HOME
 
-启动服务
+#启动服务
 mkdir /run/sshd
 /usr/sbin/sshd -D&
 
 -------------------------------------------------------------
+启动
+注意重新启动后所有服务要重启，profile也要重新载入
+docker start spark_master spark_node1  spark_node2  spark_node3
+
+依次source环境变量，启动ssh服务，这里用attach会导致容器停止
+docker exec -it  spark_node1 /bin/bash
+/usr/sbin/sshd -D&
+source /etc/profile
+exit
+
+docker exec -it  spark_node2 /bin/bash
+/usr/sbin/sshd -D&
+source /etc/profile
+exit
+
+docker exec -it  spark_node3 /bin/bash
+/usr/sbin/sshd -D&
+source /etc/profile
+exit
+
+
+docker attach spark_master
+source /etc/profile
+
 切到master尝试ssh连接
 ssh root@173.18.0.3
 ps -a 
@@ -137,6 +162,8 @@ client 端可以看到输出
 bin/spark-submit \
 --master spark://173.18.0.2:7077 \
 --deploy-mode client \
+--num-executors 3 \
+--executor-memory 1G \
 --class org.apache.spark.examples.SparkPi examples/jars/spark-examples_2.12-3.0.1.jar 1
 
 这最后的1程序中10000*1
@@ -145,9 +172,10 @@ bin/spark-submit \
 PYSPARK_PYTHON用于python运行，每个环境都需要有能运行的python环境
 删掉了原脚本中的需要numpy和pandas的内容
 
-spark-submit \
+bin/spark-submit \
 --master spark://173.18.0.2:7077 \
---num-executors 2 \
+--num-executors 3 \
+--executor-memory 1G \
 /ljl/fms/fms_log_test.py
 
 ##########################################################################################################
