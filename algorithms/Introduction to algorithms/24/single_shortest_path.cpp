@@ -59,7 +59,7 @@ void relax(Edge* edge){
 	//cout<<edge<<endl;
 	//cout<<v<<" "<<v<<" "<<w<<endl;
 	//cout<<"relax "<<v->name<<" "<<v->d<<" "<< u->name<<" "<<u->d<<" "<<w<<endl;
-
+	//这里的d是到目标节点的位置
 	if(v->d > u->d + w){
 		// cout<<"relax "<<v->name<<" "<<v->d<<" "<< u->name<<" "<<u->d<<" "<<w<<endl;
 		v->d = u->d + w;
@@ -187,6 +187,8 @@ bool dijkstra(unordered_map<Node*, vector<Edge*>*> graph, Node* s){
 			}
 			relax(edges);
 		}
+		
+		//这里也是有问题的，需要用二叉堆进行调整，make_heap复杂度O(n)
 		make_heap(nodes.begin(), nodes.begin() + length, cmp);
 		
 
@@ -205,7 +207,10 @@ bool johnson(unordered_map<Node*, vector<Edge*>*> graph, unordered_map<char, Nod
     }
     
     initialize_single_source(graph, s);
-    bellmanFord(graph, s);
+    if(!bellmanFord(graph, s)){
+		cout<<"有权重负值的环路"<<endl;	
+		return false;
+	}
     for(auto [v, edges]: graph){
         for(auto edge:*edges){
             edge->weight = edge->weight + edge->from->d - edge->to->d;
@@ -216,15 +221,12 @@ bool johnson(unordered_map<Node*, vector<Edge*>*> graph, unordered_map<char, Nod
         if(v != s) {
             initialize_single_source(graph, v);
             cout<<v->name<<"到所有节点最短路径"<<endl;
-            if(!bellmanFord(graph, v)){
-                cout<<"有权重负值的环路"<<endl;	
-            }else{
-                for(auto [v, e]:graph){
-                    if(v->name != '?') print_path(vertex, v);  
-                }
-            }
-        }
-    }
+            dijkstra(graph, v);
+			for(auto [y, e]:graph){
+				if(y != s && y != v) print_path(vertex, y);  
+			}			
+		}
+	}
 }
 
 
@@ -233,6 +235,7 @@ int main(){
 	Node* node;
 	Edge* edge;
 	
+	//数据源自算法导论
 	//bellmanFord数据,普适方法
 	vector<tuple<char, char, int>> graphData1 {
 		{'s', 't', 6},

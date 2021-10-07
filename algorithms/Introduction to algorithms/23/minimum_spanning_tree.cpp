@@ -109,6 +109,8 @@ void prim(unordered_map<char, Node*> vertexMap,
 	set<Node*> usedSet;
 	set<Node*> resultSet;
 	Node* minKeyNode;
+	
+	//key值是当前集合到达节点的最小权重，初始节点为0，其他∞
 	auto comparator = [](Node* n1, Node* n2)->bool{return n1->key > n2->key;};
 	
 	int length = vertexMap.size();
@@ -133,16 +135,18 @@ void prim(unordered_map<char, Node*> vertexMap,
 		pop_heap(minHeap.begin(), minHeap.begin() + length, comparator);
 		length--;
 		
+		
+		//更新当前节点的最小权重，
 		for(auto e:*graph[minKeyNode->name]){
 			if(e->weight < e->toNode->key){
 				e->toNode->key = e->weight;
 				e->toNode->pi = minKeyNode->name;
 			}
 		}
+		
+		//由于key只会变小所以直接递归调整当前节点合父节点，使用make_heap不是最优选择，
+		//实现该效果需要自己实现二叉堆+hashmap记录节点
 		make_heap(minHeap.begin(), minHeap.begin() + length, comparator);
-		
-
-		
 	}
 	cout<<"sum:"<<sum<<endl;
 }
