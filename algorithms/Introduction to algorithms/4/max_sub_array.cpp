@@ -28,12 +28,12 @@ int maxSubArray(int *array, int left, int right, int &st, int &ed){
 	int i;
 	
 	int sum = 0;
-	int maxPos = mid;
-	int maxSum = 0;
-	for(i = mid + 1; i <= right; i++){
+	int maxPos = mid + 1;
+	int maxSumRight = *(array + mid + 1);
+	for(i = mid + 2; i <= right; i++){
 		sum += *(array + i);
-		if(sum > maxSum){
-			maxSum = sum;
+		if(sum > maxSumRight){
+			maxSumRight = sum;
 			maxPos = i;
 		}
 	}
@@ -41,39 +41,65 @@ int maxSubArray(int *array, int left, int right, int &st, int &ed){
 	
 	sum = 0;
 	maxPos = mid;
-	maxSum = 0;
+	int maxSumLeft = *(array + mid);
 	for(i = mid - 1; i >= left; i--){
 		sum += *(array + i);	
-		if(sum > maxSum){
-			maxSum=sum;
+		if(sum > maxSumLeft){
+			maxSumLeft=sum;
 			maxPos=i;
 		}
 	}
 	st = maxPos;
 
-
-	if(leftMax > maxSum && leftMax > leftMax){
+	if(leftMax > maxSumRight + maxSumLeft && leftMax > rightMax){
 		st = leftSt;
 		ed = leftEd;
 		return leftMax; 
 	}
-	else if(rightMax > maxSum){
+	else if(rightMax > maxSumRight + maxSumLeft){
 		st = rightSt;
 		ed = rightEd;
 		return rightMax;
 	}
-	return maxSum;
+    cout<<st<<" "<<ed<<endl;
+	return maxSumRight + maxSumLeft;
+}
+
+int maxSubArray2(int *array, int left, int right, int &st, int &ed){
+    int maxSum = MIN;
+    int tmpSum = 0;
+    int tmpSt = 0;
+    st = ed = left;
+    for(int i = left; i < right; i++){
+        if( tmpSum + *(array + i) < 0){
+            tmpSt = i + 1;
+            tmpSum = 0;
+            continue;
+        }
+        
+        tmpSum += *(array + i);
+        if(tmpSum > maxSum){
+            st = tmpSt;
+            ed = i;
+            maxSum = tmpSum;
+        }
+    }
+    
+    return maxSum;
 }
 
 int main(){
 	int *array = new int[10];
 	
-	for(int i = 0; i < 10; i++) *(array + i) = random(10) - 5;
+	for(int i = 0; i < 10; i++) *(array + i) = random(100) - 50;
 	for(int i = 0; i < 10; i++) cout<<*(array + i)<<' ';
 	cout<<endl;
 	
 	int st,ed, maxSum;
 	maxSum = maxSubArray(array, 0, 9, st, ed);
-	cout<<maxSum<<' '<<st<<' '<<ed;
+	cout<<maxSum<<' '<<st<<' '<<ed<<endl;
+    
+    maxSubArray2(array, 0, 9, st, ed);
+    cout<<maxSum<<' '<<st<<' '<<ed<<endl;
 	return 0;
 }
