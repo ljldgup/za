@@ -43,7 +43,7 @@ docker commit test sparkssh:v1
 
 docker network create --subnet=173.18.0.0/24 spark_net
 
-docker run --name spark_master -p 8080:18080 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.2 -it ubuntu bash
+docker run --name spark_master -p 8080:18080 -p 4040:4040 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.2 -it ubuntu bash
 
 
 
@@ -63,8 +63,6 @@ ssh-keygen -t rsa
 cp ~/.ssh/id_rsa.pub /ljl
 
 
-
-
 配置环境变量，已经配好直接拷贝
 cp /etc/profile /ljl
 追加
@@ -72,13 +70,9 @@ cp /etc/profile /ljl
 export JAVA_HOME=/ljl/jdk1.8.0_251
 export JRE_HOME=$JAVA_HOME/jre
 export SPARK_HOME=/ljl/spark-3.0.1-bin-hadoop3.2
-export HADOOP_HOME=/ljl/hadoop-3.3.0
 export SCALA_HOME=/ljl/scala-2.10.7
-export YARN_HOME=/ljl/hadoop-3.3.0
-export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
-export YARN_CONF_DIR=${YARN_HOME}/etc/hadoop
 export PYSPARK_PYTHON=/usr/bin/python3.6
-export PATH=$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SCALA_HOME/bin:$PATH
+export PATH=$JAVA_HOME/bin:$SCALA_HOME/bin:$PATH
 
 重新载入,需要root权限拷贝
 #exit
@@ -96,49 +90,73 @@ val rdd1=sc.parallelize(1 to 100,5)
 val rdd2=rdd1.map(_+4)
 rdd1.count
 
------------------------------------------------------------------------------------------
 docker commit spark_master myspark:v1
-docker run -m 2g  --name spark_node1 -p 8081:8081  -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.3 -it myspark:v1 bash
-docker run -m 2g --name spark_node2 -v -p 8082:8082  /d/Temp/:/ljl --net=spark_net --ip 173.18.0.4 -it myspark:v1 bash
-docker run -m 2g --name spark_node3 -v -p 8083:8083  /d/Temp/:/ljl --net=spark_net --ip 173.18.0.5 -it myspark:v1 bash
+-----------------------------------------------------------------------------------------
 
-#slave机器：
-hostname -i
-
+docker run -m 1.5g --name spark_node1 -p 8081:8081 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.3 -it myspark:v1 bash
 #添加到authorized_keys中
 mkdir ~/.ssh
 cat /ljl/id_rsa.pub >> ~/.ssh/authorized_keys
 cp /ljl/profile /etc
 source /etc/profile
-echo $JAVA_HOME
-
-#启动服务
 mkdir /run/sshd
 /usr/sbin/sshd -D&
+exit
 
+
+docker run -m 1.5g --name spark_node2 -p 8082:8081 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.4 -it myspark:v1 bash
+#添加到authorized_keys中
+mkdir ~/.ssh
+cat /ljl/id_rsa.pub >> ~/.ssh/authorized_keys
+cp /ljl/profile /etc
+source /etc/profile
+mkdir /run/sshd
+/usr/sbin/sshd -D&
+exit
+
+
+docker run -m 1.5g --name spark_node3 -p 8083:8081 -v /d/Temp/:/ljl --net=spark_net --ip 173.18.0.5 -it myspark:v1 bash
+#添加到authorized_keys中
+mkdir ~/.ssh
+cat /ljl/id_rsa.pub >> ~/.ssh/authorized_keys
+cp /ljl/profile /etc
+source /etc/profile
+mkdir /run/sshd
+/usr/sbin/sshd -D&
+exit
+
+
+#slave机器：
+hostname -i
+
+#启动服务
 -------------------------------------------------------------
 启动
 注意重新启动后所有服务要重启，profile也要重新载入
-docker start spark_master spark_node1  spark_node2  spark_node3
+docker restart spark_master spark_node1  spark_node2  spark_node3
 
 依次source环境变量，启动ssh服务，这里用attach会导致容器停止
-docker exec -it  spark_node1 /bin/bash
+docker exec -it spark_node1 /bin/bash
 /usr/sbin/sshd -D&
+cp /ljl/profile /etc
 source /etc/profile
 exit
 
-docker exec -it  spark_node2 /bin/bash
+docker exec -it spark_node2 /bin/bash
 /usr/sbin/sshd -D&
+cp /ljl/profile /etc
 source /etc/profile
 exit
 
-docker exec -it  spark_node3 /bin/bash
+docker exec -it spark_node3 /bin/bash
 /usr/sbin/sshd -D&
+cp /ljl/profile /etc
 source /etc/profile
 exit
 
-
-docker attach spark_master
+docker exec -it spark_master /bin/bash
+/usr/sbin/sshd -D&
+cp /ljl/profile /etc
 source /etc/profile
 
 切到master尝试ssh连接
@@ -163,7 +181,7 @@ bin/spark-submit \
 --master spark://173.18.0.2:7077 \
 --deploy-mode client \
 --num-executors 3 \
---executor-memory 1G \
+--executor-memory 800M \
 --class org.apache.spark.examples.SparkPi examples/jars/spark-examples_2.12-3.0.1.jar 1
 
 这最后的1程序中10000*1
@@ -172,20 +190,30 @@ bin/spark-submit \
 PYSPARK_PYTHON用于python运行，每个环境都需要有能运行的python环境
 删掉了原脚本中的需要numpy和pandas的内容
 
+cd $SPARK_HOME
 bin/spark-submit \
 --master spark://173.18.0.2:7077 \
 --num-executors 3 \
---executor-memory 1G \
+--executor-memory 800M \
 /ljl/fms/fms_log_test.py
+
+注意这里如果赔了后面的HDFS的内容，要先开启hdfs
 
 ##########################################################################################################
 
 添加环境变量
+export HADOOP_HOME=/ljl/hadoop-3.3.0
+export YARN_HOME=/ljl/hadoop-3.3.0
+export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+export YARN_CONF_DIR=${YARN_HOME}/etc/hadoop
+export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
+
 export HDFS_NAMENODE_USER=root
 export HDFS_DATANODE_USER=root
 export HDFS_SECONDARYNAMENODE_USER=root
 export YARN_RESOURCEMANAGER_USER=root
 export YARN_NODEMANAGER_USER=root
+
 
 yarn
 
@@ -290,6 +318,10 @@ cat /ljl/id_rsa.pub >> ~/.ssh/authorized_keys
 mkdir /run/sshd
 /usr/sbin/sshd -D &
 
+#可以登录
+ssh root@173.18.0.2
+
+
 cd $HADOOP_HOME
 sbin/start-dfs.sh              #启动dfs 
 sbin/start-yarn.sh              #启动yarn
@@ -305,8 +337,8 @@ cd $SPARK_HOME
 sbin/start-all.sh
 
 bin/spark-submit \
---master yarn \
---deploy-mode client \
+--num-executors 2 \
+--executor-memory 800M \
 --class org.apache.spark.examples.SparkPi examples/jars/spark-examples_2.12-3.0.1.jar 1
 
 可以看到
@@ -330,6 +362,7 @@ hdfs dfs -ls /ljl/fms
 bin/spark-submit \
 --master yarn \
 --num-executors 2 \
+--executor-memory 800M \
 /ljl/fms/fms_log_test.py
 ------------------------------------------------------------------------
 hive:
