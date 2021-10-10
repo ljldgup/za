@@ -61,7 +61,7 @@ int maxSubArray(int *array, int left, int right, int &st, int &ed){
 		ed = rightEd;
 		return rightMax;
 	}
-    cout<<st<<" "<<ed<<endl;
+    // cout<<st<<" "<<ed<<endl;
 	return maxSumRight + maxSumLeft;
 }
 
@@ -70,6 +70,8 @@ int maxSubArray2(int *array, int left, int right, int &st, int &ed){
     int tmpSum = 0;
     int tmpSt = 0;
     st = ed = left;
+    //这里是动态规划，第i步求了以i结尾的最大和子串
+    //因为和为负数必然不是最优解，本身也是负数不能作为开头，所以直接跳过该元素
     for(int i = left; i < right; i++){
         if( tmpSum + *(array + i) < 0){
             tmpSt = i + 1;
