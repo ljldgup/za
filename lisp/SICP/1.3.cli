@@ -128,4 +128,3 @@
             (fn[x] (/ 10.0 (prod x (- expr_times 1)))) 1 (repeat_func average_damp 3)) 
      expr_times)))
      
-accumulate

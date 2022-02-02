@@ -1,4 +1,5 @@
 ;;尾递归测试,即使尾递归还是会爆栈
+;;recur 来代替原函数，可以实现尾递归
 ;;变量可以通过反复def改变
 (defn rec_test [base_num times]
     (def result 0)
@@ -7,8 +8,11 @@
         (def result (+ base_num result))
         (if (< left_times 1) 
             result
-            (helper (- left_times 1))))
+            ;(rec_test (- left_times 1))))
+            (recur (- left_times 1))))
     (helper times))
+(rec_test 11 111111)
+
 
 ;;练习1.11
 (defn fn_add [fn-1, fn-2, fn-3] (+ fn-1 (* 2 fn-2) (* 3 fn-3)))
