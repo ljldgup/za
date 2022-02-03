@@ -1,0 +1,92 @@
+;methods是关键字，就是用来管理函数映射的
+
+(def method_map 
+{'add {}, 
+'sub {}, 
+'mul {} 
+'div {}
+'make {}})
+
+(defn attach_tag [t x]
+    (cons t x))
+
+(defn install_number []
+    (defn tag[x]
+        (attach_tag 'my_number (list x)))
+    (assoc (method_map 'add) '(my_number my_number)
+        (fn[x y] (tag (+ (second x) (second y)))))
+    (assoc (method_map 'sub) '(my_number my_number)
+        (fn[x y] (tag (- (second x) (second y)))))
+    (assoc (method_map 'mul) '(my_number my_number)
+        (fn[x y] (tag (* (second x) (second y)))))
+    (assoc (method_map 'div) '(my_number my_number)
+        (fn[x y] (tag (/ (second x) (second y)))))
+    (assoc (method_map 'make) '(raw_number)
+        (fn[x] (tag x))))
+        
+(defn install_complex_number []
+    (defn tag
+        [x, y] (attach_tag 'complex_number (list x y))
+        [x] (attach_tag 'complex_number x))
+        
+    (defn real [complex_number]
+        (nth complex_number 1))
+        
+    (defn image [complex_number]
+        (nth complex_number 2))
+        
+    (defn add_complex_number [n1 n2]
+        (tag 
+            (+ (real n1) (real n2))
+            (+ (image n1) (image n2))))
+    (defn sub_complex_number [n1 n2]
+        (tag 
+            (- (real n1) (real n2))
+            (- (image n1) (image n2))))
+
+    (defn mul_complex_number [n1 n2]
+        (tag 
+            (- (* (real n1) (real n2)) (* (image n1) (image n2)))
+            (+ (* (image n1) (real n2)) (* (image n2) (real n1)))))
+            
+     ;;复杂除法太复杂      
+    (assoc (method_map 'add) '(complex_number complex_number) add_complex_number)
+    (assoc (method_map 'sub) '(complex_number complex_number) sub_complex_number)
+    (assoc (method_map 'mul) '(complex_number complex_number) mul_complex_number)
+        
+    (assoc (method_map 'make) '(raw_number)
+        (fn[x] (tag x))))
+;;因为clojure 参数不可变，method_map值不会变，用def双层map极其繁琐，且会有多线程问题，
+;;这种做法无法实现。。
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+clojure 实现了defmulti defmethod 来进行函数派发
+defmulti 定义一个函数返回标志位，然后根据defmethod的同名过程进行选择
+
+(defn type-tag [x]
+    (first x))
+    
+(defn attach_tag [t x]
+    (cons t x))
+    
+(defn real [complex_number]
+    (nth complex_number 1))
+    
+(defn image [complex_number]
+    (nth complex_number 2))
+    
+(defmulti add #(list (type-tag %1) (type-tag %2)))
+
+(defmethod add '(my_number my_number) [x y] 
+    (attach_tag 'my_number (list (+ (second x) (second y)))))
+    
+(defmethod add '(complex_number complex_number)[x y] 
+    (attach_tag 'complex_number (list (+ (real x) (real y)) (+ (image x) (image y)))))
+    
+(defmethod add :default [args] (println args "is default"))
+
+(add '(my_number 23)  '(my_number 12))
+
+(add '(complex_number 23 12)  '(complex_number 12 23))
+
+(add '(complex_number 23 12)  '(complex_number 12 23))

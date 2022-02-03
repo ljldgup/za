@@ -57,8 +57,8 @@
         (if (not (leaf? current_tree))
             (do 
                 ;没找到字符串相加的办法，暂时用format "   %s" cols
-                (print_helper (format "   %s" cols) (left_branch current_tree))
-                (print_helper (format "   %s" cols) (right_branch current_tree)))))
+                (print_helper (.concat "  " cols) (left_branch current_tree))
+                (print_helper (.concat "  " cols) (right_branch current_tree)))))
     (print_helper "" tree))
 
 (print_code_tree sample_tree) 
