@@ -1,0 +1,52 @@
+; &不定长参数  apply和直接调用等效 count 尺寸
+(defn average [& args]
+    (/ (apply + args) (count args)))
+(average 1 2 3 4)
+
+;#""表示正则, re-开头的几个正则操作
+(re-seq #"a.+?b" "adbacb")
+
+;#_注释忽略后面一个clojure形式
+'(1 2 3 #_(* 1 2) 4)
+
+;quote 数据结构返回的是数据结构，内部表达式不求值
+(list? '(+ x x))
+
+;let解构list map
+(let [[x & rest_args] '("123" 2 3 "4")]
+    (println x)
+    (println rest_args))
+
+;函数参数可以直接用let形式解构
+((fn[[x & rest_args]] 
+    (println rest_args)) 
+ '("123" 2 3 "4"))
+
+;3索引 :as返回自己
+(let [{b 3, :as args} '("123" 2 3 "4")]
+    (println b)
+    (println args))
+    
+(let [{a :a} {:a "1", "b":2}]
+    (println a))  
+
+;email join_date 关键字参数， :or定义默认值 join_date 
+;email join_date 关键字参数， :or定义默认值 join_date 
+;java.util.Date. 貌似和 new等效
+(defn make_user
+    [username & {:keys [email join_date]
+                :or {join_date (java.util.Date.)}}]
+    {:username username
+    :join_date join_date
+    :email email
+    :exp_date (java.util.Date. (long (+ 2.592e9 (.getTime join_date))))}
+    
+(make_user "bob")
+(make_user "bob" :join_date (java.util.Date. 111 0 1))
+
+;recur可以在不消耗堆栈的情况下，
+;转移到最近的函数定义或loop定义的头部
+(loop [x 5]
+    (if (neg? x)
+        x
+        (recur (dec x))))
