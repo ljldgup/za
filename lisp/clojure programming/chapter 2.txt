@@ -1,0 +1,50 @@
+;函数式编程
+;map多多个序列操作相当于将同位置拼成一个序列，然后调用
+(map (fn[ & args] (reduce + args )) '(1 2 3) '(4 5 6) '(1 4 5))
+(map #(reduce + %&) '(1 2 3) '(4 5 6) '(1 4 5))
+
+;两两操作的都可以考虑reduce
+(reduce max '(1 2 3))
+
+;partial 克里化
+(def only-strings (partial filter string?))
+(only-strings '("a" 5 "b" 6))
+
+;comp 函数组合,和的复数转字符串
+(def negated-sum-str (comp str - +))
+(negated-sum-str 1 2)
+
+;通过require加别名，  
+
+(require '[clojure.string :as str])
+(def camel->keyword (comp keyword 
+                          str/join 
+                          (partial interpose \-) 
+                          (partial map str/lower-case)
+                          #(str/split % #"(?<=[a-z])(?=[A-Z])")))
+(camel->keyword "camelStyle")
+
+interpose 在列表中没量过之间插入
+(interpose '- '("a" "b" "c"))
+;这个join只穿列表就是简单拼接，相当于分割符是""
+(str/join ("a" "b" "c"))
+(str/join '- ("a" "b" "c"))
+
+
+(defn print-logger
+    [writer]
+    #(println %))
+
+(require 'clojure.java.io)
+(defn file-logger 
+    [file]
+    #(with-open [f (clojure.java.io/writer file :appedn true)]
+        ((print-logger f) %)))
+
+(def log->file (file-logger "message.log"))      
+
+;memoize可用于纯函数缓存，这里因为随机数不是纯函数，所以结果不对                    
+(repeatedly 10 (partial rand-int 10))
+(repeatedly 10 (partial (memoize rand-int) 10)) 
+
+

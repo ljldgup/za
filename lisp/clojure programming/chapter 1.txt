@@ -1,3 +1,4 @@
+;基本的特殊符号
 ; &不定长参数  apply和直接调用等效 count 尺寸
 (defn average [& args]
     (/ (apply + args) (count args)))

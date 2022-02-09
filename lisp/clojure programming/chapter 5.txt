@@ -1,0 +1,100 @@
+(require '(clojure [string :as str]
+                   [walk :as walk]))
+
+;postwalk 递归便利一个嵌套列表, 然后反转每一个符号
+(defmacro reverse-it [form]
+    (walk/postwalk 
+        #(if (symbol? %)
+            (symbol (str/reverse (name %)))
+            %)
+        form))
+
+;(inc (inc 1))
+(reverse-it (cni (cni 1)))
+
+;macroexpand-1 展开最外层的宏，macroexpand递归展开所有宏
+;注意展开表达式要引用
+(macroexpand-1 '(reverse-it (cni (cni 1))))
+
+(pprint (macroexpand '(reverse-it (cni (cni 1)))))      
+
+;其实就是返回可执行的代码 符号列表
+(defmacro macro_test 
+    [& body]
+    '(println 1))
+;这里x xx xxx没有定义，但是没有求值，所以也不会报错
+(macro_test x xx xxx)
+(macroexpand-1 '(macro_test x xx xxx))
+
+;` 外层语义引述， ~内层反引述
+;`和'的区别在于 `给没有命名空间的符号赋予当前命名空间， 
+;keyword将字符串转为关键字
+`(map ~(keyword (str 'key)))  
+  
+;'~先求值，再转引用
+`(map '~(keyword (str 'key)))  
+  
+;返回(do (quote user/arr)), '被引用， arr被赋予当前命名空间
+`(do 'arr)
+;~@列表解引用
+(def arr '(1 2 3))
+;得到的是(do 1 2 3)
+`(do ~@arr) 
+
+;效果一样，会被解包
+(def arr [1 2 3]) 
+`(do ~@arr) 
+
+
+(defmacro foo 
+    [& body]
+    `(dosomething ~@body))
+(macroexpand-1 '(foo x xx xxx))
+
+(defmacro macro-hello [x]
+    `(str "hello, " ~x "!"))
+(macro-hello 'ljl)
+
+;宏不能作为值传递
+macro-hello
+(map macro-hello '(a b c))
+
+;包裹在函数中能传递
+(map #(macro-hello %) '(a b c))
+
+;通过gensym生成符号，避免冲突
+(defmacro hygienic
+    [& body]
+    (let [sym (gensym)]
+        `(let [~sym :macro-value]
+            ~@body)))
+(let [sym :important-value]
+    (hygienic (println "sym:" sym)))
+
+;可以看到sym名称是个生成符号
+(macroexpand-1 '(hygienic 'sym))
+
+;xxx#， gensym语法糖，同时可以避免x是函数情况下，多次x求值的问题
+(defmacro hygienic2
+    [& body]
+    `(let [sym# :macro-value]
+            (println sym#)))
+(macroexpand-1 '(hygienic2 'sym))  
+
+;同一个`范围内的xx#才能保证一样
+`(x# x#)
+[`x# `x#]   
+
+;不再同一`中还是需要手动let
+
+;使用name对应的符号来绑定,采用用户的符号避免污染
+(defmacro with 
+    [name & body]
+    `(let [~name 5]
+        ~@body))
+        
+(with bar (+ bar 10))
+(macroexpand-1 '(with bar (+ bar 10)))
+
+
+       
