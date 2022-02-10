@@ -1,0 +1,50 @@
+
+
+;协议，不同协议下的同名函数貌似会相互覆盖
+(defprotocol Matrix
+    (lookup[matrix i j])
+    (update [matrix i j value])
+    (rows [matrix])
+    (cols [matrix])
+    (dims [matrix]))
+
+(extend-protocol Matrix
+    ;
+    (type [])
+    (lookup [vov i j] (get-in vov [i j])))
+(lookup [[1] [2 3]] 1 1)
+
+    
+(extend-type nil
+    Matrix
+    (lookup [vov i j] 1e6))
+(lookup nil 1 1)
+
+
+(defn dispatch [x] (:tag x))
+
+;双冒号命名空间限定关键字
+(derive ::checkbox ::checkable)
+(derive ::input ::checkbox)
+;继承能够传递
+(isa? ::input ::checkable)
+
+(defmulti fill 
+    #'dispatch
+    :default nil)
+    
+(defmethod fill ::checkable [x] (println (:tag x) "is" ::checkable))
+
+;注意[...]在处理时被认为是一个vector元素
+(defmethod fill [:input 1] [x] (println (:tag x) "is" '[:input 1]))
+(defmethod fill :default [x] (println (:tag x) "is not" ::checkable))
+
+;均能执行
+(fill {:tag ::checkable})
+(fill {:tag ::input})
+(fill {:tag [:input 1]})
+
+;不是checkable，这里应该已经通过:default nil关了默认函数，但是还是能执行，很奇怪
+(fill {:tag ::radio})
+
+(-> (make-hierarchy) (derive ::checkbox ::checkable) (derive ::input ::checkbox))

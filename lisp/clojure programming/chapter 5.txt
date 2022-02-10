@@ -96,5 +96,73 @@ macro-hello
 (with bar (+ bar 10))
 (macroexpand-1 '(with bar (+ bar 10)))
 
+(def x 1)
+(eval 'x)
+@(resolve 'x)
 
+宏重载
+(defmacro reload_test
+  ([x]  `(reload_test ~x ~x nil))
+  ([x y & oldform] `(println ~x ~y)))
+
+(reload_test 1)
+
+vector直接做函数 let [form (bindings 0) tst (bindings 1)]
+
+for配合while
+(take 100 (for [x (range 100000000) y (range 1000000) :while (< y x)] [x y]))
+
+(keys { :a 1 :n 2 })
+(vals { :a 1 :n 2 })
+
+
+(defmacro  env_test
+  []
+  (let [ks (keys &env)]
+  ;这里~ks会被转符号，
+  `(prn (zipmap '~ks [~@ks]))))
+  
+(let [x 1 y 2]
+    (env_test))
+
+;上面的过程等效下面代码， zipmap 返回map
+;~@返回的是
+(let [x 1 y 2]
+    (zipmap '(x y) [x y]))
+
+;所有参数均绑定,提前计算结果
+(defmacro simplify
+  [expr]
+  (let [locals (set (keys &env))]
+    (if (some locals (flatten expr)) 
+        expr
+        (do
+            (println "Precomputing:" expr)
+            ;返回计算结果
+            (list `quote (eval expr))))))
+
+;代码直接被替换为常数            
+(simplify (apply + (range 5e7)))
+
+(defmacro ontology
+    [& triples]
+    (println &form)
+    (println (meta &form)))
+(ontology 1 2 3)
+
+(reduce #(and %1 %2) #(inc 1) '(1 2 3))
+
+(reduce #(println %1 %2) (partition 2 '(1 2 3 4)))
+
+
+;if-let 和let形式一样，只是第二个值如果是nil 或者false执行else部分，没有就不执行
+(if-let [ [x  & xs] '(1 2 3)] x)
+(if-let [ [x  & xs] nil] x)
+
+;and和or都是宏可以直接查看源码
+;均返回最后一个判断的元素，and为假直接返回，or为真直接返回
+(if-let [x  (and 1 2)] x)
+(if-let [x  (and 1 nil 2)] x)
+(if-let [x  (or nil 2 3)] x)
+(if-let [x  (or nil false nil)] x)
        
