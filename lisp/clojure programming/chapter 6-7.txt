@@ -21,6 +21,54 @@
 (lookup nil 1 1)
 
 
+;类型
+(defrecord Point [x y])
+(.x (Point. 3 4))
+;map的操作，record都支持
+(:x (Point. 3 4))
+;默认值
+(:z (Point. 3 4) -1)
+(assoc (Point. 3 4) :x 4)
+;可以新增字段
+(assoc (Point. 3 4) :z [:a :b])
+
+;不能作为函数操作
+((Point. 3 4) :x)
+
+;多参构造函数，等效(-> (Point. 3 4) (with-meta {:foo :bar}) (assoc :z 5))
+(def p (Point. 3 4 {:foo :bar} {:z 5}))
+(meta p)
+
+;隐式工厂函数->xxx map->xxx xxx/create
+(->Point 3 4)
+(apply ->Point [5 6])
+
+(map->Point {:x 3 :y 4})
+(Point/create {:x 3 :y 4})
+
+(defrecord NamedPoint [^String name ^long x ^long y])
+(NamedPoint/getBasis)
+;都是符号
+(map type (NamedPoint/getBasis))
+;tag+类型
+(map meta (NamedPoint/getBasis))
+
+
+;扩展类似继承
+(extend Point 
+    Matrix
+    {:lookup (fn[this i j] [(:x this) (:y this)])})
+(lookup (->Point 3 2) 1 1)
+
+;查看扩展
+(extenders  Matrix)
+
+(extends?  Matrix Point)
+
+;类似instanceof， 注意extends?是用在类型之间的，satisfies?这里是值和类型
+(satisfies?  Matrix (->Point 3 2))
+
+---------------------------------------------------------------------------------------------------
 (defn dispatch [x] (:tag x))
 
 ;双冒号命名空间限定关键字
