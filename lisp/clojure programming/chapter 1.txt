@@ -55,6 +55,29 @@
 ;乘积
 (*' 1 2 3)
 
+静态函数调用，clojure不需要使用try
+
+(map (fn[x](Thread/sleep x)) (range 1000 1010))
 
 ;静态函数另外一种调用
 (. Thread (sleep 1000))
+
+
+通过do执行多个表达式
+(do
+  (println "first")
+  (println "second")
+  "not return"
+  "return")
+  
+for each:
+(doseq [n [1 2 3]] ; 将列表[1 2 3]中的每一个元素依次绑定到n
+  (println n))
+  
+deseq实现嵌套  
+(doseq [m [1 2], n [3 4]]
+  (println
+  (str m " + " n " = " (+ m n))))
+  
+for也能实现嵌套
+(for [x (range 2), y (range 11 12)] [(list x y)])

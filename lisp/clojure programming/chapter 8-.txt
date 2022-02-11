@@ -24,6 +24,7 @@
 (Date. ) (java.util.Date. )
 (import java.util.Date)
 (Date. )
+(.getTime (new Date))
 
 ;一次import多个
 (import '(java.util Arrays Collections))
@@ -32,3 +33,6 @@
     into-array
     Arrays/asList
     Collections/max)
+    
+== 数值比较
+=  对象比较
