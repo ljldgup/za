@@ -1,0 +1,166 @@
+;这里用嵌套的vector 来实现队列，内部是个嵌套的vector 
+如：(1 (2 (3 (4 (5))))),本质上就是链表，只是实现在要更加抽象层面上
+
+;对node的抽象
+(defn get-item 
+    [node]
+    (nth node 0))
+
+(defn get-parent 
+    [node]
+    (nth node 1))    
+    
+(defn get-child 
+    [node]
+    (nth node 2))
+
+(defn set-parent! 
+    [node p]
+    (assoc! node 1 p))    
+    
+(defn set-child! 
+    [node c]
+    (assoc! node 2 c))
+
+;对双向queue抽象
+(defn get-front-ptr
+    [queue] 
+    (nth queue 0))
+    
+(defn get-tail-ptr
+    [queue] 
+    (nth queue 1))
+
+(defn set-front-ptr!
+    [queue item] 
+    (assoc! queue 0 item))
+    
+(defn set-tail-ptr!
+    [queue item] 
+    (assoc! queue 1 item))
+
+;可变集合不能用empty?
+(defn empty-queue?
+    [queue]
+    (or
+        ( = (count (get-front-ptr queue)) 0)
+        (identical? (get-tail-ptr queue) (get-parent (get-front-ptr queue)))))
+
+            
+(def empty-vector [])
+;易变集合不支持seq,只能用于vector map
+(defn make-queue
+    [] 
+    (transient [empty-vector empty-vector]))
+
+(defn front-queue
+    [queue]
+    (if (not (empty-queue? queue))
+        (get-item (get-front-ptr queue))))
+
+(defn tail-queue
+    [queue]
+    (if (not (empty-queue? queue))
+        (get-item (get-tail-ptr queue))))
+        
+(defn delete-queue-front!
+    [queue]
+    (if (not (empty-queue? queue))
+        ;这里front为空时插入会自动重置，所以不需要动tail部分
+        (set-front-ptr! queue (get-child (get-front-ptr queue)))))
+        
+(defn delete-queue-tail!
+    [queue]
+    (if (not (empty-queue? queue))
+        (do  
+            (set-tail-ptr! queue (get-parent (get-tail-ptr queue))))))
+        
+(defn insert-queue-tail! 
+    [queue item]
+    (let [new-pair (transient [item empty-vector empty-vector])]
+        (cond (empty-queue? queue)
+            (do
+                (set-front-ptr! queue new-pair)
+                (set-tail-ptr! queue new-pair))
+        :else
+            (do
+                ;注意这里存在赋值造成的顺序问题
+                (set-parent! new-pair (get-tail-ptr queue))
+                (set-child! (get-tail-ptr queue) new-pair)
+                (set-tail-ptr! queue new-pair)))))
+                
+                
+(defn insert-queue-front! 
+    [queue item]
+    (let [new-pair (transient [item empty-vector empty-vector])]
+        (cond (empty-queue? queue)
+            (do
+                (set-front-ptr! queue new-pair)
+                (set-tail-ptr! queue new-pair))
+        :else
+            (do
+                ;注意这里存在赋值造成的顺序问题
+                (set-parent! (get-front-ptr queue) new-pair)
+                (set-child! new-pair (get-front-ptr queue))
+                (set-front-ptr! queue new-pair)))))
+                
+
+(defn print-queue
+    [queue]
+    (if (not (empty-queue? queue))
+        (loop [fq (get-front-ptr queue)]
+            (do
+                ;(println fq)
+                (if (< 0 (count fq)) (print (nth fq 0) " "))
+                (if (not (identical? fq (get-tail-ptr queue)))
+                    (recur (nth fq 2)))))))     
+
+(def q (make-queue))
+(insert-queue-front! q 1)
+(insert-queue-tail! q 2)
+(print-queue q)
+
+(doseq [x (range 4)]
+    (insert-queue-front! q x))
+(doseq [x (range 6)]
+    (insert-queue-tail! q x))
+(print-queue q)
+(front-queue q)
+(tail-queue q)
+
+(doseq [x (range 3)]
+    (delete-queue-front! q))
+(doseq [x (range 9)]
+    (delete-queue-tail! q))
+(print-queue q)
+
+-----------------------------------------------------
+;lambda实现 递归，本质上就是定义函数递归一个意思，但是可以配合memoize等aop效果的包装使用，见下个列子
+(def lambda-fib 
+        (fn[x]
+            (cond
+                (= 0 x) 0
+                (= 1 x) 1
+                :else (+ (lambda-fib (- x 1)) (lambda-fib (- x 2))))))
+
+;递归函数memoize，通过在lamdba中调用              
+(def mome-fib 
+    (memoize 
+        (fn[x]
+            (cond
+                (= 0 x) 0
+                (= 1 x) 1
+                :else (+ (mome-fib (- x 1)) (mome-fib (- x 2)))))))
+                
+(time (lambda-fib 30))
+(time (mome-fib 30))
+
+
+
+
+
+
+
+
+
+
