@@ -236,3 +236,17 @@
 (z/root zipper)
 (z/left zipper)
 (z/children zipper)
+
+
+;使用assoc! 向transient map添加元素，因为8的时候从arrayMap 转为 HashMap，
+;HashMap不指向自己定义的map，而是通过返回给出，导致只能加8个
+(let [t (transient {})]
+    (doseq [x (range 1 16)] (assoc! t x (rand-int x)))
+    (persistent! t))
+    
+;reduce每次都会用新的返回值作为被加方，所以能成功
+(persistent!
+    (reduce 
+        #(assoc! %1 (first %2) (second %2)) 
+        (transient {}) 
+        (for [x (range 1 16)] [x (rand-int x)])))

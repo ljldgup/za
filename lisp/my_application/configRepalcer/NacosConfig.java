@@ -1,6 +1,7 @@
-package com.agioe.atm.domain.common.nacos;
+package com.agioe.atm.domain.monitoring.alarm.util;
 
 import com.alibaba.nacos.api.config.annotation.NacosValue;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,8 +13,47 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class NacosConfig {
+    /**
+     * 组织编码
+     */
     @NacosValue(value = "${OrganizationCode}", autoRefreshed = true)
     public String organizationCode;
+
+    /**
+     * 事件稀疏-开关
+     */
+    @NacosValue(value = "${monitoring.alarm.eventWave.enable}", autoRefreshed = true)
+    public Boolean eventWaveEnable;
+
+    /**
+     * 事件稀疏-值参数
+     */
+    @NacosValue(value = "${monitoring.alarm.eventWave.val}", autoRefreshed = true)
+    public float eventWaveVal;
+
+    /**
+     * 事件参数（单位 毫秒）
+     */
+    @NacosValue(value = "${monitoring.alarm.eventWave.time}", autoRefreshed = true)
+    public long eventWaveTime;
+
+    /**
+     * 提示类事件自动存入历史 注意此处的配置是反的，即此处配置的事件类别的事件存实时，而没配的存入历史
+     */
+    @NacosValue(value = "${monitoring.alarm.event.autoToHistory}", autoRefreshed = true)
+    public String autoToHistory;
+
+    /**
+     * 数据采集周期 毫秒
+     */
+    @NacosValue(value = "${monitoring.alarm.data.collect.period}", autoRefreshed = true)
+    public long collectPeriod;
+
+    /**
+     * 没有数据波动时数据存储间隔，毫秒
+     */
+    @NacosValue(value = "${monitoring.alarm.data.collect.noDataPeriod}", autoRefreshed = true)
+    public long noDataPeriod;
 
     /**
      * 数据查询时判断超时时间，毫秒
@@ -22,131 +62,92 @@ public class NacosConfig {
     public long collectOverTime;
 
     /**
-     * 邮箱服务配置---邮箱地址
+     * 特殊设备类型的超时时间配置，格式必须是：设备类型1,时间1,设备类型2,时间2,...,设备类型n,时间n
      */
-    @NacosValue(value = "${mail.fromMail.addr}", autoRefreshed = true)
-    public String fromMailAddr;
+    @NacosValue(value = "${monitoring.alarm.data.collect.specialOverTimes:}", autoRefreshed = true)
+    public String specialOverTimes;
 
     /**
-     * 短信服务配置---IP地址
+     * 曲线点数上限
      */
-    @NacosValue(value = "${sms.device.ip}", autoRefreshed = true)
-    public String smsDeviceIp;
+    @NacosValue(value = "${monitoring.alarm.history.curve.numLimitUp}", autoRefreshed = true)
+    public long numLimitUp;
 
     /**
-     * 短信服务配置---端口
+     * 本地控制判断范围 单位毫秒
      */
-    @NacosValue(value = "${sms.device.port}", autoRefreshed = true)
-    public int smsDevicePort;
-
-    @NacosValue(value = "${sms.notify.enabled}", autoRefreshed = true)
-    public boolean smsNotifyEnabled;
-
-    @NacosValue(value = "${email.notify.enabled}", autoRefreshed = true)
-    public boolean emailNotifyEnabled;
+    @NacosValue(value = "${monitoring.alarm.control.localControl}", autoRefreshed = true)
+    public long localControl;
 
     /**
-     * 数据获取时间间隔,当前时间11秒前---11秒
+     * 是否开启自动处理
      */
-    @NacosValue(value = "${ori.dateTimeInterval}", autoRefreshed = true)
-    public String oriDateTimeInterval;
+    @NacosValue(value = "${monitoring.alarm.isAutoProcess}", autoRefreshed = true)
+    public int isAutoProcess;
 
     /**
-     * 零视token
+     * 自动处理：优先关闭的事件等级
      */
-    @NacosValue(value = "${ori.token}", autoRefreshed = true)
-    public String oriToken;
+    @NacosValue(value = "${monitoring.alarm.autoProcessLevel}", autoRefreshed = true)
+    public String autoProcessLevel;
 
     /**
-     * timeUpload 超时数据上传（秒）
+     * 自动处理：向前推该天数为 需处理的事件发生截止日期
      */
-    @NacosValue(value = "${ori.timeUpload}", autoRefreshed = true)
-    public long oriTimeUpload;
+    @NacosValue(value = "${monitoring.alarm.autoProcessDay}", autoRefreshed = true)
+    public int autoProcessDay;
 
     /**
-     * 事件发送类型---1:ap发送事件信息；2：终端发送事件信息；3：ap，终端都发送事件信息
+     * 自动处理：实时事件表中事件总数上限
      */
-    @NacosValue(value = "${ori.eventSendType}", autoRefreshed = true)
-    public String oriEventSendType;
+    @NacosValue(value = "${monitoring.alarm.autoProcessLimit}", autoRefreshed = true)
+    public long autoProcessLimit;
 
     /**
-     * ap设备类型编码
+     * 撤防状态的设备，可以产生的事件对应的事件码
      */
-    @NacosValue(value = "${web.orientate.ap.dev.type}", autoRefreshed = true)
-    public String webOrientateApDevType;
+    @NacosValue(value = "${monitoring.alarm.disarmedEventCodes}", autoRefreshed = true)
+    public String disarmedEventCodes;
 
     /**
-     * 终端设备类型编码
+     * 推送功能开关
      */
-    @NacosValue(value = "${web.orientate.terminal.dev.type}", autoRefreshed = true)
-    public String webOrientateTerminalDevType;
+    @NacosValue(value = "${monitoring.alarm.push.enable}", autoRefreshed = true)
+    public Boolean pushEnable;
 
     /**
-     * 终端设备监控属性编码
+     * 风险评估
      */
-    @NacosValue(value = "${web.orientate.terminal.dev.property}", autoRefreshed = true)
-    public String webOrientateTerminalDevProperty;
-
-    /**
-     * 截止日期，超过这个日期未上传巡更数据则认为是漏检
-     */
-    @NacosValue(value = "${patrol.deadhours}", autoRefreshed = true)
-    public Integer patrolDeadHours;
-
-    /**
-     * 摄像头录像结束默认时间(秒)
-     */
-    @NacosValue(value = "${video.record.time}", autoRefreshed = true)
-    public Integer videoRecordTime;
-
-    /**
-     * 刷新消息提醒
-     */
-    @NacosValue(value = "${video.message}", autoRefreshed = true)
-    public String videoMessage;
-
-    /**
-     * 视频设备类型
-     */
-    @NacosValue(value = "${video.equipTypeCode}", autoRefreshed = true)
-    public String videoDevType;
+    @NacosValue(value = "${monitoring.alarm.risk.enable}", autoRefreshed = true)
+    public Boolean riskEnable;
 
     /***
-     * 实时状态，故障
+     * redis实时数据缓存初始化时，查询点号数据时间范围（当前时间向前推），单位小时
      */
-    @NacosValue(value = "${equip.status.fault}", autoRefreshed = true)
-    public String equipStatusFault;
-    /***
-     * 实时状态，报警
-     */
-    @NacosValue(value = "${equip.status.alarm}", autoRefreshed = true)
-    public String equipStatusAlarm;
-    /***
-     * 实时状态，数据超时
-     */
-    @NacosValue(value = "${equip.status.overtime}", autoRefreshed = true)
-    public String equipStatusOvertime;
-    /***
-     * 实时状态，使能禁止
-     */
-    @NacosValue(value = "${equip.status.disable}", autoRefreshed = true)
-    public String equipStatusDisable;
-    /***
-     * 实时状态，无数据
-     */
-    @NacosValue(value = "${equip.status.nodata}", autoRefreshed = true)
-    public String equipStatusNodata;
-    /***
-     * 实时状态，正常
-     */
-    @NacosValue(value = "${equip.status.normal}", autoRefreshed = true)
-    public String equipStatusNormal;
+    @NacosValue(value = "${monitoring.alarm.redis.init.timeBefore}", autoRefreshed = true)
+    public int redisInitTimeBefore;
 
     /**
-     * 是否上传监控报告
+     * 电缆监测菜单树编码
      */
-    @NacosValue("${monitoring.report.enable:true}")
-    public Boolean reportEnable;
+    @NacosValue(value = "${cable.monitor.menu.tree.code}",autoRefreshed = true)
+    public String cableMonitorMenuTreeCode;
+
+    @NacosValue(value = "${atm.bigDataLog.open:true}",autoRefreshed = true)
+    public Boolean bigDataLogOpen;
+
+    /**
+     * 电缆监测 相位度数页面展示时度数合并参考值
+     */
+    @NacosValue(value = "${cable.monitor.phaseDegreeMerge.size:1}",autoRefreshed = true)
+    public int phaseDegreeMergeSize;
+
+    //机器人相关开始
+    /**
+     * 是否初始化机器人客户端
+     */
+    @NacosValue(value = "${init.robot.client}",autoRefreshed = true)
+    public Boolean initRobotClient;
 
     /**
      * 文件服务器上传地址
@@ -161,14 +162,105 @@ public class NacosConfig {
     public String fileServerDeleteUrl;
 
     /**
+     * 机器人视频数据保存天数
+     */
+    @NacosValue(value = "${robot.his.video.keep.time}",autoRefreshed = true)
+    public Integer robotHisVideoKeepTime;
+
+    /**
      * 文件服务器对应appKey
      */
     @NacosValue(value = "${file.server.appKey}",autoRefreshed = true)
-    public String fileServerAppKey;
+    public String robotFileServerAppKey;
 
     /**
      * 文件服务器对应appToken
      */
     @NacosValue(value = "${file.server.appToken}",autoRefreshed = true)
-    public String fileServerAppToken;
+    public String robotFileServerAppToken;
+
+    /**
+     * 机器人实时数据超时时间(单位毫秒)
+     */
+    @NacosValue(value = "${robot.realTime.data.overTime}",autoRefreshed = true)
+    public Long robotRealTimeDataOverTime;
+
+    /**
+     * 机器人设备类型编码
+     */
+    @NacosValue(value = "${equip.type.robot}",autoRefreshed = true)
+    public String equipTypeRobot;
+
+    /**
+     * 机器人树节点类型
+     */
+    @NacosValue(value = "${tree.node.type.tunnel}",autoRefreshed = true)
+    public String treeNodeTypeTunnel;
+
+    /**
+     * 系统级联关系类型编号
+     */
+    @NacosValue(value = "${tree.type.code.robot}",autoRefreshed = true)
+    public String treeTypeCodeRobot;
+
+    /**
+     * 机器人联动轮询周期
+     */
+    @NacosValue(value = "${robot.linkage.schedule}",autoRefreshed = true)
+    public Integer robotLinkageSchedule;
+
+    /**
+     * 机器人联动轮询超时时间
+     */
+    @NacosValue(value = "${robot.linkage.query.time}",autoRefreshed = true)
+    public Integer robotLinkageQueryTime;
+
+    /**
+     * 机器人联动确认报警超时时间
+     */
+    @NacosValue(value = "${robot.linkage.confirm.time}",autoRefreshed = true)
+    public Integer robotLinkageConfirmTime;
+
+    /**
+     * 机器人图片下载次数
+     */
+    @NacosValue(value = "${robot.img.download.times}",autoRefreshed = true)
+    public Integer robotImgDownLoadTimes;
+
+    /**
+     * 机器人视频下载次数
+     */
+    @NacosValue(value = "${robot.video.download.times}",autoRefreshed = true)
+    public Integer robotVideoDownLoadTimes;
+
+    /**
+     * 机器人全程录像下载次数
+     */
+    @NacosValue(value = "${robot.whole.video.download.times}",autoRefreshed = true)
+    public Integer robotWholeVideoDownLoadTimes;
+
+    /**
+     * 机器人定时轮训滞后时间,单位min
+     */
+    @NacosValue(value = "${robot.his.data.query.delay.time}",autoRefreshed = true)
+    public Integer robotHisDataQueryDelayTime;
+
+    /**
+     * 数据权限开关
+     */
+    @NacosValue(value="${data.role.active}",autoRefreshed = true)
+    public Boolean dataRoleActive;
+
+    /**
+     * 最大放电量计算时，放电量由大到小排序后，忽略的数据的比例
+     */
+    @NacosValue(value="${cable.maxQ.ignore.ratio:0.05}",autoRefreshed = true)
+    public Double maxQIgnoreRatio;
+
+
+    /**
+     * 是否启用通知详细的事件描述信息
+     */
+    @NacosValue(value="${notify.full.desc.enable:false}",autoRefreshed = true)
+    public Boolean notifyFullDescEnable;
 }
