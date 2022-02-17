@@ -1,0 +1,103 @@
+
+
+(defn make-property-map [filename processer, property-pattern]
+    ;使用assoc! 向map添加元素，因为8的时候从arrayMap 转为 HashMap，
+    ;所以不再是自己定义的map，导致只能加8个，使用reduce代替，reduce没次都会用新的返回值作为被加方
+    ;(def property-map (transient {}))
+    (persistent!
+        (reduce 
+            #(assoc! %1 (first %2) (second %2)) 
+            (transient {}) 
+            (processer (clojure.string/split (slurp filename) #"\n") property-pattern))))
+
+
+(defn k-v-processer [line-seq, property-pattern]
+    (for [line (filter 
+                    #(not (.startsWith % "#")) 
+                    line-seq)]
+        (if-let [property-seq (re-find property-pattern line)]
+            [(nth property-seq 1) (nth property-seq 2)]
+            [:dummy :dummy])))
+
+(defn java-nacos-replacer [filename property-map]
+    (def replace-pattern #"@Na[^$]+\$\{([^:\}]+):*([^}]*)\}.+([^;]+)")
+    (def file-content (slurp filename))
+    (reduce 
+        #(clojure.string/replace 
+            %1 
+            (first %2) 
+            (clojure.string/join  "=" [(nth %2 3) (or (property-map (nth %2 1) (nth %2 2)))]))
+        file-content
+        (re-seq replace-pattern file-content)))
+
+(defn java-string-replacer [content]
+    (def replace-pattern #"String[^=]+=\s*([^\s;].*[^\s;]|[^\s;])\s*")
+    (reduce 
+        #(clojure.string/replace 
+            %1 
+            (first %2) 
+            (clojure.string/replace  
+                (first %2)
+                (second %2)
+                (str \" (second %2) \")))
+        content
+        (re-seq replace-pattern content)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;模式key=value value中间可能有空格,强制指定结尾
+(def property-pattern1 #"(^[^#\s]+)\s*=\s*(\S.*\S|\S)\s*")
+(def property-pattern2 #"(^[^#\s]+)\s*:\s*(\S.*\S|\S)\s*")
+
+;使用 nacos配置 转
+(def property-file "atm.conf.txt")
+(def java-file "NacosConfig.java")
+(def target-file "new-NacosConfig.txt")   
+(->> (make-property-map property-file k-v-processer property-pattern2)
+     (java-nacos-replacer java-file)
+     (java-string-replacer)
+     (spit target-file))
+     
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;测试
+
+(def property-pattern1 #"(^[^#\s]+)\s*=\s*(\S.*\S|\S)\s*")
+(def property-pattern2 #"(^[^#\s]+)\s*:\s*(\S.*\S|\S)\s*")
+
+(k-v-processer 
+    ["12f=sd", "sf", "#sfe=1", ".handlers = .AsyncFileHandler, .ConsoleHandler",
+    "4host-manager.org.apache.juli.AsyncFileHandler.level = FINE"]
+    property-pattern1)
+
+(count 
+    (filter 
+        #(not (= (first %) :dummy)) 
+        (k-v-processer 
+            (clojure.string/split 
+                (slurp "logging.properties") 
+                #"\r\n")
+            property-pattern1)))
+
+(make-property-map 
+    "logging.properties" 
+    k-v-processer 
+    property-pattern1)
+    
+(def property-map (make-property-map 
+    "atm.conf.txt" 
+    k-v-processer 
+    property-pattern2))
+
+    
+(->> (re-seq  #"@Na[^$]+\$\{([^:\}]+):*([^}]*)\}.+([^;]+)" (slurp  "NacosConfig.java")) 
+    (map #(.concat  (or (property-map (nth % 1)) (nth % 3)))))
+    
+(->> (re-seq  #"@Na[^$]+\$\{([^:\}]+):*([^}]*)\}.+([^;]+)" (slurp  "NacosConfig.java")) 
+    (map #(clojure.string/join  "=" [(nth % 3) (or (property-map (nth % 1) (nth % 2)))])))
+
+(use 'clojure.java.io)
+
+
+     
+
+        

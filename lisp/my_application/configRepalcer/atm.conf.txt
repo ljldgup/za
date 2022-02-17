@@ -1,0 +1,200 @@
+﻿#组织编码
+OrganizationCode: G01C01M01
+#--------------------------------------------------------------------------------------------------
+#【collection-service】服务
+#实时事件失效时间（秒）意思：在该时间内一直产生实时事件则只上报一次
+da.service.event.eventExpiredTime: 300
+#Token过期时间（min）
+da.service.sys.tokenExpiredTime: 30
+#登录验证码过期时间（sec）
+da.service.sys.verifyCodeExpiredTime: 60
+
+#--------------------------------------------------------------------------------------------------
+#【monitoring-alarm】服务
+#事件稀疏
+#开关
+monitoring.alarm.eventWave.enable: true
+#值参数
+monitoring.alarm.eventWave.val: 0.05
+#事件参数（单位 毫秒）
+monitoring.alarm.eventWave.time: 300000
+#提示类事件自动存入历史 注意此处的配置是反的，即此处配置的事件类别的事件存实时，而没配的存入历史
+monitoring.alarm.event.autoToHistory: EVT01,EVT02,EVT03
+#存储到elasticsearch中的事件类别
+monitoring.alarm.event.store.es: 
+#曲线相邻点时间间隔，不小于该值 毫秒
+monitoring.alarm.data.collect.period: 60000
+#没有数据波动时数据存储间隔，毫秒
+monitoring.alarm.data.collect.noDataPeriod: 1200000
+#数据查询时判断超时时间，毫秒
+monitoring.alarm.data.collect.overTime: 900000
+#曲线点数上限
+monitoring.alarm.history.curve.numLimitUp: 300
+#控制逻辑
+#本地控制判断范围 单位毫秒
+monitoring.alarm.control.localControl: 30000
+#是否开启自动处理
+monitoring.alarm.isAutoProcess: 1
+#自动处理：优先关闭的事件等级
+monitoring.alarm.autoProcessLevel: 3,4
+#自动处理：向前推该天数为 需处理的事件发生截止日期
+monitoring.alarm.autoProcessDay: 3
+#自动处理：实时事件表中事件总数上限
+monitoring.alarm.autoProcessLimit: 200
+#撤防状态的设备，可以产生的事件对应的事件码
+monitoring.alarm.disarmedEventCodes: ET012+FAULT+1,ET007+ALARM+1,ET012+ALARM+1
+#redis实时数据缓存初始化时，查询点号数据时间范围（当前时间向前推），单位小时
+monitoring.alarm.redis.init.timeBefore: 0
+#推送功能开关
+monitoring.alarm.push.enable: true
+#风险评估
+monitoring.alarm.risk.enable: false
+#局放数据展示时多个相位度数合并
+cable.monitor.phaseDegreeMerge.size: 1
+#局放最大放电量计算数据取值范围（去除最大的值的百分比）
+cable.maxQ.ignore.ratio: 0.05
+#电缆监测菜单树编码
+cable.monitor.menu.tree.code: CRT05
+#是否启用通知详细的事件描述信息，默认值false
+notify.full.desc.enable: true
+
+#--------------------------------------------------------------------------------------------------
+#【atm-web】服务
+#综合监控、综合展示设备状态判断类型，1代表实时数据，2代表事件
+equip.status.type: 1
+#设备实时状态等级,故障、报警、超时、无数据、正常
+equip.status.fault: 1
+equip.status.alarm: 2
+equip.status.overtime: 3
+equip.status.disable: 4
+equip.status.nodata: 4
+equip.status.normal: 4
+#监控模块配置日志拦截aop是否开启，包括webapi,emergency,video
+log.aop.web.on: true
+#权限验证开关
+web.auth.permission.on: true
+#综合展示健康指数权重
+web.display.health.weight.body: 0.4
+web.display.health.weight.line: 0.3
+web.display.health.weight.person: 0.3
+web.display.body.nodeCodes: CRT020201, CRT020202, CRT020203, CRT020204, CRT020205, CRT020301, CRT020302
+#综合展示浮窗信号显示
+newDisplay.part.displayProperties: HUM,TEMP,CO,O2,CH4,H2S,WL
+#视频设备类型
+video.equipTypeCode: ET010
+#图层配置相关
+#线路图层layerCode
+line.layer.code: layer011
+#参考点图层layerCode
+reference.point.layer.code: layer012
+#参考点数据类型
+reference.point.data.type: 3
+
+#app导入文件校验存储路径
+app.local.check.file.path: /home/developer/localCheckFile
+#临时压缩文件路径
+app.zip.temp.file.path: /home/tempFile
+#压缩文件路径
+app.zip.temp.file.zip.path: /home/tempFileZip
+#app 临时文件路径(配置)
+app.conf.zip.temp.file.path: /home/developer/tempConfFile
+#app 压缩文件路径（配置）
+app.conf.zip.temp.file.zip.path: /home/developer/tempConfFileZip
+
+#--------------------------------------------------------------------------------------------------
+#大日志是否记录到日志文件
+atm.bigDataLog.open: false
+
+#组态优化-电缆树环境树合并时显示哪一个，或是两个都显示，取值：ENV，CABLE，MERGED，默认是MERGED
+web.scada.merged.tree.display: MERGED
+
+#--------------------------------------------------------------------------------------------------
+#【domain-commin】服务（报警通知）
+mail.fromMail.addr: admin@agioe.com
+sms.device.ip: 127.0.0.1
+sms.device.port: 10086
+email.notify.enabled: false
+sms.notify.enabled: false
+
+#【domain-commin】服务（人员定位）
+#数据获取时间间隔,当前时间11秒前---11秒
+ori.dateTimeInterval: 11
+#人员定位---历史轨迹表,历史报警轨迹表
+# V3.1.1.18版本删除   ori.oriHisTimeLocation: ori_his_time_location,ori_his_time_fault
+ori.token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNTUzMjQ4NTU2LCJqdGkiOiJiNWJmMzI1MzU1MmQ2ZTI4MjA3YjY0ZmUxMTI1YWJhOGNmN2M1ZjJkIn0.N6b8fX6-vZfnPNwqRUBm0IAEcg611v_cOKiIVSoqdN8
+##超时数据上传（秒）
+ori.timeUpload: 300
+##事件发送类型---1:ap发送事件信息；2：终端发送事件信息；3：ap，终端都发送事件信息
+ori.eventSendType: 3
+
+
+#【domain-commin】服务（电子巡更）
+#截止日期，超过这个日期未上传巡更数据则认为是漏检
+patrol.deadhours: 24
+
+#【domain-commin】服务（视频）
+#摄像头录像结束默认时间(秒)
+video.record.time: 30
+#刷新消息提醒
+video.message: F5 please!
+
+
+#ap设备类型编码
+web.orientate.ap.dev.type: ET045
+#终端设备类型编码
+web.orientate.terminal.dev.type: ET048
+#报警配置，子系统编码
+web.orientate.system.node.code: CRT0203
+#终端设备监控属性编码
+web.orientate.terminal.dev.property: POS
+
+
+#数据权限开关
+data.role.active: false
+
+
+#文件服务器参数
+#文件服务器对应appKey
+file.server.appKey: 57f5c5b7-b21e-4fe1-bb19-d0dc558435ea
+#文件服务器对应appToken
+file.server.appToken: e0acdd34-6c25-4935-b159-57484f49a212
+#文件服务器地址
+file.server.url : http://192.168.15.42:8020
+#文件服务器上传地址
+file.server.upload.url: http://192.168.15.42:8020/file/upload
+#文件服务器删除地址
+file.server.delete.url : http://192.168.15.42:8020/file/delete
+
+#机器人
+init.robot.client: true
+#机器人实时数据超时时间(单位毫秒)
+robot.realTime.data.overTime: 30000
+#机器人设备类型编码
+equip.type.robot: ET093
+#机器人联动轮询周期
+robot.linkage.schedule: 10000
+#机器人联动轮询超时时间
+robot.linkage.query.time: 1800000
+#机器人联动确认报警超时时间
+robot.linkage.confirm.time: 3600000
+#机器人图片下载次数 
+robot.img.download.times : 5
+#机器人视频下载次数 
+robot.video.download.times : 10
+#机器人全程录像下载次数 
+robot.whole.video.download.times : 5
+#机器人视频数据保存天数
+robot.his.video.keep.time : 1
+#机器人定时轮询滞后时间,单位min
+robot.his.data.query.delay.time : 30
+#机器人树
+#节点类型
+tree.node.type.tunnel: TUNNEL
+#系统级联关系类型编号
+tree.type.code.robot: CRT60
+
+
+#资源使用率阈值%
+app.resource.usage.rate.limit: 75
+app.resource.usage.code: c8c287a8-b7e2-401b-bc1b-ada96fe862c8
+
