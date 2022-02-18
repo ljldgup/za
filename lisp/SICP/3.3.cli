@@ -155,7 +155,112 @@
 (time (lambda-fib 30))
 (time (mome-fib 30))
 
+--------------------------------------------------------------------------------------
 
+(defprotocol signal-op
+    (get-signal [self])
+    (set-signal! [self new-value])
+    (add-action! [self action]))
+    
+(defrecord Wire [signal]
+    signal-op
+        (set-signal! [this new-value] (reset! (:signal this) new-value))
+        (get-signal [this] @(:signal this))
+        (add-action!      ;先执行再加add-watch
+            [this action]
+            (add-watch (:signal this) :action (fn[& args](future action)))))
+        
+(def test-wire (Wire. (atom 1)))
+(add-action! test-wire (fn[] (do(Thread/sleep 1000) (println "changed"))))
+(set-signal! test-wire 3)
+(get-signal  test-wire)
+ 
+(defn make-wire[]
+    (Wire. (atom 0)))
+    
+
+;逻辑操作输入的是纯数字（信号）
+(defn logic-and [s1 s2]
+    (cond 
+        (and (= s1 1) (= s2 1)) 1
+        :else 0))
+        
+(defn logic-or [s1 s2]
+    (cond 
+        (and (= s1 0) (= s2 0)) 0
+        :else 1))
+        
+(defn logic-not [s]
+    (cond 
+        (= s 1) 0
+        :else 1))
+        
+(logic-and 1 1)
+(logic-and 0 1)
+(logic-or 0 1)
+(logic-or 0 0)
+(logic-not 0)
+(logic-not 1)
+
+
+(def or-gate-delay 1)
+(def and-gate-delay 1)
+(def inverter-delay 1)    
+(defn after-delay [seconds action]
+    (Thread/sleep (* seconds 1000))
+    (action))
+    
+(defn or-gate [input1 input2 output]
+    (defn or-input[]
+        (let [new-value (logic-or input1 input2)]
+            (after-delay 
+                or-gate-delay 
+                #(set-signal! output new-value))))
+    (add-action! input1 or-input)
+    (add-action! input2 or-input))
+    
+(defn and-gate [input1 input2 output]
+    (defn and-input[]
+        (let [new-value (logic-and input1 input2)]
+            (after-delay 
+                and-gate-delay 
+                #(set-signal! output new-value))))
+    (add-action! input1 and-input)
+    (add-action! input2 and-input))
+
+
+    
+(defn inverter [input output]
+    (defn invert-input[]
+        (let [new-value (logic-not (get-signal input))]
+            (after-delay 
+                inverter-delay 
+                #(set-signal! output new-value)))))
+    (add-action! input invert-input))
+            
+(def w1 (make-wire))
+(def w2 (make-wire))
+(invert-input w1 w2)
+(set-signal! 
+    
+
+(defn half-adder [a b s c]
+    (let [d (make-wire)
+          e (make-wire)]
+    (or-gate a b d)
+    (and-gate a b c)
+    (inverter c e)
+    (and-gate d e s)
+    'ok))
+    
+(defn full-adder [a b c-in sum c-out]
+    (let [s (make-wire)
+          c1 (make-wire)
+          c2 (make-wire)]
+    (half-adder a s sum c2)
+    (half-adder b c-in s c1)
+    (or-gate c1 c2 c-out)
+    'ok))
 
 
 

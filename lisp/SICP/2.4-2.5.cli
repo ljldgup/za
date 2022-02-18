@@ -1,3 +1,58 @@
+;methods是关键字，就是用来管理函数映射的
+
+(def method_map 
+{'add {}, 
+'sub {}, 
+'mul {} 
+'div {}
+'make {}})
+
+;;因为clojure 参数不可变，method_map值不会变，用def双层map极其繁琐，且会有多线程问题，
+;;这种做法无法实现。。
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;clojure 实现了defmulti defmethod 来进行函数派发
+;defmulti 定义一个函数返回标志位，然后根据defmethod的同名过程进行选择
+;实际使用一般标志位用，:开头关键字来实现，
+(defn type_tag [x]
+    (first x))
+    
+(defn attach_tag [t x]
+    (cons t x))
+    
+(defn real [complex_number]
+    (nth complex_number 1))
+    
+(defn image [complex_number]
+    (nth complex_number 2))
+
+;#()返回的会自动用括号包围
+(defmulti add (fn[x y]
+    ;(println x y)
+    (list (type_tag x) (type_tag y))))
+
+(defmethod add '(my_number my_number) [x y] 
+    (attach_tag 'my_number (list (+ (second x) (second y)))))
+    
+(defmethod add '(complex_number complex_number)[x y] 
+    (attach_tag 'complex_number (list (+ (real x) (real y)) (+ (image x) (image y)))))
+    
+(defmethod add '(my_number complex_number)[x y] 
+    (attach_tag 'complex_number (list (+ (second x) (real y)) (image y))))
+    
+(defmethod add '(complex_number my_number)[x y] 
+    (attach_tag 'complex_number (list (+ (second y) (real x)) (image x))))
+    
+(defn make_my_number [x] (list 'my_number x))
+(defn make_complex_number [x y] (list 'complex_number x y))
+
+;;Wrong number of args (2) passed to: 出现这个错误救是没找到对应派发函数
+(add (make_my_number 23)  (make_my_number 12))
+(add (make_complex_number 23 12)  (make_complex_number 12 23))
+(add '(my_number 1) '(my_number 1))
+(add (list 'complex_number 23 12) (list 'complex_number 23 12))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; polymonial 多项式 term 每项常数项 和 幂次项  order 幂次项 coeff 常数项
 ; 多尝试按照幂次项项order拍过序再输入
