@@ -54,11 +54,16 @@
 (map meta (NamedPoint/getBasis))
 
 
-;扩展类似继承
+;扩展类似继承,为类型添加动作
 (extend Point 
     Matrix
     {:lookup (fn[this i j] [(:x this) (:y this)])})
 (lookup (->Point 3 2) 1 1)
+
+;也可以定义的时候直接实现协议
+(defrecord Point [x y]
+    Matrix
+    (lookup [this i j] [(:x this) (:y this)]))
 
 ;查看扩展
 (extenders  Matrix)

@@ -20,13 +20,18 @@
 (realized? (:content document))
 
 ------------------------------------------------------------------------
-;future异步执行后直接返回，使用@解引用返回值，没有执行完之前阻塞
+;future异步执行后直接返回nil，执行的代码需要用()包起来，和swaq！不同
 (def future_item (future (Thread/sleep 5000) :done))
+
+;使用@解引用返回值 ,没有执行完就变成同步了会阻塞
 @future_item
 
 ;deref指定超时1000ms
 (deref (future (Thread/sleep 5000) :done) 1000 :timeout)
 
+future 实现异步函数函数
+(defn future-func[] (future (func)))
+(defn future-func[] (future (func)))
 -------------------------------------------------------------
 ;promise作为管道容器
 (def p (promise))
@@ -76,7 +81,7 @@
 (defn echo-watch
     [key identity old new]
     (println key old "=>" new))
-;echo随意取
+; 关键字 :echo 是传到echo-watch函数的第一个参数,用于派发，多个监控函数这个key值不能相同
 (add-watch sarah :echo echo-watch)
 ;新值相同也会触发
 (reset! sarah "reset value")

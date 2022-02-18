@@ -160,23 +160,33 @@
 (defprotocol signal-op
     (get-signal [self])
     (set-signal! [self new-value])
-    (add-action! [self action]))
+    (add-action! [self action_key action]))
     
-(defrecord Wire [signal]
+(defrecord Wire [name signal]
     signal-op
         (set-signal! [this new-value] (reset! (:signal this) new-value))
         (get-signal [this] @(:signal this))
-        (add-action!      ;先执行再加add-watch
-            [this action]
-            (add-watch (:signal this) :action (fn[& args](future action)))))
-        
-(def test-wire (Wire. (atom 1)))
-(add-action! test-wire (fn[] (do(Thread/sleep 1000) (println "changed"))))
+        (add-action!      
+            [this action_key action]
+            (future (action)) ;先异步执行初始化数据，再加添加监控
+            (add-watch     ;这里一个输入加多个监控必须有不同的key才行，同一个key会相互覆盖
+                (:signal this) 
+                action_key
+                (fn[k r old-val new-val]
+                    (if (not (= old-val new-val))
+                        (do 
+                            (println (:name this) k old-val "->" new-val)
+                            (future (action))))))))
+(defn make-wire[name]
+    (Wire. name (atom 0)))
+    
+;;测试       
+(def test-wire (Wire. "test-wire" (atom 1)))
+(add-action! test-wire :action (fn[] (do(Thread/sleep 1000) (println "changed"))))
 (set-signal! test-wire 3)
 (get-signal  test-wire)
  
-(defn make-wire[]
-    (Wire. (atom 0)))
+
     
 
 ;逻辑操作输入的是纯数字（信号）
@@ -195,6 +205,7 @@
         (= s 1) 0
         :else 1))
         
+;;测试    
 (logic-and 1 1)
 (logic-and 0 1)
 (logic-or 0 1)
@@ -203,30 +214,31 @@
 (logic-not 1)
 
 
-(def or-gate-delay 1)
-(def and-gate-delay 1)
-(def inverter-delay 1)    
+;门控单元
+(def or-gate-delay 0.1)
+(def and-gate-delay 0.1)
+(def inverter-delay 0.1)    
 (defn after-delay [seconds action]
     (Thread/sleep (* seconds 1000))
     (action))
     
 (defn or-gate [input1 input2 output]
     (defn or-input[]
-        (let [new-value (logic-or input1 input2)]
+        (let [new-value (logic-or (get-signal input1) (get-signal input2))]
             (after-delay 
                 or-gate-delay 
                 #(set-signal! output new-value))))
-    (add-action! input1 or-input)
-    (add-action! input2 or-input))
+    (add-action! input1 :or or-input)
+    (add-action! input2 :or or-input))
     
 (defn and-gate [input1 input2 output]
     (defn and-input[]
-        (let [new-value (logic-and input1 input2)]
+        (let [new-value (logic-and (get-signal input1) (get-signal input2))]
             (after-delay 
                 and-gate-delay 
                 #(set-signal! output new-value))))
-    (add-action! input1 and-input)
-    (add-action! input2 and-input))
+    (add-action! input1 :and and-input)
+    (add-action! input2 :and and-input))
 
 
     
@@ -235,36 +247,81 @@
         (let [new-value (logic-not (get-signal input))]
             (after-delay 
                 inverter-delay 
-                #(set-signal! output new-value)))))
-    (add-action! input invert-input))
-            
-(def w1 (make-wire))
-(def w2 (make-wire))
-(invert-input w1 w2)
-(set-signal! 
-    
+                #(set-signal! output new-value))))
+    (add-action! input :invert invert-input))
 
+;;测试    
+(def w1 (make-wire "w1"))
+(def w2 (make-wire "w2"))
+(inverter w1 w2)
+(get-signal w2)
+(set-signal! w1 1)
+(get-signal w2)
+
+(def w3 (make-wire "w3"))
+(def w4 (make-wire "w4"))
+(def w5 (make-wire "w5"))
+(and-gate w3 w4 w5)
+(get-signal w5)
+(set-signal! w3 1)
+(get-signal w5)
+(set-signal! w4 1)
+(get-signal w5)
+
+(def w3 (make-wire "w3"))
+(def w4 (make-wire "w4"))
+(def w5 (make-wire "w5"))
+(or-gate w3 w4 w5)
+(get-signal w5)
+(set-signal! w3 1)
+(get-signal w5)
+(set-signal! w4 1)
+(get-signal w5)
+
+;半加器 全加器
 (defn half-adder [a b s c]
-    (let [d (make-wire)
-          e (make-wire)]
+    (let [d (make-wire "d")
+          e (make-wire "e")]
     (or-gate a b d)
     (and-gate a b c)
     (inverter c e)
     (and-gate d e s)
-    'ok))
-    
+    d))
+
+(def a (make-wire "a"))
+(def b (make-wire "b"))
+(def s (make-wire "s"))
+(def c (make-wire "c"))
+
+(def d (make-wire "d"))
+(or-gate a b d)
+
+
+(half-adder a b s c)
+(set-signal!  a 1)
+(get-signal s)
+(set-signal!  a 0)
+(get-signal s)
+(set-signal! b 1)
+(get-signal s)
+(set-signal!  b 0)
+(get-signal s)
+
 (defn full-adder [a b c-in sum c-out]
-    (let [s (make-wire)
-          c1 (make-wire)
-          c2 (make-wire)]
+    (let [s (make-wire "s")
+          c1 (make-wire "c1")
+          c2 (make-wire "c2")]
     (half-adder a s sum c2)
     (half-adder b c-in s c1)
     (or-gate c1 c2 c-out)
     'ok))
 
-
-
-
+(def a (make-wire "a"))
+(def b (make-wire "b"))
+(def sum (make-wire "sum"))
+(def c-in (make-wire "c-in"))
+(def c-out (make-wire "c-out"))
+(full-adder a b c-in sum c-out)
 
 
 
