@@ -1,0 +1,219 @@
+(def the-empty-stream '())
+
+(defn stream-null? [s]
+    (empty? s))
+    
+;cons-stream传表达式会直接被执行，函数没法实现，只能用宏
+;这里是用在宏内部，exp的执行环境仍然存在
+;为了防止重复执行，使用记忆化
+(defmacro stream-delay [exp]
+    `(memoize (fn[] ~exp)))
+    
+(defmacro stream-force [exp]
+    `(~exp))
+    
+(defmacro cons-stream [a b]
+    `(list ~a (stream-delay ~b)))
+
+(defmacro stream-car [stream]
+        `(first ~stream))
+
+(defmacro stream-cdr [stream]
+    `(stream-force (second ~stream)))
+    
+(stream-cdr (cons-stream 1 (inc 2)))
+
+;流操作函数，主要通过迭代实现
+(defn stream-ref [n stream]
+    (cond (> n 1) (recur (- n 1) (stream-cdr stream))
+          (= n 1) (stream-car stream)
+          :else nil))
+          
+(defn stream-filter [pred stream]
+    (cond (stream-null? stream) the-empty-stream
+          (pred (stream-car stream)) 
+            (cons-stream 
+                (stream-car stream) 
+                (stream-filter pred (stream-cdr stream)))
+          :else (stream-filter pred (stream-cdr stream))))
+
+(defn stream-map [mapper stream]
+    (if (stream-null? stream)
+        the-empty-stream
+        (cons-stream
+            (mapper (stream-car stream))
+            (stream-map mapper (stream-cdr stream)))))
+    
+(defn stream-for-each [proc s]
+    ;(println (stream-null? s) (stream-car s))
+    (if (stream-null? s)
+        :done
+        (do
+            (proc (stream-car s))
+            (recur proc (stream-cdr s)))))
+            
+(defn stream-enumerate-interval [low high]
+    ;(println 'stream-enumerate-interval low high)
+    (if (> low high)
+        the-empty-stream
+        (cons-stream
+            low
+            (stream-enumerate-interval (+ low 1) high))))
+            
+(-> (stream-enumerate-interval 0 100) stream-cdr stream-cdr stream-cdr)  
+(-> (stream-enumerate-interval 0 100) stream-cdr stream-car)  
+(stream-null? (stream-enumerate-interval 0 10))
+(->> (stream-enumerate-interval 0 10) (stream-for-each #(println (* % %))))
+(->> (stream-enumerate-interval 0 10) (stream-filter #(= (mod % 3) 0)) (stream-for-each #(println %)))
+(->> (stream-enumerate-interval 0 10) (stream-map #(apply * (repeat % 3))) (stream-for-each #(println %)))
+
+;不用recur直接递归会爆栈，stream-map，stream-filter 因为本质上没有计算，所以不会爆栈
+(->> (stream-enumerate-interval 0 100000N) (stream-map #(dec %)) (stream-for-each #(inc %)))
+(->> (stream-enumerate-interval 0 1000000) (stream-ref 99999))
+
+;显示计算了几个
+(->> (stream-enumerate-interval 0 10) (stream-map println) (stream-ref 7))
+-----------------------------------------------------------------------------------
+;取前几位
+(defn stream-take [n stream]
+    (if (= n 0)
+        the-empty-stream
+        (cons-stream 
+            (stream-car stream)
+            (stream-take (dec n) (stream-cdr stream)))))
+            
+;显示前n个元素
+(defn display-stream [stream n]
+       (->> stream (stream-take n) (stream-for-each println)))
+       
+       
+;1 和整数流         
+(def ones (cons-stream 1 ones))
+(def integers 
+    (cons-stream 1 (add-streams integers ones)))
+(display-stream integers 10)
+(->> (integer-inf-stream) stream-cdr  stream-cdr (stream-ref 7))  
+
+(display-stream (integer-inf-stream) 10)
+
+;斐波拉契无穷流
+(defn fib-stream
+    ([] (fib-stream 0 1))
+    ([a b] (cons-stream 
+            a 
+            (fib-stream b (+ a b)))))
+(->> (fib-stream) (stream-ref 7))
+(display-stream (fib-stream) 10)
+ 
+     
+;素数无穷流,这里1需要特殊处理，不能加到过滤条件里
+(defn sieve 
+    ([] (cons-stream 1 (sieve (integer-inf-stream 2))))
+    ([stream] 
+        (let [last-prime (stream-car stream)]
+            ;(println last-prime)
+            (cons-stream 
+                last-prime
+                (sieve 
+                    (stream-filter 
+                        #(not= (rem % last-prime) 0) 
+                        (stream-cdr stream)))))))
+    
+(->> (sieve) (stream-ref 4))
+(display-stream (sieve) 20)
+
+
+
+(defn add-streams [s1 s2]
+    ;(println (stream-car s1) "+" (stream-car s2))
+    (cons-stream 
+        (+ (stream-car s1) (stream-car s2))
+        (add-streams (stream-cdr s1) ( stream-cdr s2))))
+(display-stream (add-streams (sieve) (fib-stream)) 20)
+
+;直接通过add-streams 得到斐波拉契序列，
+(def fibs (cons-stream 0 (cons-stream 1 (add-streams (stream-cdr fibs) fibs))))    
+(display-stream fibs 20)
+        
+        
+
+
+(defn mul-streams [s1 s2]
+    (cons-stream 
+        (* (stream-car s1) (stream-car s2))
+        (mul-streams (stream-cdr s1) ( stream-cdr s2))))
+
+;可以实现阶乘，这里factorials, integers 取下一个数是在mul-streams 实现的，不需要在定义中体现
+(def factorials 
+  (cons-stream 1 (mul-streams factorials (stream-cdr integers))))
+       
+(display-stream factorials 20)
+
+;练习3.59
+;积分，第n项代表x^(n-1)到积分 x^n前面的常数 (即1/n，d(x^n/n)/dx = x^(n-1), 具体的系统由series提供)      
+(defn intergrate-series
+    ([series] (intergrate-series series 1))
+    ([series n](cons-stream 
+                (/ (stream-car series) n)
+                (intergrate-series (stream-cdr series) (+ n 1)))))
+(def exp-series (cons-stream 1 (intergrate-series exp-series)))               
+(display-stream (->> ones intergrate-series) 10)
+(display-stream exp-series 10)
+
+;通过相互引用实现sin cos 的无穷级数不先定义会报错
+;不先定义会报错
+(def cos-series)
+(def sin-series)
+(def cos-series (cons-stream 1 (stream-map #(- %) (intergrate-series sin-series))))
+(def sin-series (cons-stream 0 (intergrate-series cos-series)))      
+
+(display-stream cos-series 10)
+(display-stream sin-series 10)
+
+
+;无穷级数相乘，先算最小的一项，这一项不可能重复，后面的递归
+(defn mul-streams [s1 s2]
+    ;(println :mul-streams)
+    (let [s1-car (stream-car s1)
+          s2-car (stream-car s2)]    
+        (cons-stream 
+            (* s1-car s2-car)
+            (add-streams 
+                ;这里两个相乘比当前幂直接大了2，所以加个0
+                (cons-stream 0 (mul-streams (stream-cdr s1) (stream-cdr s2))) 
+                (add-streams
+                    (stream-map #(* % s1-car) (stream-cdr s2))
+                    (stream-map #(* % s2-car) (stream-cdr s1)))))))
+            
+(def cos-square (mul-streams cos-series cos-series))
+(def sin-square (mul-streams sin-series sin-series))
+
+(display-stream cos-square 10)
+(display-stream sin-square 10)
+
+
+;sinx^2 + cosx^2 = 1， 写个reduce更好点，懒得弄
+(def ^:dynamic sum)
+(binding [sum 0.0]
+    (->> cos-square (stream-take 100) (stream-for-each #(set! sum (+ sum %))))
+    (->> sin-square (stream-take 100) (stream-for-each #(set! sum (+ sum %))))
+    (println sum))
+--------------------------------------------------------------------------------------------
+(defn sqrt-impore [guess x]
+    (/ 
+        (+  guess 
+            (/ x guess)) 
+        2.0))
+
+(defn sqrt-stream[x]
+    (def guesses (cons-stream 1.0 
+                    (stream-map 
+                        (fn[guess] 
+                            (do
+                                (println "improve guess " guess x)
+                                (sqrt-impore guess x))) 
+                        guesses)))
+    guesses)
+;这里是stream-map的嵌套，而stream-map 每次都会求好第一个参数，
+;所以虽然嵌套结构，运行时每次只在第一个值上运行一次映射函数，不会嵌套执行
+(display (sqrt-stream 2) 10) 
