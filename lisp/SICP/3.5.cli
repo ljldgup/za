@@ -1,7 +1,10 @@
+;这里stream对应 clojure的lazy-seq, 各类操作在clojure中都有对应的
+;clojure 通过 lazy-seq 实现 delay 如 (def x (lazy-seq (cons 1 (map inc x))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def the-empty-stream '())
 
 (defn stream-null? [s]
-    (empty? s))
+    (or (nil? s) (empty? s)))
     
 ;cons-stream传表达式会直接被执行，函数没法实现，只能用宏
 ;这里是用在宏内部，exp的执行环境仍然存在
@@ -15,11 +18,11 @@
 (defmacro cons-stream [a b]
     `(list ~a (stream-delay ~b)))
 
-(defmacro stream-car [stream]
-        `(first ~stream))
+(defn stream-car [stream]
+        (first stream))
 
-(defmacro stream-cdr [stream]
-    `(stream-force (second ~stream)))
+(defn stream-cdr [stream]
+    (stream-force (second stream)))
     
 (stream-cdr (cons-stream 1 (inc 2)))
 
@@ -86,15 +89,20 @@
 (defn display-stream [stream n]
        (->> stream (stream-take n) (stream-for-each println)))
        
-       
-;1 和整数流         
+
+(defn add-streams [s1 s2]
+    ;(println (stream-car s1) "+" (stream-car s2))
+    (cons-stream 
+        (+ (stream-car s1) (stream-car s2))
+        (add-streams (stream-cdr s1) ( stream-cdr s2))))
+        
+;1 和整数流，迭代实现
 (def ones (cons-stream 1 ones))
 (def integers 
     (cons-stream 1 (add-streams integers ones)))
 (display-stream integers 10)
-(->> (integer-inf-stream) stream-cdr  stream-cdr (stream-ref 7))  
+(->> integers stream-cdr  stream-cdr (stream-ref 7))  
 
-(display-stream (integer-inf-stream) 10)
 
 ;斐波拉契无穷流
 (defn fib-stream
@@ -108,7 +116,7 @@
      
 ;素数无穷流,这里1需要特殊处理，不能加到过滤条件里
 (defn sieve 
-    ([] (cons-stream 1 (sieve (integer-inf-stream 2))))
+    ([] (cons-stream 1 (sieve (stream-cdr integers))))
     ([stream] 
         (let [last-prime (stream-car stream)]
             ;(println last-prime)
@@ -118,17 +126,12 @@
                     (stream-filter 
                         #(not= (rem % last-prime) 0) 
                         (stream-cdr stream)))))))
-    
-(->> (sieve) (stream-ref 4))
-(display-stream (sieve) 20)
+;数量太大会报栈，因为过滤器太多，普通的是不会爆栈的
+(->> (sieve) (stream-ref 10000))
+(display-stream (sieve) 10000)
 
 
 
-(defn add-streams [s1 s2]
-    ;(println (stream-car s1) "+" (stream-car s2))
-    (cons-stream 
-        (+ (stream-car s1) (stream-car s2))
-        (add-streams (stream-cdr s1) ( stream-cdr s2))))
 (display-stream (add-streams (sieve) (fib-stream)) 20)
 
 ;直接通过add-streams 得到斐波拉契序列，
@@ -169,7 +172,8 @@
 
 (display-stream cos-series 10)
 (display-stream sin-series 10)
-
+;不爆栈
+(stream-ref 10000 sin-series)
 
 ;无穷级数相乘，先算最小的一项，这一项不可能重复，后面的递归
 (defn mul-streams [s1 s2]
@@ -216,4 +220,114 @@
     guesses)
 ;这里是stream-map的嵌套，而stream-map 每次都会求好第一个参数，
 ;所以虽然嵌套结构，运行时每次只在第一个值上运行一次映射函数，不会嵌套执行
-(display (sqrt-stream 2) 10) 
+(display-stream (sqrt-stream 2) 10) 
+
+---------------------------------------------------------------------------
+;clojure自带interleave实现,无法用于我手工实现的stream,所以只能自己再写一个
+   
+;练习3.69 改成可以接受无穷个流  
+(defn stream-interleave [s1 & ss]
+    ;(println :stream-interleave  (conj ss (stream-cdr s1)))
+    (if (stream-null? s1)
+        (stream-interleave ss)
+        (cons-stream
+            (stream-car s1)
+            (apply stream-interleave (concat ss (list (stream-cdr s1)))))))
+                
+(defn pairs [s1 & ss]
+    (if (empty? ss)
+        ;cons 需要第二个参数是seq
+        (stream-map list s1)
+        (let [s2 (first ss)
+              rest-ss (rest ss)]
+            (println :new-pairs)
+            (cons-stream
+                (cons (stream-car s1) (map stream-car ss))
+                (stream-interleave
+                    ;这里后半部分会递归排除每个流的第一个元素
+                    (stream-map (fn[x] (cons (stream-car s1) x)) (apply pairs (cons (stream-cdr s2) rest-ss)))
+                    (apply pairs (map stream-cdr (cons s1 ss))))))))
+                    
+;每执行2^n次方生成一个新pair，和我推导的一致,
+(display-stream (pairs integers integers) 20)
+
+;练习3.70，根据权重取，配合前面写成无限个流的使用，比较函数weight-fn可自定义
+;总是比较前两个参数，然后大的后移，通过辅助函数helper来确定比较完毕,这里如果流多，理论上用堆会更好
+;这里无法用尾递归，原因不明
+(defn merge-weighted-gen [weight-fn]
+    (defn helper[n ss]
+        ;(println n :helper ss )
+        ;(println (first ss)) 
+        ;(println (second ss) )
+        ;(println (weight-fn (stream-car (first ss)))) 
+        ;(println (weight-fn (stream-car (second ss))))
+        ;(println (rest (rest ss)))
+            
+        (cond (= n 1) (do 
+                        ;(println (weight-fn (stream-car (first ss)))) ;这里会打印很多，因为不只一路在归并
+                        (cons-stream 
+                            (stream-car (first ss))
+                            (helper (count ss) (conj (rest ss) (stream-cdr (first ss))))))
+              :else (let [s1 (first ss)
+                          s2 (second ss)
+                        rest-ss (rest (rest ss))
+                        w1 (weight-fn (stream-car s1))
+                        w2 (weight-fn (stream-car s2))]
+                        (if (< w1 w2)
+                            ;把大的挪到队伍尾部，n-1,n=0直接返回队伍首部
+                            (helper (dec n) (concat (conj rest-ss s1) (list s2)))
+                            (helper (dec n) (concat (conj rest-ss s2) (list s1)))))))
+    ;暴露给外部的函数处理不定长参数，传给内部处理序列
+    (fn [& ss]
+        (if (< 2 (count ss)) 
+            (first ss)
+            (helper (count ss)  ss))))
+
+(def cube-weight (fn[x](reduce + (map #(apply * (repeat 3 %)) x))))
+(def merge-cube-weighted (merge-weighted-gen cube-weight))
+
+;这里没有处理第一个  
+(defn weighted-pairs [s1 & ss]
+    (if (empty? ss)
+        ;cons 需要第二个参数是seq
+        (stream-map list s1)
+        (let [s2 (first ss)
+              rest-ss (rest ss)]
+            ;(println :new-weighted-pairs (first s1) (first s2))
+            (cons-stream
+                (cons (stream-car s1) (map stream-car ss))
+                (merge-cube-weighted 
+                    ;这里后半部分会递归排除每个流的第一个元素
+                    (stream-map (fn[x] (cons (stream-car s1) x)) (apply weighted-pairs (cons (stream-cdr s2) rest-ss)))
+                    (apply weighted-pairs (map stream-cdr (cons s1 ss))))))))
+            
+(display-stream (weighted-pairs integers integers integers) 20)
+;这里把数字取得非常大也不会爆栈。。只有像素数那样嵌套过滤太多才会爆    
+(display-stream 
+    (stream-map 
+        (fn[x](reduce + (map #(apply * (repeat 3 %)) x))) 
+        (weighted-pairs integers integers integers)) 
+    20)
+    
+;练习3.71, 练习72 修改cube-weight, 和n的判断就可以了
+(defn repeated-stream
+    ([s](repeated-stream 0 s))
+    ([n s]
+        ;(println (cube-weight (stream-car s)) (cube-weight (stream-car (stream-cdr s))))
+        (if (= (cube-weight (stream-car s)) (cube-weight (stream-car (stream-cdr s))))
+            (cons-stream 
+                    (stream-car s)
+                    (repeated-stream (inc n) (stream-cdr s)))
+            (if (> n 0)
+                (cons-stream 
+                    (stream-car s) 
+                    (repeated-stream 0 (stream-cdr s)))
+                (recur 0 (stream-cdr s))))))
+                
+(display-stream (->> 
+                    (weighted-pairs integers integers) 
+                    repeated-stream 
+                    (stream-map #(list % (cube-weight %))))
+                 20)
+        
+             

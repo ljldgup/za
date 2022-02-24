@@ -5,6 +5,8 @@
 ;cons只能加一个
 (cons 1 2  v) 
 (seq v)
+;conj，cons都是加在最前面
+;加在后面用concat
 
 ;clojure的几何操作会根据对象类型进行对应的操作
 (empty #{'a})
@@ -51,6 +53,8 @@
 (first (map inc rands))
 (nth (map inc rands) 2)
 
+;interleave 交替取后面的数据，直到一个为空
+(interleave (range 5) (range 6 10) (range 10 15))
 
 ;split-with 按条件分成两个惰性序列
 (let [[t d] (split-with neg? (range -5 5))]
@@ -175,6 +179,9 @@
 
 ;返回一个无限的lazy-seq
 (repeat nil)
+
+;lazy-seq 使用变量实现无穷序列，这里实现了一个递增序列，计算第n个使用第n-1加1， 不会嵌套执行导致爆栈
+(def x (lazy-seq (cons 1 (map inc x))))
 
 ;行转列，map多个序列长度不同会按照最短的来
 (map vector (repeat 1) '(1 2 3 4) '(3 2 1))
