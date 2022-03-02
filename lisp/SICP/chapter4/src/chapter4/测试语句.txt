@@ -1,0 +1,60 @@
+
+(null? 4)
+
+(null? '(1 2))
+
+(null? '())
+
+(car '(1 2 3))
+
+(cdr '(1 2 3))
+
+(> 1 2)
+
+
+(+ 1 (* 2 2))
+
+(define x 1)
+
+(+ x 1)
+
+(define (func x) (* x x))
+
+(func 2)
+
+(define (func2 x y) (* x (* y y)))
+
+(func2 2 3)
+
+(if (> 1 2) 1 2)
+
+(> (func 2) 2)
+
+(if (> (func 2) 2) '(func 2) 2)
+
+
+(define (func2 x y) (* x (* y y)))
+
+(func2 2 3)
+
+((lambda (x y) (* x (* y y))) 3 4)
+
+;递归也可以实现,可以用来测试分析执行分离后的性能
+(define (fact x) (if (< x 1) 1 (* x (func (- x 1)))))
+(fact 10)
+
+(define (fib x) (if (< x 2) 1 (+ (fib (- x 2)) (fib (- x 1)))))
+(fib 10)
+
+(define x 2)
+(define (func y) (set! x y) (+ x y))
+(func 3)
+
+(define x 2)
+(define (func)(define y 100)(println y)(set! x y))
+(func)
+x
+
+(begin (define y 2) (+ y 1))
+y
+
