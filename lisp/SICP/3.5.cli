@@ -1,5 +1,8 @@
 ;这里stream对应 clojure的lazy-seq, 各类操作在clojure中都有对应的
-;clojure 通过 lazy-seq 实现 delay 如 (def x (lazy-seq (cons 1 (map inc x))))
+;clojure 通过 (lazy-seq (cons  实现 cons-stream 如 (def x (lazy-seq (cons 1 (map inc x))))
+;stream-car 对应 first, stream-cdr 对应rest
+;filter map take 等都只是加了个前缀
+;add mul 等使用for实现
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def the-empty-stream '())
 
@@ -15,6 +18,7 @@
 (defmacro stream-force [exp]
     `(~exp))
     
+;由于cons-stream是宏，所以不会加深堆栈，不会导致无求流爆栈 
 (defmacro cons-stream [a b]
     `(list ~a (stream-delay ~b)))
 
@@ -128,7 +132,7 @@
                         (stream-cdr stream)))))))
 ;数量太大会报栈，因为过滤器太多，普通的是不会爆栈的
 (->> (sieve) (stream-ref 10000))
-(display-stream (sieve) 10000)
+;(display-stream (sieve) 10000)
 
 
 
@@ -173,7 +177,7 @@
 (display-stream cos-series 10)
 (display-stream sin-series 10)
 ;不爆栈
-(stream-ref 10000 sin-series)
+;(stream-ref 10000 sin-series)
 
 ;无穷级数相乘，先算最小的一项，这一项不可能重复，后面的递归
 (defn mul-streams [s1 s2]
@@ -283,8 +287,31 @@
             (first ss)
             (helper (count ss)  ss))))
 
+;通过递归 + 嵌套流实现;
+;let [merged-stream (merge-weighted ss) 这句话会不断递归直到ss为空为止，不会delay，从而保证每次都是最大的
+(defn new-merge-weighted-gen [weight-fn]
+    (defn merge-weighted
+        [s1 & ss]
+        ;(println :s1 s1) 
+        ;(println :ss ss)
+        ;(println (weight-fn (stream-car s1))) 
+        ;(println (weight-fn (stream-car (first ss))))
+        (if (empty? ss) 
+            s1
+            (let [merged-stream (apply merge-weighted ss)
+                  w1 (weight-fn (stream-car s1))
+                  w2 (weight-fn (stream-car merged-stream))]
+                (if (< w1 w2)
+                    (cons-stream 
+                        (stream-car s1) 
+                        (merge-weighted (stream-cdr s1) merged-stream))
+                    (cons-stream 
+                        (stream-car merged-stream) 
+                        (merge-weighted (stream-cdr merged-stream) s1)))))))
+                
 (def cube-weight (fn[x](reduce + (map #(apply * (repeat 3 %)) x))))
-(def merge-cube-weighted (merge-weighted-gen cube-weight))
+;(def merge-cube-weighted (merge-weighted-gen cube-weight))
+(def merge-cube-weighted (new-merge-weighted-gen cube-weight))
 
 ;这里没有处理第一个  
 (defn weighted-pairs [s1 & ss]
@@ -300,9 +327,14 @@
                     ;这里后半部分会递归排除每个流的第一个元素
                     (stream-map (fn[x] (cons (stream-car s1) x)) (apply weighted-pairs (cons (stream-cdr s2) rest-ss)))
                     (apply weighted-pairs (map stream-cdr (cons s1 ss))))))))
-            
+                    
+;这里没用recur，把数字取得非常大也不会爆栈。。只有像素数那样嵌套过滤太多才会爆           
 (display-stream (weighted-pairs integers integers integers) 20)
-;这里把数字取得非常大也不会爆栈。。只有像素数那样嵌套过滤太多才会爆    
+   
+
+
+
+
 (display-stream 
     (stream-map 
         (fn[x](reduce + (map #(apply * (repeat 3 %)) x))) 
@@ -329,5 +361,10 @@
                     repeated-stream 
                     (stream-map #(list % (cube-weight %))))
                  20)
-        
-             
+-----------------------------------------------------------------------------
+
+------------------------------------------------------------------------------------            
+(def rand-stream (lazy-seq (cons (rand) (map (fn[x](rand)) rand-stream))))
+(take 40 rand-stream )
+
+
