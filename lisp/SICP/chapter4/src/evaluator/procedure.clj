@@ -1,4 +1,4 @@
-(ns chapter4.procedure)
+(ns evaluator.procedure)
 (defn make-procedure [parameter body env]
   (list 'procedure parameter body env))
 

@@ -1,4 +1,4 @@
-(ns chapter4.syntax)
+(ns evaluator.syntax)
 
 (defn make-lambda [parameters body]
   (cons 'lambda (cons parameters body)))

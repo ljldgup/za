@@ -1,7 +1,7 @@
-(ns chapter4.my-eval
-  (:require [chapter4.syntax :refer :all])
-  (:require [chapter4.environment :refer :all])
-  (:require [chapter4.procedure :refer :all]))
+(ns evaluator.evaluator
+  (:require [evaluator.syntax :refer :all])
+  (:require [evaluator.environment :refer :all])
+  (:require [evaluator.procedure :refer :all]))
 
 (defmulti my-eval
           (fn [exp env]
@@ -16,7 +16,7 @@
   (cond (last-exp? exps) (my-eval (get-first-exp exps) env)
         :else (do
                 (my-eval (get-first-exp exps) env)
-                (eval-sequence (rest exps) env))))
+                (recur (rest exps) env))))
 
 
 (defn my-apply [procedure arguments]
@@ -71,10 +71,40 @@
                                                      env))
 
 (defmethod my-eval 'begin [exp env]
-  (eval-sequence exp env))
+  (eval-sequence (rest exp) env))
+
+
+;练习4.4,注意要判断空集表达式
+(defmethod my-eval 'or [exp env]
+  (cond
+    (empty? env) false
+    (my-eval (first exp) env) true
+    :else (recur (rest exp) env)))
+
+(defmethod my-eval 'and [exp env]
+  (cond
+    (empty? env) true
+    (not (my-eval (first exp) env)) false
+    :else (recur (rest exp) env)))
+
+;练习4.6
+(defmethod my-eval 'let [exp env]
+  (let [vars-exp (second exp)
+        body (rest (rest exp))
+        lambda (make-lambda (map first vars-exp) body)]
+    (my-apply (my-eval lambda env)
+              (map #(my-eval (second %) env) vars-exp))))
 
 (defmethod my-eval :default [exp env]
   (my-apply (my-eval (get-operator exp) env)
             (get-list-of-values (get-operands exp) env)))
 
+;分析和执行在一起的估值器
+(defn -main []
+  (try
+    (let [exps (read-string (read-line))]
+      (let [output (my-eval exps global-environment)]
+        (println :output output)))
+    (catch Exception e (println e)))
+  (recur))
 

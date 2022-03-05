@@ -1,16 +1,11 @@
-(ns chapter4.environment)
-;外部环境，
-(defn enclose-environment [env]
-  (rest env))
+(ns evaluator.environment
+  (:require [evaluator.procedure :refer :all]))
 
-;当前环境放在第一个
-(def the-empty-environment '())
 
 (defn make-frame
-  ([vars-vals]
-   (let [frame (atom {})]
-     (swap! frame #(into % vars-vals))
-     frame)))
+  [vars-vals]
+   (atom (into {} vars-vals)))
+
 
 (defn get-first-frame [env]
   (first env))
@@ -35,6 +30,7 @@
 ;;var是关键字，这里改成my_var
 (defn look-up-variable [my_var env]
   (let [frame (first (filter #(my_var @%) env))]
+    (println 'look-up-variable my_var)
     (if (not (nil? frame)) (my_var @frame))))
 
 (defn set-variable-value! [my_var val env]
@@ -45,4 +41,12 @@
 (defn define-variable! [my_var val env]
   (let [first-frame (get-first-frame env)]
     (add-binding-to-frame! my_var val first-frame)))
+
+
+(def the-empty-environment '())
+
+(def global-environment
+  (extend-environment
+    primitives-procedures
+    the-empty-environment))
 

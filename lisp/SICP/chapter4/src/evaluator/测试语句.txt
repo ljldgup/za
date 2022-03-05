@@ -11,6 +11,7 @@
 
 (> 1 2)
 
+(let ((x 1) (y (+ 1 1))) (println x) (+ x y))
 
 (+ 1 (* 2 2))
 
@@ -40,11 +41,13 @@
 ((lambda (x y) (* x (* y y))) 3 4)
 
 ;递归也可以实现,可以用来测试分析执行分离后的性能
-(define (fact x) (if (< x 1) 1 (* x (func (- x 1)))))
+(define (fact x) (if (< x 1) 1 (* x (fact (- x 1)))))
+
 (fact 10)
 
-(define (fib x) (if (< x 2) 1 (+ (fib (- x 2)) (fib (- x 1)))))
-(fib 10)
+
+(define (fib x) (if (< x 2) 1 (+ (fib (- x 2)) (fib (- x 1))))) (fib 10)
+
 
 (define x 2)
 (define (func y) (set! x y) (+ x y))
@@ -55,6 +58,9 @@
 (func)
 x
 
-(begin (define y 2) (+ y 1))
-y
+(begin (define y 2) (+ y 1)) y
 
+
+(and (> 1 0) (> 2 3))
+
+(or (> 1 0) (> 2 3))
