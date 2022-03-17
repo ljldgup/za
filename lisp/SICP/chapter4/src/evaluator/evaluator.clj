@@ -7,6 +7,7 @@
           (fn [exp env]
             ;(println :my-eval)
             (cond
+              (or (nil? exp) (and (seq? exp) (empty? exp))) 'nothing
               (or (number? exp) (string? exp)) 'self-eval
               (symbol? exp) 'variable
               :else (first exp))))
@@ -27,7 +28,7 @@
                          (get-procedure-parameters procedure)
                          arguments
                          (get-procedure-environment procedure)))
-        :else (Exception. (str "unknow procedure type " procedure))))
+        :else  (println "unknow procedure type " procedure)))
 
 
 
@@ -38,6 +39,7 @@
     (cons (my-eval (get-first-operand exp) env)
           (get-list-of-values (get-rest-operands exp) env))))
 
+(defmethod my-eval 'nothing [exp env] "null")
 
 (defmethod my-eval 'self-eval [exp env] exp)
 
@@ -96,8 +98,11 @@
               (map #(my-eval (second %) env) vars-exp))))
 
 (defmethod my-eval :default [exp env]
-  (my-apply (my-eval (get-operator exp) env)
-            (get-list-of-values (get-operands exp) env)))
+  (let [operator (my-eval (get-operator exp) env)]
+    (if (nil? operator)
+      (println "unkonw procedure" (get-operator exp) " !!")
+      (my-apply operator
+                (get-list-of-values (get-operands exp) env)))))
 
 ;分析和执行在一起的估值器
 (defn -main []

@@ -12,7 +12,7 @@
     (= 'thunk (first @exp))))
 
 (defn thunk-env [exp]
-  (rest (rest @exp)))
+  (nth @exp 2))
 
 (defn thunk-exp [exp]
   (second @exp))

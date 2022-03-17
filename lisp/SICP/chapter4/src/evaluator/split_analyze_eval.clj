@@ -9,6 +9,7 @@
 (defmulti my-analyze
           (fn [exp]
             (cond
+              (or (nil? exp) (and (seq? exp) (empty? exp))) 'nothing
               (or (number? exp) (string? exp)) 'self-eval
               (symbol? exp) 'variable
               :else (first exp))))
@@ -23,6 +24,9 @@
 
 (defmethod my-analyze 'self-eval [exp]
   (fn [env] exp))
+
+(defmethod my-analyze 'nothing [exp]
+  (fn [env] "null"))
 
 (defmethod my-analyze 'if [exp]
   (let [predict-proc (my-analyze (get-if-predicate exp))
@@ -116,7 +120,7 @@
              (get-procedure-parameters procedure)
              arguments
              (get-procedure-environment procedure)))
-          :else (Exception. (str "unknow procedure type" procedure))))
+          :else (println "unknow procedure type")))
 
   (let [fproc (my-analyze (get-operator exp))
         aproc (map my-analyze (get-operands exp))]

@@ -27,7 +27,9 @@
 
 (defn get-if-predicate [exp] (second exp))
 (defn get-if-consequent [exp] (nth exp 2))
-(defn get-if-alternative [exp] (nth exp 3))
+
+;if不存在后半句
+(defn get-if-alternative [exp] (if (== (count exp) 4) (nth exp 3) ()))
 (defn make-if [predicate consequent alternative]
   (list 'if predicate consequent alternative))
 

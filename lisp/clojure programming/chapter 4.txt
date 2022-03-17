@@ -153,7 +153,8 @@ v
 ;await 等待所有agent结束
 (await a b)
 
-;貌似没挂。。
+;貌似没挂。。clojure中异常被当成普通对象操作，不会打断流程，
+;打印会有所有信息，用来空值流程没有什么效果
 (send b (throw (new Exception "agent die!!??")))
 (send-off b (throw (new Exception "agent die!!??")))
 

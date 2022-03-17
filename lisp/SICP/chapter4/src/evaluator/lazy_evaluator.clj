@@ -8,6 +8,7 @@
           (fn [exp env]
             ;(println :my-lazy-eval)
             (cond
+              (or (nil? exp) (and (seq? exp) (empty? exp))) 'nothing
               (or (number? exp) (string? exp)) 'self-eval
               (symbol? exp) 'variable
               :else (first exp))))
@@ -51,6 +52,7 @@
           (list-of-delayed-arguments (get-rest-operands exp) env))))
 
 (defn my-apply [procedure arguments env]
+  (if (not (primitive-procedure? procedure)) (println (get-procedure-body procedure)))
   (cond (primitive-procedure? procedure) (apply-primitive-procedure procedure (get-list-of-args-values arguments env))
         (compound-procedure? procedure)
         (eval-sequence (get-procedure-body procedure)
@@ -58,7 +60,7 @@
                          (get-procedure-parameters procedure)
                          (list-of-delayed-arguments arguments env)
                          (get-procedure-environment procedure)))
-        :else (Exception. (str "unknow procedure type " procedure))))
+        :else (println "unknow procedure type")))
 
 
 
@@ -69,6 +71,7 @@
     (cons (my-lazy-eval (get-first-operand exp) env)
           (get-list-of-values (get-rest-operands exp) env))))
 
+(defmethod my-lazy-eval 'nothing [exp env] "null")
 
 (defmethod my-lazy-eval 'self-eval [exp env] exp)
 
@@ -130,15 +133,18 @@
 (defmethod my-lazy-eval 'procedure [exp env] exp)
 
 (defmethod my-lazy-eval :default [exp env]
-  (my-apply (actual-value (get-operator exp) env)
-            (get-operands exp)
-            env))
+  (let[ actual-operator (actual-value (get-operator exp) env)]
+    (if (nil? actual-operator)
+      (println "unknow procedure" (get-operator exp) "!!!")
+      (my-apply  actual-operator (get-operands exp) env))))
 
 ;分析和执行在一起的估值器
 (defn -main []
   (try
     (let [exps (read-string (read-line))]
       (let [output (actual-value exps global-environment)]
+        ;返回的不是惰性序列基本就是直接求值
+        ;(let [output (my-lazy-eval exps global-environment)]
         (println :output output)))
     (catch Exception e (println e)))
   (recur))

@@ -29,6 +29,8 @@
 
 (if (> 1 2) 1 2)
 
+(if (> 1 2) 1)
+
 (> (func 2) 2)
 
 (if (> (func 2) 2) '(func 2) 2)
@@ -43,7 +45,7 @@
 ;递归也可以实现,可以用来测试分析执行分离后的性能
 (define (fact x) (if (< x 1) 1 (* x (fact (- x 1)))))
 
-(fact 10)
+(fact 2)
 
 
 (define (fib x) (if (< x 2) 1 (+ (fib (- x 2)) (fib (- x 1))))) (fib 10)
@@ -64,3 +66,63 @@ x
 (and (> 1 0) (> 2 3))
 
 (or (> 1 0) (> 2 3))
+
+惰性求值
+练习4.27 结果 1 2 2 ，内部(id count)不会立即执行
+(define count 0)
+(define (id x) (set! count (+ count 1)) x)
+(define w (id (id count)))
+
+练习4.28
+(define (square x)  (* x x))
+(square (id 10))
+
+练习4.30b 结果 (1 2)
+(define (p1 x) (set! x (cons x '(2))) x)
+(define (p2 x) (define (p e) e x) (p (set! x (cons x '(2)))))
+
+
+基于惰性求值的流
+(define (cons x y) (lambda (m) (m x y)))
+(define (car z) (z (lambda (p q) p)))
+(define (cdr z) (z (lambda (p q) q)))
+(define (list-ref items n) (if (= n 0) (car items) (list-ref (cdr items) (- n 1))))
+(define (map proc items) (if (null? items) '() (cons (proc (car items)) (map proc (cdr items)))))
+
+;这边假设都是无穷流
+(define (add-lists list1 list2) (cons (+ (car list1) (car list2)) (add-lists (cdr list1) (cdr list2))))
+(define ones (cons 1 ones))
+(list-ref  ones 2)
+(define integers (cons 1 (add-lists ones integers)))
+
+(car (cdr integers))
+(list-ref  integers 33)
+(list-ref (map (lambda (x) (+ 1 x)) ones) 3)
+
+
+#amb测试语句,可以嵌套
+(amb (if (2 > 1) "2" "1")  (amb 2 3) (+ 1 2) '(1 2))
+try-again
+try-again
+try-again
+try-again
+
+#可以单独执行，
+(define x 1)
+(amb (begin (define x 2) 3) (* x x))
+try-again
+try-again
+#恢复到原来的值
+x
+
+#整数的无穷序列
+(define (integer n) (amb n (integer (+ n 1))))
+(integer 10)
+try-again
+
+#空集
+(amb)
+
+(define (require p) (if (not p) (amb)))
+(define (an-elements-of-item items)
+

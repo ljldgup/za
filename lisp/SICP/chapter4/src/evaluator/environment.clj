@@ -4,7 +4,7 @@
 
 (defn make-frame
   [vars-vals]
-   (atom (into {} vars-vals)))
+  (atom (into {} vars-vals)))
 
 
 (defn get-first-frame [env]
@@ -30,8 +30,10 @@
 ;;var是关键字，这里改成my_var
 (defn look-up-variable [my_var env]
   (let [frame (first (filter #(my_var @%) env))]
-    (println 'look-up-variable my_var)
-    (if (not (nil? frame)) (my_var @frame))))
+    ;(println 'look-up-variable my_var)
+    (if (not (nil? frame))
+      (my_var @frame)
+      (println "unknow varible" my_var))))
 
 (defn set-variable-value! [my_var val env]
   (let [frame (first (filter #(my_var @%) env))]
