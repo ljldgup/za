@@ -51,4 +51,5 @@
 (defn no-operands? [ops] (empty? ops))
 (defn get-first-operand [ops] (first ops))
 (defn get-rest-operands [ops] (rest ops))
-
+(defn get-let-vars-exp [exp] (second exp))
+(defn get-let-body [exp] (rest (rest exp)))

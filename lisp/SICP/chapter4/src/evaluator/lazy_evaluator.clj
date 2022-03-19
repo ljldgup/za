@@ -133,6 +133,7 @@
 (defmethod my-lazy-eval 'procedure [exp env] exp)
 
 (defmethod my-lazy-eval :default [exp env]
+  (println 'execute exp)
   (let[ actual-operator (actual-value (get-operator exp) env)]
     (if (nil? actual-operator)
       (println "unknow procedure" (get-operator exp) "!!!")

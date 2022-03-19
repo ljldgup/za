@@ -55,7 +55,7 @@
     `(str "hello, " ~x "!"))
 (macro-hello 'ljl)
 
-;宏不能作为值传递
+;宏不能作为值传递，不能和高阶函数合作
 macro-hello
 (map macro-hello '(a b c))
 

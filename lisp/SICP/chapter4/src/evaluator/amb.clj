@@ -36,6 +36,7 @@
         consequent-proc (my-amb-analyze (get-if-consequent exp))
         alternative-proc (my-amb-analyze (get-if-alternative exp))]
     (fn [env succeed fail]
+      (println 'if exp)
       (pred-proc env
                  (fn [pred-result fail2]
                    (if (true? pred-result)
@@ -88,14 +89,21 @@
     (fn [env succeed fail]
       (succeed (make-procedure parameters body-proc env) fail))))
 
+
+
+
 (defmethod my-amb-analyze 'amb [exp]
   (let [cprocs (map my-amb-analyze (amb-choice exp))]
     (fn [env succeed fail]
-      (defn try-next [choices]
+      (letfn [(try-next [choices]
+        ;这里用define定义的try-next是全局的！！！！！！！！！！！！
+        ; 在嵌套amb的情况下会被重新定义，导致fail等信息被新的try-next覆盖导致死循环
+        ;使用letfn后成功运行
         (if (empty? choices)
           (fail)
-          ((first choices) env succeed (fn [] (try-next (rest choices))))))
-      (try-next cprocs))))
+          ;这里的fail最终传到最上层作为internal-loop中的next-alternative执行
+          ((first choices) env succeed (fn [](println exp) (try-next (rest choices))))))]
+      (try-next cprocs)))))
 
 (defn get-args [arg-procs env succeed fail]
   (if (empty? arg-procs)
@@ -124,11 +132,35 @@
          fail)
         :else (Exception. (str "unknow procedure" procedure))))
 
+(defmethod my-amb-analyze 'let [exp]
+  (let [vars-exp (get-let-vars-exp exp)
+        body (get-let-body exp)
+        lambda-analyzer (my-amb-analyze (make-lambda (map first vars-exp) body))
+        arg-procs (map #(my-amb-analyze (second %)) vars-exp)]
+    ;这里没办法用let获得procedure，因为lambda-analyzer 会直接通过获得结果调用succeed,所以需要将逻辑写在succeed中
+    (fn [env succeed fail]
+      (defn do-nothing [&arg] ())
+      (lambda-analyzer env
+                       (fn [procedure fail2]
+                         (get-procedure-body procedure)
+                         (extend-environment
+                           (get-procedure-parameters procedure)
+                           (get-args arg-procs
+                                     env
+                                     (fn [args fail3]
+                                       (execute-application procedure args succeed fail3))
+                                     fail2)
+                           env)
+                         succeed
+                         fail2)
+                       fail))))
+
 (defmethod my-amb-analyze :default [exp]
 
   (let [fproc (my-amb-analyze (get-operator exp))
         arg-procs (map my-amb-analyze (get-operands exp))]
     (fn [env succeed fail]
+      (println 'execute exp)
       (fproc env (fn [proc fail2]
                    (get-args arg-procs
                              env

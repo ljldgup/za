@@ -15,7 +15,7 @@
   (nth exp 3))
 ;要先判断集合，才能判断空集，否则会报错
 (def primitives-procedures {'car first, 'cdr rest, 'cons cons, 'null? #(or (nil? %1) (and (seq? %1) (empty? %1)))
-                            '+   +, '- -, '* *, '/ /, '= =, '> >, '< <, 'println println, 'not not})
+                            '+   +, '- -, '* *, '/ /, '= =, '> >, '< <, '% mod, 'list list, 'println println, 'not not})
 
 (def primitives-procedures-reverse (into #{} (vals primitives-procedures)))
 

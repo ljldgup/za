@@ -29,10 +29,16 @@
 
 ;;var是关键字，这里改成my_var
 (defn look-up-variable [my_var env]
-  (let [frame (first (filter #(my_var @%) env))]
-    ;(println 'look-up-variable my_var)
+  ;这里查找的变量如果是false也会导致找不到！！！ 只能改成这样
+  (let [frame (first (filter #(not (nil? (my_var @%))) env))]
+    (print 'look-up-variable my_var " ")
     (if (not (nil? frame))
-      (my_var @frame)
+      (let [val (my_var @frame)]
+        ;调试用
+        (if (and (list? val) (> (count val) 2))
+          (println (first val) (second val) )
+          (println val))
+        val)
       (println "unknow varible" my_var))))
 
 (defn set-variable-value! [my_var val env]

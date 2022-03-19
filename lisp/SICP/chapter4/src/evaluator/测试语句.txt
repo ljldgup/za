@@ -12,6 +12,10 @@
 (> 1 2)
 
 (let ((x 1) (y (+ 1 1))) (println x) (+ x y))
+(let ((x 1)) (define z x) (+ x y))
+
+;由于extend-environment是一次性将参数加入环境的，所以这没法成功，后续可以考虑优化成流模式，逐个加入
+(let ((x 1) (y (+ x x))) (println x) (+ x y))
 
 (+ 1 (* 2 2))
 
@@ -101,7 +105,7 @@ x
 
 
 #amb测试语句,可以嵌套
-(amb (if (2 > 1) "2" "1")  (amb 2 3) (+ 1 2) '(1 2))
+(amb (if (> 2 1) "2" "1")  (amb 2 3) (+ 1 2) '(1 2))
 try-again
 try-again
 try-again
@@ -124,5 +128,17 @@ try-again
 (amb)
 
 (define (require p) (if (not p) (amb)))
-(define (an-elements-of-item items)
+(define (an-elements-of-item items) (require (not (null? items))) (amb (car items) (an-elements-of-item (cdr items))))
+(define (odd? x) (= (% x 2) 1))
+;这里执行try-next函数将回退到let中amb部分探索下面的可能性
+(define (odd-sum-pair list1 list2)(let ((a (an-elements-of-item list1)) (b (an-elements-of-item list2)))(require (odd? (+ a b)))(list a b)))
 
+
+(an-elements-of-item  '(1 2))
+try-again
+
+(amb 1 (amb 2))
+try-again
+try-again
+
+(odd-sum-pair '(1 2) '(3 4))

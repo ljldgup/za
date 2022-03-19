@@ -89,15 +89,16 @@
     (not (my-eval (first exp) env)) false
     :else (recur (rest exp) env)))
 
-;练习4.6
+;练习4.6, 这里参数实体，获取应该放在syntax文件里
 (defmethod my-eval 'let [exp env]
-  (let [vars-exp (second exp)
-        body (rest (rest exp))
+  (let [vars-exp (get-let-vars-exp exp)
+        body (get-let-body exp)
         lambda (make-lambda (map first vars-exp) body)]
     (my-apply (my-eval lambda env)
               (map #(my-eval (second %) env) vars-exp))))
 
 (defmethod my-eval :default [exp env]
+  (println 'execute exp)
   (let [operator (my-eval (get-operator exp) env)]
     (if (nil? operator)
       (println "unkonw procedure" (get-operator exp) " !!")

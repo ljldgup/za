@@ -95,8 +95,8 @@
 
 ;练习4.6
 (defmethod my-analyze 'let [exp]
-  (let [vars-exp (second exp)
-        body (rest (rest exp))
+  (let [vars-exp (get-let-vars-exp exp)
+        body (get-let-body exp)
         lambda-analyzer (my-analyze (make-lambda (map first vars-exp) body))
         args-analyzers (map #(my-analyze (second %)) vars-exp)]
     (fn [env]
@@ -124,7 +124,7 @@
 
   (let [fproc (my-analyze (get-operator exp))
         aproc (map my-analyze (get-operands exp))]
-    (fn [env] (application-execute (fproc env) (map #(% env) aproc)))))
+    (fn [env] (println 'execute exp)(application-execute (fproc env) (map #(% env) aproc)))))
 
 (defn my-split-eval [exps env]
   "执行和分析分离"
