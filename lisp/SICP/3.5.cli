@@ -228,7 +228,8 @@
 
 ---------------------------------------------------------------------------
 ;clojure自带interleave实现,无法用于我手工实现的stream,所以只能自己再写一个
-   
+;clojure的interleave在一个为空后就终止。。。和这里的不一样
+
 ;练习3.69 改成可以接受无穷个流  
 (defn stream-interleave [s1 & ss]
     ;(println :stream-interleave  (conj ss (stream-cdr s1)))

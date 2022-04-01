@@ -64,7 +64,7 @@ future 实现异步函数函数
 ;swap!采用cas更新atom类型，update-in 更新map函数
 (swap! sarah update-in [:age] + 3)
 
-;注意这里比较和更新的是atom整个值，此时结束后值为nil
+;swap!参数是函数加参数，同时将atom的值作为第一个函数第一个参数
 (swap! sarah #(println %))
 @sarah
 
