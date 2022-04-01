@@ -20,6 +20,9 @@
 (defn add-binding-to-frame! [my_var value frame]
   (swap! frame assoc my_var value))
 
+;这里返回了一个新环境，对其他环境使用者不会有影响
+;由于这里新环境是一次性生成的在，所以clojure let那种可以使用上面定义的变量的效果没法实现
+;如果要实现这种效果，可以考虑将表达式解释为嵌套的let
 (defn extend-environment
   ([vars-vals base-env]
    (cons (make-frame vars-vals) base-env))
@@ -35,7 +38,7 @@
     (if (not (nil? frame))
       (let [val (my_var @frame)]
         ;调试用
-        (if (and (list? val) (> (count val) 2))
+        (if (and (seq? val) (> (count val) 2))
           (println (first val) (second val) )
           (println val))
         val)

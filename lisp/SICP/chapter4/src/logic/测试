@@ -1,0 +1,33 @@
+(assert! (ljl job programmer))
+(assert! (sfd job programmer))
+(?x ?y ?z)
+(assert! (agl job unknown))
+(assert! (fq job teacher))
+(assert! (ljl fk fq))
+(assert! (ljl fk ysm))
+(agl ?y ?z)
+
+
+(and (?x job ?xx) (?y job ?yy) (?x fk ?y))
+
+or是interleave交替输出多个框架，如果使用不同的变量，会导致没法替换
+(or (?x job ?xx) (?y job ?yy)) 无效
+
+这里输出任意一个模式的到的x都能填充到另外一个框架上，所以不会输出变量
+(or (?x job unknow) (?x job programmer))  生效
+
+由于not默认输入流为空，所以单独使用无效,需要放在其他查询的后面
+(not (ljl ?yy ?xx)) 无效
+(and (not (ljl ?y ?z) (?x ?y ?z))) 无效
+not表达式子中的约束也会受到框架影响，因此需要一样,注意框架里是模式中变量约束不是数据
+(and (?x ?y ?z)  (not (ljl ?yy ?zz))) 无效
+
+(and (?x ?y ?z)  (not (ljl ?y ?z))) 生效
+
+(assert! (ljl shot 2))
+(and (ljl shot ?z)  (lisp-value > ?z 1))
+(and (ljl shot ?z)  (not (lisp-value = ?z 2)))
+
+;and是从左右向右求的
+(assert! (rule (fk-by-same ?x ?y ?z) (and (?x fk ?y) (?x fk ?z)  (not (lisp-value = ?z ?y)))))
+(fk-by-same ljl ?z ?y)

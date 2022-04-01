@@ -4,4 +4,5 @@
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]]
-  :repl-options {:init-ns evaluator.core})
+  ;这里根据调试需要修改:init-ns
+  :repl-options {:init-ns logic.drive})
