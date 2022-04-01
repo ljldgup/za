@@ -49,9 +49,21 @@
 ;重复调用还能拿到之前的值，这个和生成器不一样
 (first rands)
 
+;last获取最后一个值
+(last rands)
+
 ;加了map仍然是lazy-seq
 (first (map inc rands))
 (nth (map inc rands) 2)
+
+concat可以合并惰性流，  (lazy-cat xs ys zs) === (concat (lazy-seq xs) (lazy-seq ys) (lazy-seq zs))
+(-> (lazy-cat '(1 2) '(3 4) '(5 6)) (nth 3))
+
+展开任意嵌套的数据结构
+(flatten '(1 (2 3) (1  (2 (3))))
+
+mapcat和java中flatmap相同，只展开一层
+(mapcat identity '((1 2 3) '(1 (2 3)) (1 (2 (3)))))
 
 ;interleave 交替取后面的数据，直到一个为空
 (interleave (range 5) (range 6 10) (range 10 15))

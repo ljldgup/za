@@ -1,8 +1,16 @@
-;基本的特殊符号
+﻿;基本的特殊符号
 ; &不定长参数  apply和直接调用等效 count 尺寸
 (defn average [& args]
     (/ (apply + args) (count args)))
 (average 1 2 3 4)
+
+;双向引用可以用def定义一个空变量，后面再扩充
+(def a)
+(defn b[x](if (> x 0) (a (dec x)) (println x)))
+(defn a[x] (println 'a x) (b (dec x)))
+(b 10)
+
+;这种方法也可以用来设计的时候预定义函数
 
 ;#""表示正则, re-开头的几个正则操作
 (re-seq #"a.+?b" "adbacb")
