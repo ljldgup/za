@@ -70,6 +70,7 @@
   'ok)
 
 (defn add-rule-or-assertion! [assertion]
+	(println assertion)
   (if (rule? assertion)
     (add-rule! assertion)
     (add-assertion! assertion)))

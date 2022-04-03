@@ -174,12 +174,15 @@
 ;重命名变量避免重复，这里其实可以用map
 (defn rename-variables-in [rule]
   (let [rule-application-id (new-rule-application-id)]
+  ;(println 'exp rule)
     (defn tree-walk [exp]
+	  (println exp)
       (cond
         (variable? exp) (make-new-variable exp rule-application-id)
-        (seq? exp) (cons (tree-walk (first exp)) (tree-walk (rest exp)))
+        (and (seq? exp) (not (empty? exp)))
+            (cons (tree-walk (first exp)) (tree-walk (rest exp)))
         :else exp)))
-  tree-walk rule)
+  (tree-walk rule))
 
 (defn apply-a-rule [rule query-pattern query-frame]
   (let [clean-rule (rename-variables-in rule)]
