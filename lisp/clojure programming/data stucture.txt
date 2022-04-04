@@ -1,4 +1,4 @@
-;集合类数据结构
+﻿;集合类数据结构
 (def v [1 2 3])
 ;conj可以加多个
 (conj v 1 2) 
@@ -38,7 +38,7 @@
     (lazy-seq 
         (cons (rand-int limit)
         (random-ints limit))))
-        
+
 ;等效(repeatedly 10 (random-int 100)
 (take 10 (random-ints 100))
 
@@ -56,7 +56,8 @@
 (first (map inc rands))
 (nth (map inc rands) 2)
 
-concat可以合并惰性流，  (lazy-cat xs ys zs) === (concat (lazy-seq xs) (lazy-seq ys) (lazy-seq zs))
+lazy-cat，concat可以合并惰性流，  
+(lazy-cat xs ys zs) === (concat (lazy-seq xs) (lazy-seq ys) (lazy-seq zs))
 (-> (lazy-cat '(1 2) '(3 4) '(5 6)) (nth 3))
 
 展开任意嵌套的数据结构

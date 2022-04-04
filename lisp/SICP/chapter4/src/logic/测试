@@ -1,3 +1,4 @@
+;再test中引入了drive空间， 输入(logic-repl)就可以测试
 (assert! (ljl job programmer))
 (assert! (sfd job programmer))
 (?x ?y ?z)
@@ -31,4 +32,4 @@ not表达式子中的约束也会受到框架影响，因此需要一样,注意�
 ;and是从左右向右求的
 (assert-body assert! (rule (fk-by-same ?x ?y ?z) (and (?x fk ?y) (?x fk ?z)  (not (lisp-value = ?z ?y)))))
 
-(fk-by-same ljl ?z ?y)
+(fk-by-same ljl)

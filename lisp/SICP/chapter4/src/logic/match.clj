@@ -98,6 +98,16 @@
         (rest-conjuncts conjuncts)
         first-result-frame))))
 
+;练习4.76 and的每个查询单独查询，在合并框架流, 这种情况not lisp-value依赖于别的约束的会出错
+(defn my-conjoin [conjuncts frame-stream]
+  (if (empty-conjunction? conjuncts)
+    frame-stream
+    (reduce 
+        merge-frame-stream 
+        (map #(qeval % frame-stream) conjuncts)))) 
+
+
+
 (def apply-rules)
 (defn simple-query [query-pattern frame-stream]
   (mapcat (fn [frame]
@@ -149,6 +159,7 @@
   (tree-walk exp))
 
 ;双向调用都先定义个空变量
+
 (def unify-match)
 (defn extend-if-possible [var val frame]
     ;(println 'extend-if-possible var val frame)
@@ -159,12 +170,14 @@
       (let [binding (binding-in-frame val frame)]
         (if binding
           (unify-match var (binding-value binding) frame)
+          ;规则外部的变量会被绑定到重命名的变量，比如x (? 49x)
           (my-extend var val frame)))
       (depends-on? val var frame) 'failed
       :else (my-extend var val frame))))
 
 
 (defn unify-match [p1 p2 frame]
+    ;(println (= p1 p2))
     ;(println 'unify-match p1 p2 frame)
   (cond
     (= frame 'failed) 'failed
@@ -189,11 +202,13 @@
   (tree-walk rule))
 
 (defn apply-a-rule [rule query-pattern query-frame]
-    ;(println 'apply-a-rule rule)
+    ;(println 'apply-a-rule rule query-pattern query-frame)
   (let [clean-rule (rename-variables-in rule)]
+    ;(println 'clean-rule clean-rule (conclusion clean-rule))
     (let [unify-result (unify-match query-pattern
                                     (conclusion clean-rule)
                                     query-frame)]
+      ;(println unify-result)
       (if (= unify-result 'failed)
         the-empty-stream
         (qeval (rule-body clean-rule)
@@ -203,5 +218,6 @@
 
 
 (defn apply-rules [pattern frame]
+    ;(println 'apply-rules pattern frame)
   (mapcat (fn [rule] (apply-a-rule rule pattern frame))
           (fetch-rules pattern frame)))

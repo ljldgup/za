@@ -9,11 +9,26 @@
 
 ;repl测试
 
-(add-rule-or-assertion! (add-assertion-body '(assert! (ljl job programmer))))
-(add-rule-or-assertion! (add-assertion-body '(assert! (agl job unknow))))
-(add-rule-or-assertion! (add-assertion-body '(assert! (fq job teacher))))
-(add-rule-or-assertion! (add-assertion-body '(assert! (ljl fk fq))))
-(add-rule-or-assertion! (add-assertion-body '(assert! (ljl fk ysm))))
+;把其他空间的数据重置
+(require 'logic.test  :reload-all)
+
+(->> '(assert! (rule (fk-by-same ?x) (and (?x fk ?y) (?x fk ?z)  (not   (lisp-value = ?z ?y)))))
+        add-assertion-body
+        query-syntax-process)
+
+(defn add-to-database[assert-or-rule]
+    (->> assert-or-rule
+        add-assertion-body
+        query-syntax-process
+        add-rule-or-assertion!))
+        
+(add-to-database '(assert! (ljl job programmer)))
+(add-to-database '(assert! (agl job unknow)))
+(add-to-database '(assert! (fq job teacher)))
+(add-to-database '(assert! (ljl fk fq)))
+(add-to-database '(assert! (ljl fk ysm)))
+(add-to-database '(assert! (rule (fk-by-same ?x) (and (?x fk ?y) (?x fk ?z)  (not (lisp-value = ?z ?y))))))
+
 
 @DATABASE
 @THE-ASSERTION
@@ -22,19 +37,22 @@
 (def start-stream (singleton-stream {}))
 (def data '(ljl job programmer))
 (def empty-frame {})
+
+;空的时候会直接打印出#object[clojure.core$map$fn这种形式
 (defn print-result[pattern]
+    (println "-----------------")
     (println "pattern:" pattern)
-    (let [extend-pattern (query-syntax-process pattern)]
-        (println "extendpattern:" extend-pattern )
-        (println "match result")
-        (map println
+    (let [extend-pattern  (query-syntax-process pattern)]
+        (doall (map #(println "match result" %)
                 (map
-                    (fn [frame] (instantiate extend-pattern
+                    (fn [frame]
+                            ;(println extend-pattern frame)
+                            (instantiate extend-pattern
                                              frame
                                              (fn [v f] (contract-question-mark v))))
-                    (qeval extend-pattern start-stream)))))
+                    (qeval extend-pattern start-stream))))))
 
-(use-index? query-pattern)
+(use-index? '(ljl job programmer))
 (indexable? '(ljl job programmer))
 (index-key-of '(ljl job programmer))
 (get-stream 'ljl 'assertion-stream)
@@ -48,40 +66,38 @@
 (qeval extend-query-pattern start-stream)
 (simple-query extend-query-pattern start-stream)
 (find-assertions extend-query-pattern {})
-
-(print-result query-pattern)
     
 
-(def query-pattern0 '(?y job ?yy)))
-(def query-pattern1 '(?x fk ?xx)))
+(def query-pattern0 '(?y job ?yy))
+(def query-pattern1 '(?x fk ?xx))
 (def query-pattern2 '(and (?x job ?xx) (?y job ?yy) (?x fk ?y)))
-(simple-query query-pattern1 start-stream)
+(qeval  (query-syntax-process query-pattern0) start-stream)
 (print-result query-pattern0)
 (print-result query-pattern1)
 (print-result query-pattern2)
 
 
-(def rule1 
-'(assert! (rule (fk-by-same ?x ?y ?z) (and (?x fk ?y) (?x fk ?z)  (not (lisp-value = ?z ?y))))))
 
 
-(->> rule1
-	query-syntax-process
-	add-assertion-body 
-	add-rule!)
 @DATABASE
 @THE-RULES
-
-(fetch-rules '(fk-by-same ljl ?z ?y) '())
-(rename-variables-in (fetch-rules '(fk-by-same ljl ?z ?y) '()))
+@THE-ASSERTION
+(fetch-rules '(fk-by-same ljl) '())
+(rename-variables-in (fetch-rules '(fk-by-same ljl) '()))
 (new-rule-application-id)
 (make-new-variable '(? x) (new-rule-application-id))
 
-(println-result '(fk-by-same ljl))
-(println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+(qeval  (query-syntax-process '(fk-by-same ljl)) start-stream)
+(qeval  (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z))) start-stream)
+(print-result '(fk-by-same ljl))
+(print-result '(and (fk-by-same ?x) (?x ?y ?z)))
 
-(map
-    (fn [frame] (instantiate '(and (fk-by-same ?x) (?x ?y ?z))
-                             frame
-                             (fn [v f] (contract-question-mark v))))
-    (qeval (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z))) start-stream))
+(let [extend-pattern  (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z)))]
+    (doall (map #(println "match result" %)
+            (map
+                (fn [frame] 
+                        (instantiate extend-pattern
+                                         frame
+                                         (fn [v f] (contract-question-mark v))))
+                (qeval extend-pattern start-stream)))))
+                

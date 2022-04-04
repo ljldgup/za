@@ -89,3 +89,9 @@ deseq实现嵌套
   
 for也能实现嵌套
 (for [x (range 2), y (range 11 12)] [(list x y)])
+
+;any?有任意元素返回true
+(any? '(false))
+;some任意一个满足表达式为真的元素
+(some identity '(false))
+(some #(not %) '(false))

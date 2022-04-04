@@ -22,6 +22,10 @@
 
 (defn stream-flatmap [proc s]
   (interleave-flatten (map proc s)))
+  
+  
+(defn stream-flatmap [proc s]
+  (interleave-flatten (map proc s)))
 
 ;interleave-delayed可以直接用clojure中的interleave
 ;stream-append-delayed 可以直接用 concat

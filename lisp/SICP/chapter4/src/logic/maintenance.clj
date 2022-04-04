@@ -92,6 +92,9 @@
 
 
 (defn fetch-rules [pattern frame]
+  ;(println 'fetch-rules (use-index? pattern) 
+    ;(get-indexed-rules pattern)
+    ;(get-all-rules))
   (if (use-index? pattern)
     (get-indexed-rules pattern)
     (get-all-rules)))
@@ -106,7 +109,9 @@
   (get-stream (index-key-of pattern) 'assert-stream))
 
 (defn fetch-assertions [pattern frame]
-  ;(println (get-all-assertions nil))
+  ;(println 'fetch-assertions (use-index? pattern) 
+      ;(get-indexed-assertions pattern)
+    ;(get-all-assertions pattern))
   (if (use-index? pattern)
     (get-indexed-assertions pattern)
     (get-all-assertions pattern)))

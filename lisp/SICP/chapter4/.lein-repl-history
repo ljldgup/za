@@ -1,0 +1,500 @@
+                (fn [frame] 
+                        (println extend-pattern frame)
+                        (instantiate extend-pattern
+                                         frame
+                                         (fn [v f] (contract-question-mark v))))
+                (qeval extend-pattern start-stream))))))
+(print-result)
+(defn print-result[pattern]
+(let [extend-pattern  (query-syntax-process pattern)]
+    (doall (map #(println "match result" %)
+            (map
+                (fn [frame] 
+                        (println extend-pattern frame)
+                        (instantiate extend-pattern
+                                         frame
+                                         (fn [v f] (contract-question-mark v))))
+                (qeval extend-pattern start-stream))))))
+(print-result '(fk-by-same ljl))
+(defn print-result[pattern]
+    (println "-----------------")
+    (println "pattern:" pattern)
+(let [extend-pattern  (query-syntax-process pattern)]
+    (doall (map #(println "match result" %)
+            (map
+                (fn [frame] 
+                        (println extend-pattern frame)
+                        (instantiate extend-pattern
+                                         frame
+                                         (fn [v f] (contract-question-mark v))))
+                (qeval extend-pattern start-stream))))))
+(print-result '(fk-by-same ljl))
+(require 'logic.test  :reload-all)
+(print-result '(fk-by-same ljl))
+(println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+(print-result '(fk-by-same ljl))
+(qeval  (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z))) start-stream)
+(logic-repl )
+(let [extend-pattern  (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z)))]
+    (doall (map #(println "match result" %)
+            (map
+                (fn [frame] 
+                        (instantiate extend-pattern
+                                         frame
+                                         (fn [v f] (contract-question-mark v))))
+                (qeval extend-pattern start-stream)))))
+(defn print-result[pattern]
+    (println "-----------------")
+    (println "pattern:" pattern)
+    (let [extend-pattern  (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z)))]
+        (doall (map #(println "match result" %)
+                (map
+                    (fn [frame] 
+                            (instantiate extend-pattern
+                                             frame
+                                             (fn [v f] (contract-question-mark v))))
+                    (qeval extend-pattern start-stream))))))
+(println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+(let [extend-pattern  (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z)))]
+    (doall (map #(println "match result" %)
+            (map
+                (fn [frame] 
+                        (instantiate extend-pattern
+                                         frame
+                                         (fn [v f] (contract-question-mark v))))
+                (qeval extend-pattern start-stream)))))
+(defn print-result[pattern]
+    (let [extend-pattern  (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z)))]
+        (doall (map #(println "match result" %)
+                (map
+                    (fn [frame] 
+                            (instantiate extend-pattern
+                                             frame
+                                             (fn [v f] (contract-question-mark v))))
+                    (qeval extend-pattern start-stream))))))
+ (println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+(defn print-result[pattern]
+    (println "-----------------")
+    (println "pattern:" pattern)
+    (let [extend-pattern  (query-syntax-process pattern)]
+        (doall (map #(println "match result" %)
+                (map
+                    (fn [frame] 
+                            (instantiate extend-pattern
+                                             frame
+                                             (fn [v f] (contract-question-mark v))))
+                    (qeval extend-pattern start-stream))))))
+(println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+(source print-result )
+print-result 
+(defn print-result[pattern]
+    (println "-----------------")
+    (println "pattern:" pattern)
+    (let [extend-pattern  (query-syntax-process pattern)]
+        (doall (map #(println "match result" %)
+                (map
+                    (fn [frame] 
+                            (instantiate extend-pattern
+                                             frame
+                                             (fn [v f] (contract-question-mark v))))
+                    (qeval extend-pattern start-stream))))))
+(println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+(defn print-result[pattern]
+    (println "-----------------")
+    (println "pattern:" pattern))
+(println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+(println-result)
+(println-result '(and))
+'(and (fk-by-same ?x) (?x ?y ?z))'(and (fk-by-same ?x) (?x ?y ?z))
+'(and (fk-by-same ?x) (?x ?y ?z))
+(count '(and (fk-by-same ?x) (?x ?y ?z)))
+(print-result query-pattern)
+    
+(print-result query-pattern)
+(print-result query-pattern0)
+(print-result query-pattern1)
+(print-result query-pattern2)
+(print-result 1)
+(defn print-result[& pattern]
+    (println "-----------------")
+    (println "pattern:" pattern)
+    (let [extend-pattern  (query-syntax-process pattern)]
+        (doall (map #(println "match result" %)
+                (map
+                    (fn [frame] 
+                            (instantiate extend-pattern
+                                             frame
+                                             (fn [v f] (contract-question-mark v))))
+                    (qeval extend-pattern start-stream))))))
+(print-result query-pattern2)
+(println-result '(fk-by-same ljl))
+(println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+println-result
+(println-result)
+(require 'logic.test :reload-all )
+(require 'logic.test :reload-all)
+(def map1 {:a 1 :b 2})
+(def map2 {:c 1 :b 3})
+(keys map1)
+(keys map1) (key map2)
+(keys map1) (keys map2)
+(clojure.set/intersection  (keys map1) (keys map2))
+(some  (keys map1) (keys map2))
+interpose
+(doc interpose)
+(clojure.set/intersection  (keys map1) (keys map2))
+(clojure.set/intersection  map1 map2)
+(doseq [k1 (keys map1)]
+(println k1))
+(doseq [k1 (keys map1)]
+(if (k1 map2)
+(println k1))
+)
+(contains? :a map1)
+(contains? map1 :a)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains frame1 %)) (keys frame2))]
+        (if (any (map #(= (% frame1) (% frame2))))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+        (if (any (map #(= (% frame1) (% frame2))))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+        (if (any (map #(= (% frame1) (% frame2))))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(doc any?)
+(doc some)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+        (if (any? (map #(= (% frame1) (% frame2))))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(merge-frame  map1 map2)
+map1
+map2
+(def map2 {:c 1 :b 2})
+map2
+(merge-frame  map1 map2)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+        (if (any? (map #(= (% frame1) (% frame2)) same-keys))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(merge-frame  map1 map2)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          (println same-keys to-be-added-keys)
+        (if (any? (map #(= (% frame1) (% frame2)) same-keys))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(merge-frame  map1 map2)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          (println (map #(= (% frame1) (% frame2)) same-keys) to-be-added-keys)
+        (if (any? (map #(= (% frame1) (% frame2)) same-keys))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(merge-frame  map1 map2)
+(filter #(contains? map2 %) (keys map1))
+(any? (filter #(contains? map2 %) (keys map1))
+)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          (println (map #(= (% frame1) (% frame2)) same-keys) to-be-added-keys)
+        (if (any? (map #(not (= (% frame1) (% frame2))) same-keys))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(merge-frame  map1 map2)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          (println (map #(not (= (% frame1) (% frame2))) same-keys) to-be-added-keys)
+        (if (any? (map #(not (= (% frame1) (% frame2))) same-keys))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1))))
+(merge-frame  map1 map2)
+ (filter #(not (contains? map1 %)) (keys map2))
+(reduce #(assoc %1 %2 (%2 map2)) (filter #(not (contains? map1 %)) (keys map2))  map1))))
+(def map1 {:a 1 :b 2})
+(def map1 {:c 1 :b 2})
+(let [same-keys (filter #(contains? map2 %) (keys map1))
+      to-be-added-keys (filter #(not (contains? map1 %)) (keys map2))]
+        (println (map #(not (= (% frame1) (% frame2))) same-keys))
+        (println (reduce #(assoc %1 %2 (%2 frame2)) to-be-added-keys frame1)))
+(def map1 {:a 1 :b 2})
+(def map1 {:c 1 :b 2})
+(let [same-keys (filter #(contains? map2 %) (keys map1))
+      to-be-added-keys (filter #(not (contains? map1 %)) (keys map2))]
+        (println (map #(not (= (% map1) (% map2))) same-keys))
+        (println (reduce #(assoc %1 %2 (%2 map2)) to-be-added-keys map1)))
+(doc reduce)
+(let [same-keys (filter #(contains? map2 %) (keys map1))
+      to-be-added-keys (filter #(not (contains? map1 %)) (keys map2))]
+        (println (map #(not (= (% map1) (% map2))) same-keys))
+        (println (reduce #(assoc %1 %2 (%2 map2)) map1 to-be-added-keys )))
+(def map1 {:a 1 :b 2})
+(def map1 {:c 1 :b 2})
+(let [same-keys (filter #(contains? map2 %) (keys map1))
+      to-be-added-keys (filter #(not (contains? map1 %)) (keys map2))]
+        (println (map #(not (= (% map1) (% map2))) same-keys))
+        (println to-be-added-keys)
+        (println (reduce #(assoc %1 %2 (%2 map2)) map1 to-be-added-keys )))
+(def map1 {:a 1 :b 2})
+(def map2 {:c 1 :b 2})
+(let [same-keys (filter #(contains? map2 %) (keys map1))
+      to-be-added-keys (filter #(not (contains? map1 %)) (keys map2))]
+        (println (map #(not (= (% map1) (% map2))) same-keys))
+        (println to-be-added-keys)
+        (println (reduce #(assoc %1 %2 (%2 map2)) map1 to-be-added-keys )))
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          
+        (if (any? (map #(not (= (% frame1) (% frame2))) same-keys))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(merge-frame  map1 map2)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          
+        (if (any? (map #(not (= (% frame1) (% frame2))) same-keys))
+            nil
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          
+        (if (any? (map #(not (= (% frame1) (% frame2))) same-keys))
+            1
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(merge-frame  map1 map2)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          
+        (if (any? (map #(not (= (% frame1) (% frame2))) same-keys))
+            (println (map #(not (= (% frame1) (% frame2))) same-keys))
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(merge-frame  map1 map2)
+(any? (false))
+(any? '(false))
+(any?
+)
+(doc any?)
+any?
+any
+(some '(false))
+(doc some)
+(def map1 {:a 1 :b 2})
+(def map2 {:c 1 :b 2})
+(let [same-keys (filter #(contains? map2 %) (keys map1))
+      to-be-added-keys (filter #(not (contains? map1 %)) (keys map2))]
+        (println (some (map #(not (= (% map1) (% map2))) same-keys)))
+        (println to-be-added-keys)
+        (println (reduce #(assoc %1 %2 (%2 map2)) map1 to-be-added-keys )))
+(let [same-keys (filter #(contains? map2 %) (keys map1))
+      to-be-added-keys (filter #(not (contains? map1 %)) (keys map2))]
+        (println (some #(not (= (% map1) (% map2))) same-keys))
+        (println to-be-added-keys)
+        (println (reduce #(assoc %1 %2 (%2 map2)) map1 to-be-added-keys )))
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          
+        (if (some (map #(not (= (% frame1) (% frame2))) same-keys))
+            (println (map #(not (= (% frame1) (% frame2))) same-keys))
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(merge-frame  map1 map2)
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          
+        (if (some #(not (= (% frame1) (% frame2))) same-keys)
+            (println (map #(not (= (% frame1) (% frame2))) same-keys))
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(merge-frame  map1 map2)
+(any? '(false true))
+(some identity '(false true))
+(some identity '(false true));any?有任意元素返回true
+(any? '(false))
+;some返回一个表达式为真的元素
+(some identity '(false))
+(some #(not %) '(false))
+clear
+cls
+(defn merge-frame[frame1 frame2]
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+          
+        (if (some #(not (= (% frame1) (% frame2))) same-keys)
+            the-empty-stream
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(merge-frame  map1 map2)
+(def map3 {:a 2 :b 2}
+)
+(merge-frame  map1 map3)
+(doc concat)
+(lazy-cat '(1 2 3) '( 3 4 5))
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? stream1) (empty? stream2))
+        the-empty-stream
+        (let [first-frame1 (first stream1)
+              first-frame2 (first stream2)]
+            (cons (merge-frame first-frame1 first-frame2) 
+                (lazy-cat
+                    (merge-frame (rest first-frame1) first-frame2)
+                    (merge-frame (rest first-frame1) first-frame2))))))
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            (cons (merge-frame first-frame1 first-frame2) 
+                (lazy-cat
+                    (merge-frame (rest first-frame1) first-frame2)
+                    (merge-frame (rest first-frame1) first-frame2))))))
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? frame-stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            (cons (merge-frame first-frame1 first-frame2) 
+                (lazy-cat
+                    (merge-frame (rest first-frame1) first-frame2)
+                    (merge-frame (rest first-frame1) first-frame2))))))
+map1
+map2
+map3
+(merge-frame-stream (singleton map1) (singleton map2))
+(merge-frame-stream (singleton-stream map1) (singleton-stream map2))
+                    (merge-frame (rest first-frame1) first-frame2))))))
+(def map1 {:a 1 :b 2})
+(def map2 {:a 2 :b 3})
+(def map3 {:c 4 :b 2})
+(def map4 {:c 5 :b 3})
+           
+(merge-frame-stream (list map1 map2) (list map3 map4))
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? frame-stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            (cons (merge-frame first-frame1 first-frame2) 
+                (lazy-cat
+                    (merge-frame-stream (rest first-frame1) first-frame2)
+                    (merge-frame-stream (rest first-frame1) first-frame2))))))
+(merge-frame-stream (list map1 map2) (list map3 map4))
+(first (merge-frame-stream (list map1 map2) (list map3 map4)))
+(second (merge-frame-stream (list map1 map2) (list map3 map4)))
+(defn merge-frame[frame1 frame2]
+    (print frame1 frame2)
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+         ;any?是不为空就返回ture，some是任意一个表达式为真返回true
+        (if (some #(not (= (% frame1) (% frame2))) same-keys)
+            the-empty-stream
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(second (merge-frame-stream (list map1 map2) (list map3 map4)))
+(defn merge-frame[frame1 frame2]
+    (println frame1)
+    (println frame2)
+    (let [same-keys (filter #(contains? frame2 %) (keys frame1))
+          to-be-added-keys (filter #(not (contains? frame1 %)) (keys frame2))]
+         ;any?是不为空就返回ture，some是任意一个表达式为真返回true
+        (if (some #(not (= (% frame1) (% frame2))) same-keys)
+            the-empty-stream
+            (reduce #(assoc %1 %2 (%2 frame2)) frame1  to-be-added-keys ))))
+(second (merge-frame-stream (list map1 map2) (list map3 map4)))
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? frame-stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            (cons (merge-frame first-frame1 first-frame2) 
+                (lazy-cat
+                    (merge-frame-stream (rest frame-stream1) frame-stream2)
+                    (merge-frame-stream first-stream1 (rest frame-stream2)))))))
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? frame-stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            (cons (merge-frame first-frame1 first-frame2) 
+                (lazy-cat
+                    (merge-frame-stream (rest frame-stream1) frame-stream2)
+                    (merge-frame-stream frame-stream1 (rest frame-stream2)))))))
+(second (merge-frame-stream (list map1 map2) (list map3 map4)))
+(merge-frame-stream (list map1 map2) (list map3 map4))
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? frame-stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            (first #(not (empty? %))
+                (cons (merge-frame first-frame1 first-frame2) 
+                    (lazy-cat
+                        (merge-frame-stream (rest frame-stream1) frame-stream2)
+                        (merge-frame-stream frame-stream1 (rest frame-stream2))))))))
+(merge-frame-stream (list map1 map2) (list map3 map4))
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? frame-stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            
+                (cons (merge-frame first-frame1 first-frame2) 
+                    (lazy-cat
+                        (merge-frame-stream (rest frame-stream1) frame-stream2)
+                        (merge-frame-stream frame-stream1 (rest frame-stream2)))))))
+(merge-frame-stream (list map1 map2) (list map3 map4))
+(l(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? frame-stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            
+                (filter
+                    #(not (empty? %))
+                    (cons (merge-frame first-frame1 first-frame2) 
+                    (lazy-cat
+                        (merge-frame-stream (rest frame-stream1) frame-stream2)
+(defn merge-frame-stream[frame-stream1 frame-stream2]
+    (if (or (empty? frame-stream1) (empty? frame-stream2))
+        the-empty-stream
+        (let [first-frame1 (first frame-stream1)
+              first-frame2 (first frame-stream2)]
+            
+                (filter
+                    #(not (empty? %))
+                    (cons (merge-frame first-frame1 first-frame2) 
+                    (lazy-cat
+                        (merge-frame-stream (rest frame-stream1) frame-stream2)
+                        (merge-frame-stream frame-stream1 (rest frame-stream2))))))))
+(merge-frame-stream (list map1 map2) (list map3 map4))
+(reduce merge-frame-stream (list (list map1 map2) (list map3 map4)) the-empty-stream)
+(reduce merge-frame-stream the (list (list map1 map2) (list map3 map4)))
+(reduce merge-frame-stream (list (list map1 map2) (list map3 map4)))
+(defn my-conjoin [conjuncts frame-stream]
+  (if (empty-conjunction? conjuncts)
+    frame-stream
+    (reduce 
+        merge-frame-stream 
+        (map #(qeval % frame-stream) conjuncts)))) 
+(requir 'logic.test  :reload-all)
+(require 'logic.test  :reload-all)
+(print-result query-pattern2)
+(require 'logic.test  :reload-all)

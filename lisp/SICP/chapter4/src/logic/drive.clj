@@ -4,7 +4,7 @@
   (:require [logic.maintenance :refer :all])
   (:require [logic.stream :refer :all]))
 ;;;;;;;;;;;;;;;;;;;;;;;;;驱动循环
-(defn repl []
+(defn logic-repl []
 
     (let [q (query-syntax-process (read-string (read-line)))]
       (if (not (= q 'exit))
@@ -19,7 +19,8 @@
               (println)
               (doall (map println
                           (map
-                            (fn [frame] (instantiate q
+                            (fn [frame] (println q frame)
+                                        (instantiate q
                                                      frame
                                                      (fn [v f] (contract-question-mark v))))
                             (qeval q (singleton-stream {})))))))

@@ -5,4 +5,4 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]]
   ;这里根据调试需要修改:init-ns
-  :repl-options {:init-ns logic.drive})
+  :repl-options {:init-ns logic.test})
