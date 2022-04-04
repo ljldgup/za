@@ -2,7 +2,8 @@
 ;;;;;;;;;;;;;;;;;;; 框架和约束 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;框架是一组约束的表，约束为一个变量值 的 键值对
 (defn binding-in-frame [variable frame]
-  (let [variable-symbol (second variable)
+    ;(println 'binding-in-frame variable frame)
+  (let [variable-symbol (last variable)
         variable-value (variable-symbol frame)]
     (if variable-value
       (list variable-symbol variable-value))))
@@ -11,7 +12,8 @@
   (list variable value))
 
 (defn my-extend [variable value frame]
-  (let [variable-symbol (second variable)]
+    ;(println frame)
+  (let [variable-symbol (last variable)]
     (assoc frame variable-symbol value)))
 
 (defn binding-value [binding]

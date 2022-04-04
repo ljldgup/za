@@ -12,6 +12,7 @@
 ;不存在变量则简单extend，存在则递归调用pattern match，这里是双向调用
 (def pattern-match)
 (defn extend-if-consistent [var dat frame]
+;(println 'extend-if-consistent var dat frame)
   (let [binding (binding-in-frame var frame)]
     (if binding
       (pattern-match (binding-value binding) dat frame)
@@ -117,6 +118,7 @@
 
 ;实例化表达式
 (defn instantiate [exp frame unbound-var-handler]
+;(println 'instantiate exp frame unbound-var-handler)
   (defn copy [exp]
     (cond (variable? exp)
           (let [binding (binding-in-frame exp frame)]
@@ -133,6 +135,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;规则合一;;;;;;;;;;;;;;;;;;;;
 ;exp中是否存在var
 (defn depends-on? [exp var frame]
+;(println 'depends-on? exp var frame)
   (defn tree-walk [e]
     (cond
       (variable? e)
@@ -148,6 +151,7 @@
 ;双向调用都先定义个空变量
 (def unify-match)
 (defn extend-if-possible [var val frame]
+    ;(println 'extend-if-possible var val frame)
   (let [binding (binding-in-frame var frame)]
     (cond
       binding (unify-match (binding-value binding) val frame)
@@ -161,6 +165,7 @@
 
 
 (defn unify-match [p1 p2 frame]
+    ;(println 'unify-match p1 p2 frame)
   (cond
     (= frame 'failed) 'failed
     (= p1 p2) frame
@@ -176,7 +181,6 @@
   (let [rule-application-id (new-rule-application-id)]
   ;(println 'exp rule)
     (defn tree-walk [exp]
-	  (println exp)
       (cond
         (variable? exp) (make-new-variable exp rule-application-id)
         (and (seq? exp) (not (empty? exp)))
@@ -185,6 +189,7 @@
   (tree-walk rule))
 
 (defn apply-a-rule [rule query-pattern query-frame]
+    ;(println 'apply-a-rule rule)
   (let [clean-rule (rename-variables-in rule)]
     (let [unify-result (unify-match query-pattern
                                     (conclusion clean-rule)

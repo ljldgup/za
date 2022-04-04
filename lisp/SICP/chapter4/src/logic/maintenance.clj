@@ -15,7 +15,9 @@
              #(assoc % key2 (assoc data key1 item))))
     (swap! DATABASE
            #(assoc % key2 {key1 item})))
-  (println @DATABASE))
+  ;(println @DATABASE)
+  )
+
 
 (defn my-get [key1 key2]
   (key1 (key2 @DATABASE)))
@@ -70,7 +72,7 @@
   'ok)
 
 (defn add-rule-or-assertion! [assertion]
-	(println assertion)
+	;(println assertion)
   (if (rule? assertion)
     (add-rule! assertion)
     (add-assertion! assertion)))

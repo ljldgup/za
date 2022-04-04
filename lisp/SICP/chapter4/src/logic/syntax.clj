@@ -10,7 +10,7 @@
 
 
 (defn make-new-variable [var rule-application-id]
-  (cons '? (list rule-application-id (second var))))
+  (list '? (symbol (str rule-application-id (second var)))))
 
 
 (def rule-counter (atom 0))

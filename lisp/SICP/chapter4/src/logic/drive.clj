@@ -4,22 +4,24 @@
   (:require [logic.maintenance :refer :all])
   (:require [logic.stream :refer :all]))
 ;;;;;;;;;;;;;;;;;;;;;;;;;驱动循环
-(defn -main []
-  (try
+(defn repl []
+
     (let [q (query-syntax-process (read-string (read-line)))]
-      (cond
-        (assertion-to-be-added? q)
-        (do (add-rule-or-assertion! (add-assertion-body q))
-            (println)
-            (println "Added to data base"))
-        :else
-        (do
-          (println)
-          (doall (map println
-                      (map
-                        (fn [frame] (instantiate q
-                                                 frame
-                                                 (fn [v f] (contract-question-mark v))))
-                        (qeval q (singleton-stream {}))))))))
-      (catch Exception e (println e)))
-    (recur))
+      (if (not (= q 'exit))
+        (try
+          (cond
+            (assertion-to-be-added? q)
+            (do (add-rule-or-assertion! (add-assertion-body q))
+                (println)
+                (println "Added to data base"))
+            :else
+            (do
+              (println)
+              (doall (map println
+                          (map
+                            (fn [frame] (instantiate q
+                                                     frame
+                                                     (fn [v f] (contract-question-mark v))))
+                            (qeval q (singleton-stream {})))))))
+          (catch Exception e (println e))))
+    (recur)))

@@ -4,7 +4,8 @@
   (:require [logic.match :refer :all])
   (:require [logic.syntax :refer :all])
   (:require [logic.maintenance :refer :all])
-  (:require [logic.stream :refer :all]))
+  (:require [logic.stream :refer :all])
+  (:require [logic.drive :refer :all]))
 
 ;repl测试
 
@@ -16,46 +17,48 @@
 
 @DATABASE
 @THE-ASSERTION
-(def query-pattern (query-syntax-process '(and (?x job ?xx) (?y job ？yy) (?x fk ?y))))
 
 
-(def start-stream (singleton-stream '({})))
+(def start-stream (singleton-stream {}))
 (def data '(ljl job programmer))
 (def empty-frame {})
+(defn print-result[pattern]
+    (println "pattern:" pattern)
+    (let [extend-pattern (query-syntax-process pattern)]
+        (println "extendpattern:" extend-pattern )
+        (println "match result")
+        (map println
+                (map
+                    (fn [frame] (instantiate extend-pattern
+                                             frame
+                                             (fn [v f] (contract-question-mark v))))
+                    (qeval extend-pattern start-stream)))))
 
 (use-index? query-pattern)
 (indexable? '(ljl job programmer))
 (index-key-of '(ljl job programmer))
 (get-stream 'ljl 'assertion-stream)
 
-(fetch-assertions query-pattern empty-frame)
-(pattern-match query-pattern data empty-frame)
-(check-an-assertion data query-pattern empty-frame)
-(find-assertions query-pattern empty-frame)
-(singleton-stream (check-an-assertion data query-pattern empty-frame))
+(def extend-query-pattern (query-syntax-process '(and (?x job ?xx) (?y job ?yy) (?x fk ?y))))
+(fetch-assertions extend-query-pattern empty-frame)
+(pattern-match extend-query-pattern data empty-frame)
+(check-an-assertion data extend-query-pattern empty-frame)
+(find-assertions extend-query-pattern empty-frame)
+(singleton-stream (check-an-assertion data extend-query-pattern empty-frame))
+(qeval extend-query-pattern start-stream)
+(simple-query extend-query-pattern start-stream)
+(find-assertions extend-query-pattern {})
 
+(print-result query-pattern)
+    
 
-(qeval query-pattern start-stream)
-(simple-query query-pattern start-stream)
-(find-assertions query-pattern {})
-
-(map
-  (fn [frame] (instantiate query-pattern
-                           frame
-                           (fn [v f] (contract-question-mark v))))
-  (qeval query-pattern (singleton-stream '({}))))
-
-
-(def query-pattern1 (query-syntax-process '(?x job ?xx)))
-(def query-pattern2 (query-syntax-process '(?y job ？yy)))
+(def query-pattern0 '(?y job ?yy)))
+(def query-pattern1 '(?x fk ?xx)))
+(def query-pattern2 '(and (?x job ?xx) (?y job ?yy) (?x fk ?y)))
 (simple-query query-pattern1 start-stream)
-
-(def query-pattern (query-syntax-process '(ljl ?yy ?xx)))
-
-(simple-query  query-pattern (singleton-stream '(ljl job unknow)))
-(stream-flatmap #(qeval '(ljl ?yy ?xx) %) (singleton-stream '(ljl job unknow)))
-
-
+(print-result query-pattern0)
+(print-result query-pattern1)
+(print-result query-pattern2)
 
 
 (def rule1 
@@ -73,3 +76,12 @@
 (rename-variables-in (fetch-rules '(fk-by-same ljl ?z ?y) '()))
 (new-rule-application-id)
 (make-new-variable '(? x) (new-rule-application-id))
+
+(println-result '(fk-by-same ljl))
+(println-result '(and (fk-by-same ?x) (?x ?y ?z)))
+
+(map
+    (fn [frame] (instantiate '(and (fk-by-same ?x) (?x ?y ?z))
+                             frame
+                             (fn [v f] (contract-question-mark v))))
+    (qeval (query-syntax-process '(and (fk-by-same ?x) (?x ?y ?z))) start-stream))
