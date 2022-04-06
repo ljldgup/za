@@ -1,0 +1,10 @@
+
+Thread/sleep 1000
+
+(.getTime (new Date))
+
+异常，clojure不是必须
+ (try (throw (Exception. "error")) (finally (println "final")))  
+ (new Exception "sdf")
+ (try (/ 3 0) (catch Exception e (println e)))  
+ (assert true)  

@@ -16,6 +16,24 @@
 ;for 产生一个新列表 类似python
 (for [[k v] (hash-map :a 3 :b 11 :c 1)] [k (inc v)])
 
+
+assoc接收三个参数：第一个是向量，第二个是整数索引，第三个是一个值
+(assoc [1 2 3] 0 10)  
+[10 2 3]  
+assoc不会修改原来容器 
+
+哈希表
+(assoc {"a" 1, "b" 2, "c" 1} "a" 10)
+(assoc {:b" 2, :c 1} a 10)
+(dissoc {'a 10, 'b 2, 'c 1} a)
+
+获取
+(get {"a" 1, "b" 2, "c" 1} "a")
+({"a" 1, "b" 2, "c" 1} "a")
+(:a {:a 2 "b" 2})
+('a {'a 3 "b" 1})
+
+
 (defn map-map
     [f m]
     (into (empty m)
