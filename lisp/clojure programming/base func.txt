@@ -1,4 +1,14 @@
-﻿;基本的特殊符号
+﻿
+coljure相除默认分数，
+可以通过float, double获得小数
+也可以通过小数点.
+(/ 1 2.)
+(/ 1 1.5)
+
+(quot 22 7) ;整除
+(rem 22 7) ;余数
+  
+;基本的特殊符号
 ; &不定长参数  apply和直接调用等效 count 尺寸
 (defn average [& args]
     (/ (apply + args) (count args)))
@@ -30,6 +40,11 @@
 ((fn[[x & rest_args]] 
     (println rest_args)) 
  '("123" 2 3 "4"))
+
+defn 后面可以直接跟多个函数体，实现重载,注意每个重载都要用括号包起来
+(defn test
+  ([x] (println x))
+  ([x y] (println x y)))
 
 ;3索引 :as返回自己
 (let [{b 3, :as args} '("123" 2 3 "4")]
@@ -95,3 +110,34 @@ for也能实现嵌套
 ;some任意一个满足表达式为真的元素
 (some identity '(false))
 (some #(not %) '(false))
+
+or 效果类似，or 全不为真返回false
+every? 和 and和上面类同
+
+letfn定义临时函数，避免函数内定义的函数需要递归时的空间污染
+(defn outer[x]
+    (defn inner [y]
+                (if (> y 0)
+                    (do (println x)
+                        (inner (dec y)))))
+    inner)
+        
+       
+(defn letfn-outer[x]
+    (letfn [(inner [y]
+                (if (> y 0)
+                    (do (println x)
+                        (inner (dec y)))))]
+       inner))
+       
+(def inner1 (outer 1))
+(def inner2 (outer 2))
+;结果错误因为递归调用的inner已经被(outer 2)调用时重新定义
+(inner1 3)
+(inner2 3)
+
+(def inner1 (letfn-outer 1))
+(def inner2 (letfn-outer 2))
+;结果正确，因为两个inner都是局部函数
+(inner1 3)
+(inner2 3)

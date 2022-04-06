@@ -8,3 +8,9 @@ Thread/sleep 1000
  (new Exception "sdf")
  (try (/ 3 0) (catch Exception e (println e)))  
  (assert true)  
+ 
+ 
+doto 将第一个式子的结果加到后面每个列表的最后一个执行
+(doto 1 (println 1 ) (println 2 ) (println 3))
+doto 适合java对象操作
+(object 1 (.setXxx 1 ) (.setXxx 2 ))

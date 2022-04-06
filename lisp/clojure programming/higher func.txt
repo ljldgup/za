@@ -1,14 +1,19 @@
 ﻿;函数式编程
-;map多多个序列操作相当于将同位置拼成一个序列，然后调用
-(map (fn[ & args] (reduce + args )) '(1 2 3) '(4 5 6) '(1 4 5))
+;map多多个序列操作相当于将同位置拼成一个序列，然后调用，最短结束，就结束过程
+(map (fn[ & args] (reduce + args )) '(1 2 3 4) '(4 5 6) '(1 4 5))
 (map #(reduce + %&) '(1 2 3) '(4 5 6) '(1 4 5))
 
 ;两两操作的都可以考虑reduce
 (reduce max '(1 2 3))
 
 ;partial 克里化
+;partial 配合关键字 返回函数， 比匿名表达式好用些,如下
 (def only-strings (partial filter string?))
 (only-strings '("a" 5 "b" 6))
+
+;行转列效果，map多个序列长度不同会按照最短的来
+(map vector (repeat 1) '(1 2 3 4) '(3 2 1))
+
 
 ;comp 函数组合,和的复数转字符串
 (def negated-sum-str (comp str - +))
@@ -47,4 +52,33 @@ interpose 在列表中没量过之间插入
 (repeatedly 10 (partial rand-int 10))
 (repeatedly 10 (partial (memoize rand-int) 10)) 
 
+lambda也可配合memoize使用,可以实现惰性求值槽位的效果
+(def mem_fn (memoize (fn[] (rand-int 10))))
+(mem_fn)
 
+
+apply 和 直接括号执行的区别在于可以用容器解包为参数
+(apply * (repeat 19 3))
+直接(* (repeat 19 3))就不行 
+经常用于不定参数截取后，递归调用
+
+eval能执行符号表
+(eval '(+ 1 2))
+字符串需要read-string
+(eval (read-string "(+ 1 2)"))
+
+
+doto 将第一个式子的结果加到后面每个列表的最后一个执行
+(doto 1 (println 1 ) (println 2 ) (println 3))
+doto 适合java对象操作
+
+
+->>,-> 是将每次计算的结果作为后一个表达式的参数不一样
+(->> 1 (println 1 ) (println 2 ) (println 3))
+
+
+doall 将惰性序列取出
+(doall (range 3))
+
+
+identity返回自己
