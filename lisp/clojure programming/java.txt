@@ -14,3 +14,24 @@ doto 将第一个式子的结果加到后面每个列表的最后一个执行
 (doto 1 (println 1 ) (println 2 ) (println 3))
 doto 适合java对象操作
 (object 1 (.setXxx 1 ) (.setXxx 2 ))
+
+
+(def frame (java.awt.Frame.))
+;匹配查找函数
+(for [meth (.getMethods java.awt.Frame)
+            :let [name (.getName meth)]
+            :when (re-find #"Vis" name)] name)
+            
+(.setVisible frame true)
+(.setSize frame (java.awt.Dimension. 200 200))
+(def gfx (.getGraphics frame))
+(.fillRect gfx 100 100 50 75)
+
+(defn xors[max-x max-y]
+    (for [x (range max-x) y (range max-y)]
+        [x y (rem (bit-xor x y) 256)]))
+        
+(doseq [[x y xor] (xors 1000 1000)]
+    (.setColor gfx (java.awt.Color. xor xor xor))
+    (.fillRect gfx x y 1 1))
+(.dispose frame)

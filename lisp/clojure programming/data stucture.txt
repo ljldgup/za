@@ -1,10 +1,20 @@
-﻿;集合类数据结构
+﻿;空集均为空
+(map boolean '(() [] {} 0 nil false))
+
+seq 检查空序列
+(map #(->> % seq boolean) '(() [] {}))
+
+
+;集合类数据结构
 (def v [1 2 3])
-;conj可以加多个
+;conj可以加多个，加在尾部
 (conj v 1 2) 
-;cons只能加一个
-(cons 1 2  v) 
-(seq v)
+
+;cons只能加一个，加在头部
+(cons 1  v)
+(cons 1 2 v) 
+
+
 ;conj，cons都是加在最前面
 ;加在后面用concat
 
@@ -13,43 +23,63 @@
 (empty '(1 2))
 (empty {:a 1})
 
-;for 产生一个新列表 类似python
-(for [[k v] (hash-map :a 3 :b 11 :c 1)] [k (inc v)])
+map创建
+{:a 3 :b 11 [1 2 3] 1}
+(hash-map :a 3 :b 11 [1 2 3] 1)
+(into {} '([:a 3] [:b 11] [[1 2 3] 1]))
+(zipmap '(:a :b [1 2 3]) '(3 11 1))
 
+
+;哈希表
+(assoc {"a" 1, "b" 2, "c" 1} "a" 10)
+(assoc {:b" 2, :c 1} a 10)
+(dissoc {'a 10, 'b 2, 'c 1} a)
 
 assoc接收三个参数：第一个是向量，第二个是整数索引，第三个是一个值
 (assoc [1 2 3] 0 10)  
 [10 2 3]  
 assoc不会修改原来容器 
 
-哈希表
-(assoc {"a" 1, "b" 2, "c" 1} "a" 10)
-(assoc {:b" 2, :c 1} a 10)
-(dissoc {'a 10, 'b 2, 'c 1} a)
+;for 产生一个新列表 类似python
+(for [[k v] ] [k (inc v)])
 
-获取
+
+
+
+
+;list右侧尾部操作较快
+(pop [1 2 3]) 移除尾部
+(peek [1 2 3]) 尾部，类似last
+
+定义类型的数组
+ (vector-of :int 1.1 Math/PI)
+
+
+
+;获取
 (get {"a" 1, "b" 2, "c" 1} "a")
 ({"a" 1, "b" 2, "c" 1} "a")
 (:a {:a 2 "b" 2})
 ('a {'a 3 "b" 1})
 
 
-(defn map-map
-    [f m]
-    (into (empty m)
-        (for [[k v] m]
-            [k (f v)])))
-            
-(map-map inc (hash-map :a 3 :b 11 :c 1))
-(map-map inc (sorted-map :a 3 :b 11 :c 1))
 
-;seq 返回列表，类似python list
+;set,没有时返回nil,否则返回键值
+(map #{:a, 1}  '(1 2 3 :a))
+
+;交叉并集
+(clojure.set/intersection #{:b :c} (set (keys {:a 1  :b 2})))
+(clojure.set/difference #{:b :c} (keys {:a 1  :b 2}))
+(clojure.set/union #{:b :c} (keys {:a 1  :b 2}))
+
+
+;seq 返回列表，是链表实现的
 (seq "abfd")
 (seq (hash-map :a 3 :b 11 :c 1))    
 
-;
-(cons '() (range 1 3))
 
+
+;惰性列表
 (defn random-ints 
     [limit]
     (println "take one random number")
@@ -74,51 +104,67 @@ assoc不会修改原来容器
 (first (map inc rands))
 (nth (map inc rands) 2)
 
+
+
+
 lazy-cat，concat可以合并惰性流，  
 (lazy-cat xs ys zs) === (concat (lazy-seq xs) (lazy-seq ys) (lazy-seq zs))
 (-> (lazy-cat '(1 2) '(3 4) '(5 6)) (nth 3))
 
+
+
+
 展开任意嵌套的数据结构
 (flatten '(1 (2 3) (1  (2 (3))))
+
 
 mapcat和java中flatmap相同，只展开一层
 (mapcat identity '((1 2 3) '(1 (2 3)) (1 (2 (3)))))
 
+
+
+
+
 ;interleave 交替取后面的数据，直到一个为空
 (interleave (range 5) (range 6 10) (range 10 15))
+
+
+
 
 ;split-with 按条件分成两个惰性序列
 (let [[t d] (split-with neg? (range -5 5))]
     (println t d))
+
+
+
 
 ;sorted 操作,按key比较
 (def sm (sorted-map :a 3 :b 11 :c 1))
 (rseq sm)
 (subseq sm <= :b)
 
+
+
 (sort < (repeatedly 10 #(rand-int 100)))
 (sorted-map-by compare :a 3 :b 11 :c 1)
 (sorted-map-by (comp - compare) :a 3 :b 11 :c 1)
 (sorted-set-by < 3 11 1)
 
-;返回第一个非nil入参
-(some #{1 3 7} [0 2 3])
-(some #{1 3 7} [0 2 4])
-
-(defn enclidian-vivision
-    [x y]
-    [(quot x y) (rem x y)])
-
-;vector 配合解包
-(let [[q r] (enclidian-vivision 54 8)]
-    (println q r))
     
 ;keys vals
 (keys (sorted-map :a 3 :b 11 :c 1))
 (vals (sorted-map :a 3 :b 11 :c 1))
 
-;group-by 返回map
+
+
+
+;group-by 返回map,值是list和java中的是一样的
 (group-by #(rem % 3) (range 10))
+
+;frequencies统计类似python中的counter
+(frequencies '(1 2 3 "f"))
+
+
 
 ;注意for返回的是序列，没法直接返回map,需要into
 (defn reduce-by
@@ -127,7 +173,11 @@ mapcat和java中flatmap相同，只展开一层
         (for [[k v] (group-by key-fn m)]
             [k (reduce fn init v)])))
 
+
+
 (reduce-by #(rem % 3) (range 10) + 0)
+
+
  
 ;易变集合
 (def x (transient []))
@@ -137,6 +187,7 @@ mapcat和java中flatmap相同，只展开一层
 (defn naive-into
     [coll source]
     (reduce conj coll source))
+
 
 ;使用可变容器
 (defn faster-into
@@ -154,13 +205,6 @@ mapcat和java中flatmap相同，只展开一层
 (nth (persistent! [1 2 3]) 0)
 
 
-;元数据
-(def a ^{:created (System/currentTimeMillis)}
-        [1 2 3])
-(meta a)
-
-;这里指定的是 [1 2 3]这个vector的元数据
-(meta ^:private ^:dynamic [1 2 3])
 
 ;利用reduce实现一个带初值的foreach
 ;assoc-in修改多维集合
@@ -172,108 +216,47 @@ mapcat和java中flatmap相同，只展开一层
 (get-in [[[1 2] [3 4]]]  [0 0])
 
 
-;for取周边元素索引,not=两个等于才有效
+;for 配合 :when
 (for [dx [-1 0 1], dy [-1 0 1] :when (not= 0 dx dy)]
     [dx dy])
 
-;recur配合loop实现循环   
-(loop [x 0]
-    (if (<= x 10) 
-        x
-        (recur (inc x))))
 
 
-;iterate[f x] 返回x, (f x), (f (f x))的惰性序列
-;->把(iterate iter_test 1)塞到(nth 8)中间，
-;然后再把得到结果塞到ppring后面 等同于(pprint (nth (iterate iter_test 1) 8))
-;->是一个反复塞到第二个的操作, 可以把嵌套的语法，写成非嵌套形式
-(-> (iterate #(inc %1) 1) (nth 8) pprint)
 
-会自动根据函数需要的参数取参数，这个相当于(-(dec(square(inc 1))))
-(-> 1 inc (#(* %1 %1)) dec -)
-;不是单个函数需要加括号，原位函数也需要加括号，->是按照list执行的
-(-> 1 inc (#(reduce + %&) 1))
 
-;通过for将二维索引转一维，再利用reduce遍历
-(reduce 
-    #(do
-        (println %2  (get-in [[1, 2] [3, 4]] %2))
-        (assoc-in %1 %2 (inc (get-in [[1, 2] [3, 4]] %2))))
-    ;不给初值，第一次会取两个值
-    [[1, 2] [3, 4]]        
-    (for[x (range 2), y (range 2)][x, y]))
+
 
 ;partition 产生相邻三个元素的序列集合，首尾不产生
 (partition 3 1 (range 5))
 ;增加首尾元素
 (partition 3 1 (concat [nil] (range 5) [nil]))
 
+
+
 ;返回一个无限的lazy-seq
 (repeat nil)
 
+
+
 ;lazy-seq 使用变量实现无穷序列，这里实现了一个递增序列，计算第n个使用第n-1加1， 不会嵌套执行导致爆栈
 (def x (lazy-seq (cons 1 (map inc x))))
+
+
 
 ;行转列，map多个序列长度不同会按照最短的来
 (map vector (repeat 1) '(1 2 3 4) '(3 2 1))
 
 
+
+
 ;利用容器做函数直接过滤，因为不存在的会返回nil
 (filter #{:on, :off} '(:on :off :offon :onoff :on))
 
-;多重解包, _占位类似python
-(let [ [_ [_ target]] [[1 2] [3 4]]] target)
 
-;mapcat 映射+拼接，类似java flatmap
-(defn neighbours
-    [[x y]]
-    (for [dx [-1 0 1], dy [-1 0 1]]
-        [(+ dx x), (+ dy y)]))
-
-(mapcat neighbours #{[2 0], [1 1], [0 1]})
-
-;frequencies统计类似java中的counter
-(frequencies (mapcat neighbours #{[2 0], [1 1], [0 1]}))
-
-;flatten直接化为一维度
-(flatten [[2] [2 [3 4] 2]])
-
-
-
-(defn step
-    [cells]
-    (set 
-        (for [[loc n](frequencies (mapcat neighbours cells))
-            ;and部分只有两个活邻居，原来就是活的
-            :when (or (= n 3) (and (= n 2) (cells loc)))]
-            loc)))
-            
-;->>是一个反复塞到最后一个位置上, ->是第二个
-(->> (iterate step #{[2 0], [2 1], [2 2], [1 2], [0 1]}) (drop 9) first)
-
-;迭代实现
-(defn iter_step
-    [cells]
-    (let [new_cells (step cells)]
-        (if (empty? new_cells) 
-            [new_cells]
-            (lazy-seq (cons new_cells (iter_step new_cells))))))
-
-(take 10 (iter_step #{[2 0], [2 1], [2 2], [1 2], [0 1]}))
-
-;doto 用后面的函数调用第一项参数
-(doto 1 println inc)
 
 ;rand-nth随机选择集合中的一个
 (rand-nth '(1 2 3))
 (rand-nth '(1 2 3))
-
-(require '[clojure.zip :as z])
-(def v [1 2 [3 4 [5 6]]])
-(def zipper (z/vector-zip v))
-(z/root zipper)
-(z/left zipper)
-(z/children zipper)
 
 
 ;使用assoc! 向transient map添加元素，因为8的时候从arrayMap 转为 HashMap，
