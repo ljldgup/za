@@ -6,7 +6,7 @@
 ;两两操作的都可以考虑reduce
 (reduce max '(1 2 3))
 
-;partial 克里化
+;partial 类似克里化，克里化要在所有参数都齐了才求值
 ;partial 配合关键字 返回函数， 比匿名表达式好用些,如下
 (def only-strings (partial filter string?))
 (only-strings '("a" 5 "b" 6))
@@ -89,3 +89,14 @@ doall 将惰性序列取出
 
 
 identity直接返回入参
+
+#sort只能传入比较器
+(sort (repeatedly 10 #(rand-int 20)))
+(sort < (repeatedly 10 #(rand-int 20)))
+
+#sort-by 使用函数进行转换后再排序
+(sort-by  str (repeatedly 10 #(rand-int 20)))
+
+;complement 取反
+(sort (complement <) (repeatedly 10 #(rand-int 20)))
+(sort < (repeatedly 10 #(rand-int 20)))

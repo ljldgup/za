@@ -94,10 +94,16 @@ defn 后面可以直接跟多个函数体，实现重载,注意每个重载都�
 
 ;recur可以在不消耗堆栈的情况下，
 ;转移到最近的函数定义或loop定义的头部
-(loop [x 5]
-    (if (neg? x)
-        x
-        (recur (dec x))))
+(defn print-n1[x n]
+    (if (> n 0)
+        (do (print x)
+            (recur x (dec n)))))
+
+匿名函数递归
+(def print-n2 (fn[x n]    
+                (if (> n 0)
+                (do (println x)
+                    (recur x (dec n))))))
         
 ;乘积
 (*' 1 2 3)
@@ -185,3 +191,10 @@ letfn定义临时函数，避免函数内定义的函数需要递归时的空间
 (def a ^{:created (System/currentTimeMillis)}
         [1 2 3])
 (meta a)
+
+case使用
+(def x 1)
+(case x
+    :a (println 'a)
+    :b (println 'b)
+    (println 'c))

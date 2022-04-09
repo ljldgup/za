@@ -61,7 +61,8 @@ assoc不会修改原来容器
 ({"a" 1, "b" 2, "c" 1} "a")
 (:a {:a 2 "b" 2})
 ('a {'a 3 "b" 1})
-
+;vector也可以做函数
+(['a 3 "b" 1] 1)
 
 
 ;set,没有时返回nil,否则返回键值
@@ -145,8 +146,9 @@ mapcat和java中flatmap相同，只展开一层
 
 
 
-(sort < (repeatedly 10 #(rand-int 100)))
+
 (sorted-map-by compare :a 3 :b 11 :c 1)
+#(comp - compare) 复合- 和compare取原来相反的排序结果
 (sorted-map-by (comp - compare) :a 3 :b 11 :c 1)
 (sorted-set-by < 3 11 1)
 
