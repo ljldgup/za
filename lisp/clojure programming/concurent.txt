@@ -18,7 +18,6 @@
 (realized? (:content document))
 @(:content document)
 (realized? (:content document))
-
 ------------------------------------------------------------------------
 ;future异步执行后直接返回nil，执行的代码需要用()包起来，和swaq！不同
 (def future_item (future (Thread/sleep 5000) :done))
@@ -64,7 +63,7 @@ future 实现异步函数函数
 ;swap!采用cas更新atom类型，update-in 更新map函数
 (swap! sarah update-in [:age] + 3)
 
-;swap!参数是函数加参数，同时将atom的值作为第一个函数第一个参数
+;swap!第二个参数是函数，将atom的值作为函数的入参进行调用，返回值替换原来atom的值
 (swap! sarah #(println %))
 @sarah
 
@@ -145,11 +144,15 @@ v
             (future (println v)))))
 
 ;agent send固定线程池 send-off不限制线程池
-(def a (agent 5000))
-(def b (agent 10000))
+(def a (agent 50000))
+(def b (agent 100000))
+;send，send-off将用第二个参数作为函数，将agent的值作为入参进行调用
+;并将返回值替换agent的值
 (send b #(Thread/sleep %))
 (send-off a  #(Thread/sleep %))
+;在函数执行完结前不会替换值
 @a
+
 ;await 等待所有agent结束
 (await a b)
 

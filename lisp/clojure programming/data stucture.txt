@@ -35,6 +35,9 @@ map创建
 (assoc {:b" 2, :c 1} a 10)
 (dissoc {'a 10, 'b 2, 'c 1} a)
 
+;合并map
+(merge {:a 1} {:b 2})
+
 assoc接收三个参数：第一个是向量，第二个是整数索引，第三个是一个值
 (assoc [1 2 3] 0 10)  
 [10 2 3]  
@@ -73,6 +76,8 @@ assoc不会修改原来容器
 (clojure.set/difference #{:b :c} (keys {:a 1  :b 2}))
 (clojure.set/union #{:b :c} (keys {:a 1  :b 2}))
 
+去掉set中的:a
+(disj #{:a 1}  :a)
 
 ;seq 返回列表，是链表实现的
 (seq "abfd")
@@ -105,8 +110,11 @@ assoc不会修改原来容器
 (first (map inc rands))
 (nth (map inc rands) 2)
 
+;多重操作,
+(ffirst '((1 2) 3))
+(nnext '(1 2 3))
 
-
+;next和rest的区别为空时返回nil，rest为空时返回()
 
 lazy-cat，concat可以合并惰性流，  
 (lazy-cat xs ys zs) === (concat (lazy-seq xs) (lazy-seq ys) (lazy-seq zs))

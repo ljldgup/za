@@ -100,3 +100,6 @@ identity直接返回入参
 ;complement 取反
 (sort (complement <) (repeatedly 10 #(rand-int 20)))
 (sort < (repeatedly 10 #(rand-int 20)))
+
+;keep类似于map，但是去掉nil
+(keep identity '(1 2 5 nil))

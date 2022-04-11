@@ -1,4 +1,4 @@
-
+静态函数调用，clojure不需要使用try
 Thread/sleep 1000
 
 (.getTime (new Date))

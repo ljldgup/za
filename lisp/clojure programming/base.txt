@@ -87,7 +87,7 @@ defn 后面可以直接跟多个函数体，实现重载,注意每个重载都�
     {:username username
     :join_date join_date
     :email email
-    :exp_date (java.util.Date. (long (+ 2.592e9 (.getTime join_date))))}
+    :exp_date (java.util.Date. (long (+ 2.592e9 (.getTime join_date))))})
     
 (make_user "bob")
 (make_user "bob" :join_date (java.util.Date. 111 0 1))
@@ -105,11 +105,17 @@ defn 后面可以直接跟多个函数体，实现重载,注意每个重载都�
                 (do (println x)
                     (recur x (dec n))))))
         
-;乘积
-(*' 1 2 3)
+(def print-n2 (fn[x n]    
+                (if (> n 0)
+                (do (println x)
+                    (recur x (dec n))))))
 
-静态函数调用，clojure不需要使用try
-
+loop+recur实现可变的局部变量
+(loop [x 10]
+    (if (> x 1)
+        (do
+            (println x)
+            (recur (dec x)))))
 
 通过do执行多个表达式
 (do
