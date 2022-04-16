@@ -1,4 +1,5 @@
 ;;filter是个关键字，入参和局部变量无法使用，这里也不会报错是个坑！！
+;这是递归版本，非递归需要辅助函数，用其入参保存临时累积和及左边界
 (defn accumulate [combiner, my_fiter, null-value, term, a, b, next]
     (if (> a b) null-value
         (if (my_fiter a) 
@@ -36,7 +37,7 @@
 (continued_fraction_rec (fn[x] 1) (fn[x] 1) + 100)
 
 
-;;迭代，从最底层开始算
+;;练习1.37 迭代，从最底层开始算
 (defn continued_fraction_iter [func_n, func_d, combiner, k]
     (defn continued_fraction_helper[result, i]
         (if (< i 1) result
@@ -56,6 +57,7 @@
 (continued_fraction_iter (fn[x] 1) fn_d138  + 100)
 
 ;;练习1.41，1.43,扩展至任意次，使用闭包要尽可能减少内部函数的传参
+;clojure 关键字repeat
 (defn repeat_func [f, n] 
     (defn helper[x i] 
         (if ( < i n ) (helper (f x) (+ i 1)) x))
@@ -64,6 +66,7 @@
 ((repeat_func inc 10) 1)
 
 ;;练习1.42,复合过程关键在于返回函数
+;clojure 关键字comp
 (defn compose [f g]
     (fn [x] (f (g x))))
     

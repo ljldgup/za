@@ -36,15 +36,15 @@
 ;;;通过尾递归实现迭代，就是把循环中所有要用到的变量传到递归参数里
 ;;;不变参数可以考虑闭包提出
 
-;;从小到大累加
+;;从小到大累加,当没法翻倍时将临时结果prod放到总结果total_prod里面
 (defn fast_expr [base_num, expr_num]
     (defn fast_expr_iter [total_prod, prod, cur_expr_num, left_expr_num]
-    ;(println (format "%s %s %s %s" total_prod prod cur_expr_num left_expr_num))
-    (cond 
-        (= cur_expr_num left_expr_num) (* total_prod prod)
-        (= cur_expr_num 0) (fast_expr_iter total_prod base_num 1 left_expr_num)
-        (> (* cur_expr_num 2) left_expr_num) (fast_expr_iter (* total_prod prod) 1 0 (- left_expr_num cur_expr_num))
-        :else (fast_expr_iter total_prod (* prod prod) (* cur_expr_num 2) left_expr_num)))
+        ;(println (format "%s %s %s %s" total_prod prod cur_expr_num left_expr_num))
+        (cond 
+            (= cur_expr_num left_expr_num) (* total_prod prod)
+            (= cur_expr_num 0) (fast_expr_iter total_prod base_num 1 left_expr_num)
+            (> (* cur_expr_num 2) left_expr_num) (fast_expr_iter (* total_prod prod) 1 0 (- left_expr_num cur_expr_num))
+            :else (fast_expr_iter total_prod (* prod prod) (* cur_expr_num 2) left_expr_num)))
 
     (fast_expr_iter 1 1 0 expr_num))
     
@@ -53,7 +53,7 @@
     (defn rec_helper[result base_num, expr_num]
         (cond
             (= expr_num 0) result
-            (= (mod expr_num 2) 1) (rec_helper (* result base_num) (* base_num 2) (quot expr_num 2))
+            (odd? expr_num) (rec_helper (* result base_num) (* base_num 2) (quot expr_num 2))
             :else (rec_helper result (* base_num 2) (quot expr_num 2))))
     (rec_helper 1 base_num expr_num))
     
@@ -72,7 +72,8 @@
     ;;(print (format "%s %s %s \n" base_num exp_num mod_num))
     (cond 
         ( = 1 exp_num) (mod base_num mod_num)
-        (odd exp_num) 
+        (odd? exp_num)
+            ;这里利用了 (a*b) mod c = (a * ( b mod c)) mod c
             (mod 
                 (* base_num 
                     (exp_mod (mod (square base_num) mod_num) (half_int exp_num) mod_num)) 

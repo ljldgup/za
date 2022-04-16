@@ -43,15 +43,15 @@
 
 ;;注意是各个序列的同一位置进行操作，实际上用map+解包就可以
 (defn accumulate_n [op init seqs]
+    (accumulate #(cons %1 (accumulate op init (map %1)
     ;(println seqs)
     (if (or (empty? seqs) (empty? (first seqs)))
         '()
         (cons (accumulate op init (map first seqs))
                 (accumulate_n op init (map rest seqs)))))
-    ;用map实现，缺个解包
+    ;用map实现，缺个解包,需要用符号完成比较烦
     ;(map (fn[x y](if (= (type x) (type '())) (cons x y) (list x y))) seqs)
     
-accumulate_n
 (accumulate_n + 0 '((1 2 3 4) (11 22 33 44)))
 
 ;;练习2.37
@@ -109,3 +109,4 @@ accumulate_n
                         (cons x s))               
                     (permutations (remove x seq))))  
                  seq))))
+                 

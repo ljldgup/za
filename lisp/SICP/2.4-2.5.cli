@@ -118,6 +118,7 @@
                     (larger? (get_order t2) (get_order t1)) (adjoin_term t2 (add_terms (rest term_list2) term_list1))
                     :else (adjoin_term 
                             (make_term (get_order t1) (add (get_coeff t1) (get_coeff t2)))
+                            
                             (add_terms (rest term_list1) (rest term_list2)))))))
         
 (defn add_poly [p1 p2]
@@ -140,17 +141,20 @@
 (defmethod mul '(complex_number my_number) [x y] 
     (make_complex_number (* (second y) (real x)) (* (second y) (image x))))
 
+;单个式子和表达式相乘
 (defn mul_term_by_all_terms [t1 terms1]
     (if (empty_term_list? terms1)
         (the_empty_term_list)
         (let [t2 (first_term terms1)]
             (adjoin_term 
                 (make_term 
+                    ;多态
                     (add (get_order t1) (get_order t2))
                     (mul (get_coeff t1) (get_coeff t2)))
                 (mul_term_by_all_terms t1 (rest terms1))))))
 
-                    
+   
+;两个表达式相乘   
 (defn mul_terms [terms1 terms2]
     (if (empty_term_list? terms1)
         (the_empty_term_list)
