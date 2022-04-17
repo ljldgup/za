@@ -164,6 +164,7 @@
     
 (defrecord Wire [name signal]
     signal-op
+        ;(:signal this) 等价java this.signal
         (set-signal! [this new-value] (reset! (:signal this) new-value))
         (get-signal [this] @(:signal this))
         (add-action!      
@@ -182,7 +183,7 @@
     
 ;;测试       
 (def test-wire (Wire. "test-wire" (atom 1)))
-(add-action! test-wire :action (fn[] (do(Thread/sleep 1000) (println "changed"))))
+(add-action! test-wire :test_action (fn[] (do(Thread/sleep 1000) (println "changed"))))
 (set-signal! test-wire 3)
 (get-signal  test-wire)
  
@@ -228,8 +229,11 @@
             (after-delay 
                 or-gate-delay 
                 #(set-signal! output new-value))))
-    (add-action! input1 :or or-input)
-    (add-action! input2 :or or-input))
+     
+    ;这里如果输入连接多个与门应该会相互覆盖，可以考虑生成关键字 (keyword `or#)或者
+    ;或者用名字拼接(keyword (str (map :name (input1 input2 output))))
+    (add-action! input1 (keyword `or#)  -input)
+    (add-action! input2 (keyword `or#) or-input))
     
 (defn and-gate [input1 input2 output]
     (defn and-input[]
@@ -237,8 +241,8 @@
             (after-delay 
                 and-gate-delay 
                 #(set-signal! output new-value))))
-    (add-action! input1 :and and-input)
-    (add-action! input2 :and and-input))
+    (add-action! input1 (keyword `and#) and-input)
+    (add-action! input2 (keyword `and#) and-input))
 
 
     
@@ -248,7 +252,7 @@
             (after-delay 
                 inverter-delay 
                 #(set-signal! output new-value))))
-    (add-action! input :invert invert-input))
+    (add-action! input (keyword `invert#) invert-input))
 
 ;;测试    
 (def w1 (make-wire "w1"))

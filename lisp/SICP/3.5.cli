@@ -49,7 +49,7 @@
         the-empty-stream
         (cons-stream
             (mapper (stream-car stream))
-            (stream-map mapper (stream-cdr stream)))))
+            (recur mapper (stream-cdr stream)))))
     
 (defn stream-for-each [proc s]
     ;(println (stream-null? s) (stream-car s))
@@ -364,8 +364,32 @@
                  20)
 -----------------------------------------------------------------------------
 
-------------------------------------------------------------------------------------            
+;clojure的lazy-seq,lazy-cat
+   
+;随机无穷惰性序列         
 (def rand-stream (lazy-seq (cons (rand) (map (fn[x](rand)) rand-stream))))
 (take 40 rand-stream )
 
+;随机无穷惰性序列  
+(def integers (lazy-seq (cons 1 (map inc integers))))
 
+;斐波拉契数列，注意这里map自己部分外面的cons需要加lazy-seq，否则没有延时直接爆栈
+(def fib 
+    (cons 1 
+        (lazy-seq 
+            (cons 1 
+            (map + fib (rest fib))))))
+(take 10 fib)
+
+(def scale-2 (lazy-seq (cons 1 (map (fn[x](* x 2)) scale-2))))
+(def scale-3 (lazy-seq (cons 1 (map (fn[x](* x 3)) scale-2))))
+(def scale-5 (lazy-seq (cons 1 (map (fn[x](* x 5)) scale-2))))
+
+
+;素数流
+(def integers (lazy-seq (cons 2 (map inc integers))))
+(def prime)
+(defn prime?[x] 
+    (not (some #(= (rem x %) 0) prime)))
+(def prime (filter prime? integers))
+(take 10 prime)
