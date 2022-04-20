@@ -1,7 +1,7 @@
 (ns evaluator.environment
   (:require [evaluator.procedure :refer :all]))
 
-
+; 一个frame是一个map，包含一系列不重复的键值对，来保存变量
 (defn make-frame
   [vars-vals]
   (atom (into {} vars-vals)))

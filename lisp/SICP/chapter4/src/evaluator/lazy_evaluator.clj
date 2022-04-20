@@ -39,6 +39,7 @@
                 (my-lazy-eval (get-first-exp exps) env)
                 (recur (rest exps) env))))
 
+;list-of-delayed-arguments的反操作
 (defn get-list-of-args-values [exp env]
   (if (no-operands? exp)
     '()
@@ -51,15 +52,20 @@
     (cons (delay-it (get-first-operand exp) env)
           (list-of-delayed-arguments (get-rest-operands exp) env))))
 
+;主要的区别是在复合过程时先不求值,对实参表达式进行delay
+;遇到基础过程时才会递归进行强迫求值，把所有需要的表达式求出来当返回lamdba这种，不会有任何求值发生
+;当返回lamdba这种，就不会有任何求值发生，因为只有定义，而没有发生任何计算
 (defn my-apply [procedure arguments env]
   (if (not (primitive-procedure? procedure)) (println (get-procedure-body procedure)))
-  (cond (primitive-procedure? procedure) (apply-primitive-procedure procedure (get-list-of-args-values arguments env))
+  (cond (primitive-procedure? procedure) 
+           
+            (apply-primitive-procedure procedure (get-list-of-args-values arguments env))
         (compound-procedure? procedure)
-        (eval-sequence (get-procedure-body procedure)
-                       (extend-environment
-                         (get-procedure-parameters procedure)
-                         (list-of-delayed-arguments arguments env)
-                         (get-procedure-environment procedure)))
+            (eval-sequence (get-procedure-body procedure)
+                           (extend-environment
+                             (get-procedure-parameters procedure)
+                             (list-of-delayed-arguments arguments env)
+                             (get-procedure-environment procedure)))
         :else (println "unknow procedure type")))
 
 

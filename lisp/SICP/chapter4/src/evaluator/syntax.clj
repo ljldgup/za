@@ -30,6 +30,8 @@
 
 ;if不存在后半句
 (defn get-if-alternative [exp] (if (== (count exp) 4) (nth exp 3) ()))
+
+;用于实现cond，我没写
 (defn make-if [predicate consequent alternative]
   (list 'if predicate consequent alternative))
 
