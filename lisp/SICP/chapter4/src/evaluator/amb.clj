@@ -101,45 +101,51 @@
         ;使用letfn后成功运行
         (if (empty? choices)
           (fail)
-          ;这里的fail最终传到最上层作为internal-loop中的next-alternative执行
+          ;这里的fail包装了向下一个choice查询的操作，使得嵌套的amb能够正常执行
           ((first choices) env succeed (fn [](println exp) (try-next (rest choices))))))]
       (try-next cprocs)))))
 
 (defn get-args [arg-procs env succeed fail]
   (if (empty? arg-procs)
     (succeed '() fail)
-    ((first arg-procs) env (fn [arg fail2]
-                             (get-args (rest arg-procs) env
-
-                                       (fn [args fail3]
-                                         (succeed (cons arg args)
-                                                  fail3))
-                                       fail2))
-     fail)))
+    ((first arg-procs)
+            env 
+            ;传个arg-proc的succeed，arg-proc的succeed是依次向内执行的
+            (fn [arg fail2]
+                 (get-args (rest arg-procs) 
+                            env
+                            ;传给下一个get-args的succeed,get-args是从内向外执行的
+                            ;最终参数拼接完成，调用用最外层succeed，即execute-application
+                           (fn [args fail3]
+                             (succeed (cons arg args)
+                                      fail3))
+                           fail2))
+            fail)))
 
 
 (defn execute-application [procedure arguments succeed fail]
   (cond (primitive-procedure? procedure)
-        (succeed (apply-primitive-procedure procedure arguments) fail)
+            (succeed (apply-primitive-procedure procedure arguments) fail)
         (compound-procedure? procedure)
-        ;注意这里body是个lambda，原来是表达式
-        ((get-procedure-body procedure)
-         (extend-environment
-           (get-procedure-parameters procedure)
-           arguments
-           (get-procedure-environment procedure))
-         succeed
-         fail)
+            ;注意这里body是个lambda，原来是表达式
+            ((get-procedure-body procedure)
+             (extend-environment
+               (get-procedure-parameters procedure)
+               arguments
+               (get-procedure-environment procedure))
+             succeed
+             fail)
         :else (Exception. (str "unknow procedure" procedure))))
 
 (defmethod my-amb-analyze 'let [exp]
   (let [vars-exp (get-let-vars-exp exp)
-        body (get-let-body exp)
-        lambda-analyzer (my-amb-analyze (make-lambda (map first vars-exp) body))
+        lambda-body (get-let-body exp)
+        lambda-args (map first vars-exp)
+        lambda-analyzer (my-amb-analyze (make-lambda lambda-args lambda-body))
         arg-procs (map #(my-amb-analyze (second %)) vars-exp)]
     ;这里没办法用let获得procedure，因为lambda-analyzer 会直接通过获得结果调用succeed,所以需要将逻辑写在succeed中
     (fn [env succeed fail]
-      (defn do-nothing [&arg] ())
+      (defn do-nothing [& arg] ())
       (lambda-analyzer env
                        (fn [procedure fail2]
                          (get-procedure-body procedure)
