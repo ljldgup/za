@@ -53,7 +53,8 @@
 
 (defn always-true [ignore frame-stream] frame-stream)
 
-;eval获得符号对应的函数，args得到变量列表
+;执行的表达式类似(> 1 2)
+;predicate获得符号，eval获得符号对应的函数，args得到变量列表
 (defn execute [exp]
   (apply (eval (predicate exp)) (args exp)))
 
