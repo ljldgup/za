@@ -1,4 +1,5 @@
-;基于amb风格实现惰性笛卡尔乘积，要用递归实现的效果，可以采用amb风格的写法,使用回退点完成
+;第一种
+;基于amb风格实现惰性笛卡尔乘积,使用回退点完成
 ;整个选择集合cols为空,说明所有集合都取过一次
 ;backword记录每次回退点,第一个集合为空说明当前的选择结束，直接回退
 
@@ -42,9 +43,9 @@
 (take 10 (lazy-product-amb integer integer))
 
 ----------------------------------------------------------------------
-
+;第二种
 ;两层map+递归实现，这种实现方式比amb更加简单一些
-;两层嵌套+递归基本能实现所有正常的递归效果
+;两层嵌套+递归，由于延时执行的效果，基本能实现所有正常的递归
 (defn lazy-product-recur[& cols]
     ;(println cols)
     (if (and (empty? (first cols)) (empty (rest cols))) 
@@ -77,3 +78,21 @@
 (println (lazy-product-recur integer '(6 7 8 9 10)))
 
 (take 10 (lazy-product-recur integer integer))
+
+------------------------------------------------------------------------
+;将过程拆成两个过程执行,内部返回的是惰性序列
+
+(defn append-value[lists, value]
+    (map #(cons value %) lists))
+    
+    
+;map会返回一个seq，只能用apply调用concat
+
+(defn append-values[lists, values]
+    (apply concat (map #(append-value lists %) values)))
+    
+;reduce,concat内容是惰性序列，则返回还是惰性序列 
+(defn cross-join[& list-values]
+    (reduce #(append-values %1 %2) '(()) list-values))
+    
+    
