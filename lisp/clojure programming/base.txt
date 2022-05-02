@@ -37,8 +37,11 @@ coljure相除默认分数，
 
 
 
-
-
+lamdba
+(fn[args]body)
+(#(inc %) 1)
+(#(+ %1 %2) 1 2)
+(#(reduce + %&) 1 2 3)
 
 
 ;#_注释忽略后面一个clojure形式

@@ -49,4 +49,6 @@
 (law-check 3 #(or (and %2 %3) %1) #(and (or %2 %1) (or %3 %1)))
 
 
-
+;量词的德摩根定律
+(law-check 3 #(every? (complement identity) %&) #(not (some identity %&)))
+(law-check 3 #(some (complement identity) %&) #(not (every? identity %&)))

@@ -90,14 +90,14 @@ doall 将惰性序列取出
 
 identity直接返回入参
 
-#sort只能传入比较器
+;sort只能传入比较器
 (sort (repeatedly 10 #(rand-int 20)))
 (sort < (repeatedly 10 #(rand-int 20)))
 
-#sort-by 使用函数进行转换后再排序
+;sort-by 使用函数进行转换后再排序
 (sort-by  str (repeatedly 10 #(rand-int 20)))
 
-;complement 取反
+;complement 取反，注意这里返回的是函数，可以直接高阶函数的参数
 (sort (complement <) (repeatedly 10 #(rand-int 20)))
 (sort < (repeatedly 10 #(rand-int 20)))
 
