@@ -1,0 +1,29 @@
+;有重复组合 数量为组合 C(N - 1 + LENGHTH, N-1),N为eles尺寸
+(defn reptable-conbination[eles length]
+    ;(println eles length)
+    (defn helper[elements result left]
+        (println elements result left)
+        (if (= left 0)
+            (list result)
+            (if (empty? elements) 
+                nil
+                (let [first-element (first elements)
+                      rest-elements (rest elements)]
+                    (lazy-seq 
+                        ;mapcat貌似不是lazy的需要lazy-seq 
+                        (mapcat
+                            #(helper 
+                                rest-elements
+                                (concat (repeat % first-element) result)
+                                (- left %))
+                            (range 0 (inc left))))))))
+                                    
+    ;去掉nil
+    (filter identity (helper eles '() length)))
+
+(count (reptable-conbination '(1 2 5 10 20 50 100) 5))    
+(take 2 (reptable-conbination '(1 2 5 10 20 50 100) 5))
+
+(
+
+         
