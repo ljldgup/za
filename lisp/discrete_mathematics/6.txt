@@ -69,9 +69,15 @@
         (* n (factorial (dec n)))))
 (def memoize-factorial (memoize factorial))
 
+(defn remove-n[n eles]
+    (if (= n 0) 
+        (rest eles)
+        (cons (first eles) (remove-n (dec n) (rest eles)))))
+(remove-n 2 (range 10))
+
 (defn translate-alphabet-order[n eles]
-    (println n eles)
-    (if (empty? eles)
+    ;(println n eles)
+    (if (or (empty? eles) (>= n (memoize-factorial (count eles))))
         '()
         (let [count-num (count eles)
               choice-num (memoize-factorial (dec count-num))
@@ -82,8 +88,10 @@
             ele 
             (translate-alphabet-order 
                 (- n (* choice-num position)) 
-                ;这里用filter性能有问题，但普适，clojure没提供普适的删除操作
-                (filter #(not= % ele) eles))))))
+                ;这里用filter性能有问题，且有相同元素会造成错误
+                ;删除操作但普适，clojure没提供普适的删除操作
+                ;(filter #(not= % ele) eles)
+                (remove-n position eles))))))
 
 注意范围是0~n!-1
 (translate-alphabet-order  0 '(a b c d))  
