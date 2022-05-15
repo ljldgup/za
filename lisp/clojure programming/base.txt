@@ -6,7 +6,7 @@ coljure相除默认分数，
 (/ 1 1.5)
 
 (quot 22 7) ;整除
-(rem 22 7) ;余数
+(rem 22 7) (mod 22 7) ;余数
  
 不等于是not= 
 (not=  1 2)
@@ -142,11 +142,15 @@ deseq实现嵌套
   
   
 for也能实现嵌套,for会将结果作为容器返回
-(for [x (range 4 8), y (range 11 12)] [(list x y)])
+(for [x (range 4 8), y (range 11 13)] [(list x y)])
 
-[]中用配合:when :let
-(for [x (range 4 8), y (range 11 12) :when (even? x) :let [z (* x y)]] [(list z y)])
+[]中用配合:when :let，
+:when可以避免返回nil元素，
+(for [x (range 4 8), y (range 11 13) :when (even? x)] [(list z y)])
 
+:let是因为x，y是笛卡尔乘积，直接z (* x y)无法得到正确结果
+(for [x (range 4 8), y (range 11 13) z (* x y)] z )
+(for [x (range 4 8), y (range 11 13) :let [z (* x y)]] z )
 
 ;any?有任意元素返回true
 (any? '(false))
