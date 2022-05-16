@@ -6,6 +6,10 @@
 ;两两操作的都可以考虑reduce
 (reduce max '(1 2 3))
 
+;*+查看源码，入参为空会自动给值
+(reduce * ())
+(reduce + ())
+
 ;partial 类似克里化，克里化要在所有参数都齐了才求值
 ;partial 配合关键字 返回函数， 比匿名表达式好用些,如下
 (def only-strings (partial filter string?))

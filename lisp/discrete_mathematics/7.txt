@@ -1,0 +1,11 @@
+(defn combination[a b]
+    (let [upper (reduce * (range (inc (- a b)) (inc a)))
+          lower (reduce * (range 1 (inc b)))]
+          (/ upper lower)))
+          
+;7.1练习15
+(def tonghua (* 4 (combination 13 4)))
+(def shunzi (* 9 4 4 4 4 4))
+(def tonghuashun (* 9 4))
+(def total (combination 52 5))
+(def probility (/ (- total (- (+ tonghua shunzi) tonghuashun)) total))
