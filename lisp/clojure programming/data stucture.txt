@@ -54,6 +54,16 @@ assoc不会修改原来容器
 (pop [1 2 3]) 移除尾部
 (peek [1 2 3]) 尾部，类似last
 
+;删除特定位置,用subvec，或者filter
+(defn remove-n[n elements]
+    (concat (subvec elements 0 n) (subvec elements (inc n))))
+
+;递归删除特定位置
+(def remove-n[n eles]
+    (if (n == 0) 
+        (rest eles)
+        (cons (first eles) (remove-n (dec n) eles))))
+        
 定义类型的数组
  (vector-of :int 1.1 Math/PI)
 
