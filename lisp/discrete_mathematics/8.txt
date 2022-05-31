@@ -3,7 +3,7 @@
                 (lazy-seq (map inc integers))))
                 
 (defn exp-stream[n]
-        (map #(-> % (Math/pow n) int) (rest integers)))
+        (map #(-> % (Math/pow n) long) (rest integers)))
 
 (->> (map exp-stream integers) (take 10) (map first))
 
@@ -15,7 +15,7 @@
             ;(println num right-num (< num right-num))
             (if (< num right-num) 
                 (concat (reverse left-streams) (list stream) right-streams)
-                (sort-streams stream (cons (first right-streams) left-streams) (rest right-streams))))))
+                (recur stream (cons (first right-streams) left-streams) (rest right-streams))))))
 
 (defn remove-first-first[streams]
     (cons (-> streams first rest) (rest streams)))
