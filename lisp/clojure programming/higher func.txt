@@ -110,3 +110,5 @@ identity直接返回入参
 
 ;去重
 (distinct '(1 2 3 1 2 3))
+;distinct可以惰性化，去重的时候只要可前面比较就可以了
+(take 3 (distinct '(1 2 3 1 2 3)))
