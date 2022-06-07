@@ -3,7 +3,14 @@
 (map (fn[ & args] (reduce + args )) '(1 2 3 4) '(4 5 6) '(1 4 5))
 (map #(reduce + %&) '(1 2 3) '(4 5 6) '(1 4 5))
 ;mapcat 等价(apply concat (map .. 
-;mapv 等价 (vec (map
+;mapv 等价 (vec (map 应为vector是数组，所以应该不是惰性化实现
+;filterv同理
+
+(map inc (range 10)) 
+((map inc) (range 10))
+(filter odd? (range 10))
+((filter odd?) (range 10))
+
 
 ;两两操作的都可以考虑reduce
 (reduce max '(1 2 3))
@@ -87,8 +94,17 @@ eval能执行符号表
 (->> 1 (println 1 ) (println 2 ) (println 3))
 (-> 1 (println 1 ) (println 2 ) (println 3))
 
-;iterate[f x] 返回x, (f x), (f (f x))的惰性序列
-(take 10 (iterate #(/ % 2) 1)) 
+;iterate[f x] 返回x, (f x), (f (f x))的惰性序列,可以代替(def x (cons 1 (map fn x)))这样的流
+(take 10 (iterate #(/ % 2) 1))
+
+;两种基于流的斐波拉契实现
+
+;这个函数返回两个数
+(defn fib1 []
+  (map first (iterate (fn [[a b]] [b (+ a b)]) [0N 1N])))
+
+;这里通过(map + fib2 (rest fib2))实现交替的两个数相加，这里还可以扩展到任意个
+(def fib2 (cons 1 (cons 2 (lazy-seq (map + fib2 (rest fib2))))))
 
 doall 将惰性序列取出
 (doall (range 3))
