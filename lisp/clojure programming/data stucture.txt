@@ -35,6 +35,13 @@ map创建
 (assoc {:b" 2, :c 1} a 10)
 (dissoc {'a 10, 'b 2, 'c 1} a)
 
+;update类似swap!的操作，提供的是个函数，或者可以作为函数的列表
+(update {:name "James", :age 27} :age inc)
+;;{:name "James", :age 28}
+(update {:name "James", :age 27} :age + 10)
+;;{:name "James", :age 37}
+
+
 ;合并map
 (merge {:a 1} {:b 2})
 
