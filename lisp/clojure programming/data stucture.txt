@@ -40,6 +40,7 @@ map创建
 ;;{:name "James", :age 28}
 (update {:name "James", :age 27} :age + 10)
 ;;{:name "James", :age 37}
+(update [0] 0 inc)
 
 
 ;合并map
@@ -260,9 +261,10 @@ mapcat和java中flatmap相同，只展开一层
 
 
 
-;返回一个无限的lazy-seq
+;repeat没有指定数量 返回一个无穷的lazy-seq
 (repeat nil)
-
+;返回长度为10的惰性序列
+(repeat 10 nil)
 
 
 ;lazy-seq 使用变量实现无穷序列，这里实现了一个递增序列，计算第n个使用第n-1加1， 不会嵌套执行导致爆栈
