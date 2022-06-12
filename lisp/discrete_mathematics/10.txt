@@ -52,16 +52,16 @@
                 (map #(cons head %) paths)))))
         
 (defn gen-euler-loop-path[graph]
-    (let [line-num (/ (->> graph (map count) (reduce +) 2)]
+    (let [line-num (/ (->> graph (map count) (reduce +)) 2)]
         (println line-num)
         (->> (range (count graph))
              (mapcat #(get-head-paths graph %))
              ;删掉没有全部走的通路
              (filter #(= (count %) (inc line-num)))
-             first))))
+             first)))
 
 (gen-euler-loop-path [#{1 2} #{0 3} #{0 3} #{1 2}]) 
 
-(def graph (gen-euler-graph 6))
+(def graph (gen-euler-graph 4))
 (gen-euler-loop-path graph) 
 
