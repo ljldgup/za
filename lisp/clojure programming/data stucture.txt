@@ -216,6 +216,11 @@ mapcat和java中flatmap相同，只展开一层
 (conj! x 1)
 (count x)
 
+可变集合操作也是返回自己，能用在reduce中
+(conj! (conj! (transient []) 1) 2)
+;另外可变map数量突破8个时必须用返回的新map，因为从arraymap变成了hashmap
+
+
 (defn naive-into
     [coll source]
     (reduce conj coll source))

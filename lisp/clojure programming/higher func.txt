@@ -76,7 +76,8 @@ interpose 在列表中没量过之间插入
 
 (def log->file (file-logger "message.log"))      
 
-;memoize可用于纯函数缓存，这里因为随机数不是纯函数，所以结果不对                    
+;memoize可用于纯函数缓存，这里因为随机数不是纯函数，所以结果不对    
+;repeatedly 用于函数，会调用参数，repeat用于实体                
 (repeatedly 10 (partial rand-int 10))
 (repeatedly 10 (partial (memoize rand-int) 10)) 
 
@@ -106,6 +107,8 @@ eval能执行符号表
 
 ;iterate[f x] 返回x, (f x), (f (f x))的惰性序列,可以代替(def x (cons 1 (map fn x)))这样的流
 (take 10 (iterate #(/ % 2) 1))
+;整数数列，等价(range)
+(iterate inc 1)
 
 ;两种基于流的斐波拉契实现
 
@@ -143,7 +146,9 @@ identity直接返回入参
 (distinct '(1 2 3 1 2 3))
 ;distinct可以惰性化，去重的时候只要可前面比较就可以了
 (take 3 (distinct '(1 2 3 1 2 3)))
-
+;distinct可以根据seq，vec的内容进行去重，但是sort确不能排序。。。python支持后者
+(distinct (repeatedly 100 #(vector (rand-int 2) (rand-int 2))))
+(distinct (repeatedly 100 #(vector (rand-int 2) (rand-int 2))))
 
 ;group-by类似java
 (group-by #(mod % 3) (range 10))
