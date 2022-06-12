@@ -2,6 +2,10 @@
 ;map多多个序列操作相当于将同位置拼成一个序列，然后调用，最短结束，就结束过程
 (map (fn[ & args] (reduce + args )) '(1 2 3 4) '(4 5 6) '(1 4 5))
 (map #(reduce + %&) '(1 2 3) '(4 5 6) '(1 4 5))
+;flatmap
+(mapcat identity '((1 2 3) (4 5 6)))
+;map成vector注意内层没变
+(mapv identity '((1 2 3) (4 5 6)))
 
 ;两两操作的都可以考虑reduce
 (reduce max '(1 2 3))

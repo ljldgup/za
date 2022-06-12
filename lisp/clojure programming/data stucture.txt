@@ -23,6 +23,10 @@ seq 检查空序列
 (empty '(1 2))
 (empty {:a 1})
 
+;vec迭代加入vector， vector整个转成vector
+(vec '(1 2 3))
+(vector '(1 2 3 4))
+
 map创建
 {:a 3 :b 11 [1 2 3] 1}
 (hash-map :a 3 :b 11 [1 2 3] 1)
