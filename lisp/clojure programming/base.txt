@@ -211,3 +211,6 @@ case使用
     :a (println 'a)
     :b (println 'b)
     (println 'c))
+    
+;clojure 字符串也可以像python那样迭代
+(for [x "xfsdf"] x)

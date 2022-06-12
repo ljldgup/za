@@ -35,3 +35,10 @@ doto 适合java对象操作
     (.setColor gfx (java.awt.Color. xor xor xor))
     (.fillRect gfx x y 1 1))
 (.dispose frame)
+
+;set! 反射setXxx效果
+;bean返回bean map
+(let [object (java.awt.Point. 1 2)]
+        (set! (. object  -y) 8)
+        (bean object)
+        )

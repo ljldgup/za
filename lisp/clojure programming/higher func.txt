@@ -18,6 +18,10 @@
 ((filter odd?) (range 10))
 
 
+;将下标作为索引
+(map-indexed vector "foobar")
+(map-indexed hash-map "foobar")
+
 ;两两操作的都可以考虑reduce
 (reduce max '(1 2 3))
 
@@ -129,6 +133,9 @@ identity直接返回入参
 (sort (complement <) (repeatedly 10 #(rand-int 20)))
 (sort < (repeatedly 10 #(rand-int 20)))
 
+;sorted-map, sorted-map-by, sorted-set, sorted-set-by 类似红黑树的效果
+;clojure里貌似没有自带的优先级队列，排序只能考虑用这个
+
 ;keep类似于map，但是去掉nil
 (keep identity '(1 2 5 nil))
 
@@ -136,3 +143,21 @@ identity直接返回入参
 (distinct '(1 2 3 1 2 3))
 ;distinct可以惰性化，去重的时候只要可前面比较就可以了
 (take 3 (distinct '(1 2 3 1 2 3)))
+
+
+;group-by类似java
+(group-by #(mod % 3) (range 10))
+
+;partition-by拆分流，返回是处拆分流
+ (partition-by #(= 3 %) [1 2 3 4 5])
+ 
+;shuffle随机打乱
+(->> (partial shuffle [1 2 3]) (repeatedly 5))
+ 
+;frequencies统计频次
+(frequencies ['a 'b 'a 'a])
+
+cumXxxx的效果
+(reductions + (range 1 10))
+(reductions * (range 1 10))
+(reductions conj [] '(1 2 3))
