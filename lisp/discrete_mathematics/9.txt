@@ -101,10 +101,10 @@
 (->>  [[1 0 1] [0 1 0] [1 1 0]] warshall print-matrix)
     
 (defn gen-random-matrix[n]
-    (for[x (range n)] (vec (map (fn[x](if (> (rand-int 10) 7) 1 0)) (range n)))))
-
-(->>  (gen-random-matrix 10) tranpass-closure print-matrix)
-(->>  (gen-random-matrix 10) warshall print-matrix)
+    (for[x (range n)] (mapv (fn[x](if (> (rand-int 10) 7.5) 1 0)) (range n))))
+(def rand-matrix (gen-random-matrix 10))
+(->>  rand-matrix tranpass-closure print-matrix)
+(->>  rand-matrix warshall print-matrix)
     
     
     

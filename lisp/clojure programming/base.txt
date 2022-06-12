@@ -191,7 +191,7 @@ letfn定义临时函数，避免函数内定义的函数需要递归时的空间
 (inner1 3)
 (inner2 3)
 
-
+letfn [(x[]...)] 等效于 let [x (fn[]...)]
 
 ;recur配合loop实现循环   
 (loop [x 0]

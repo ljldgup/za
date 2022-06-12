@@ -2,7 +2,7 @@
 ;基于amb风格实现惰性笛卡尔乘积,使用回退点完成
 ;整个选择集合cols为空,说明所有集合都取过一次
 ;backword记录每次回退点,第一个集合为空说明当前的选择结束，直接回退
-
+;其实如果单纯无副作用回退直接用lazy-seq+递归就行
 (defn lazy-product-amb[& cols]
 
     (defn helper[cols, production, backword]
@@ -54,13 +54,12 @@
               rest-production (apply lazy-product-recur (rest cols))]
             ;因为map返回会包一层括号，这里用一次 concat 将内部map包的括号去掉
             ;concat内容是惰性序列，则返回还是惰性序列
-            (apply concat
-                (map 
-                    (fn[ele]
-                        (map 
-                            (fn[production](cons ele production))
-                            rest-production))
-                    first-col)))))
+            (mapcat 
+                (fn[ele]
+                    (map 
+                        (fn[production](cons ele production))
+                        rest-production))
+                first-col))))
 
 (lazy-product-recur '(1 2 3) '(5 7))
 
@@ -80,19 +79,19 @@
 (take 10 (lazy-product-recur integer integer))
 
 ------------------------------------------------------------------------
-;将过程拆成两个过程执行,内部返回的是惰性序列
 
-(defn append-value[lists, value]
-    (map #(cons value %) lists))
     
-    
-;map会返回一个seq，只能用apply调用concat
-
+apply+concat+map = mapcat
 (defn append-values[lists, values]
-    (apply concat (map #(append-value lists %) values)))
+    (mapcat #(map #(cons value %) lists) values))
     
 ;reduce,concat内容是惰性序列，则返回还是惰性序列 
 (defn cross-join[& list-values]
     (reduce #(append-values %1 %2) '(()) list-values))
+
+(cross-join '(1 2 3) '(5 7))
     
-    
+;注意这里如果没有写成(cons 1 (lazy-seq,是无法实现的，因为没有推迟会发现integer没有被定义
+(def integer (cons 1 (lazy-seq (map inc integer))))
+
+(take 10 (cross-join integer '(6 7 8 9 10)))
