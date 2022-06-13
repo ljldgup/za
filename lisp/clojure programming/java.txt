@@ -42,3 +42,30 @@ doto 适合java对象操作
         (set! (. object  -y) 8)
         (bean object)
         )
+
+;也能遍历打印出来结果，比transient好用。。
+(doto (java.util.HashMap.)
+      (.put "a" 1)
+      (.put "b" 2)
+      (map println))
+      
+;java的作用范围有问题。。不能直接把.add作为函数
+(reduce #(do (.add %1 %2) %1) (java.util.ArrayList.) (range 10))
+
+;java的数据结构也能遍历
+(map println (reduce #(do (.add %1 %2) %1) (java.util.ArrayList.) (range 10)))
+
+
+;优先队列可以轻松的指定一个比较器
+(doto (java.util.PriorityQueue. (fn[x,y](> x y)))
+      (.add 3)
+      (.add 5)
+      (.add 1)
+      (map #(.pop %)))
+      
+
+;实现接口 
+(defrecord com-imp []
+    java.util.Comparator
+    (compare   [this i j] (if (> i j) 1 0)))
+(.compare (com-imp.) 1 2)
