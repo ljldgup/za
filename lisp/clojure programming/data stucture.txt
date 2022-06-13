@@ -30,6 +30,7 @@ seq 检查空序列
 map创建
 {:a 3 :b 11 [1 2 3] 1}
 (hash-map :a 3 :b 11 [1 2 3] 1)
+;into只能配合vector不能配合list
 (into {} '([:a 3] [:b 11] [[1 2 3] 1]))
 (zipmap '(:a :b [1 2 3]) '(3 11 1))
 
@@ -309,3 +310,11 @@ mapcat和java中flatmap相同，只展开一层
         #(assoc! %1 (first %2) (second %2)) 
         (transient {}) 
         (for [x (range 1 16)] [x (rand-int x)])))
+        
+
+;true = 相当于java equal
+(= (conj #{} 1) (conj #{} 1))
+;false identical? 相当于java =
+(identical? (conj #{} 1) (conj #{} 1))
+;true这里应该被编译器优化成同一个了
+(identical? #{} #{})
