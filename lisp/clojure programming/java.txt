@@ -1,4 +1,4 @@
-静态函数调用，clojure不需要使用try
+﻿静态函数调用，clojure不需要使用try
 Thread/sleep 1000
 
 (.getTime (new Date))
@@ -52,6 +52,11 @@ doto 适合java对象操作
 ;java的作用范围有问题。。不能直接把.add作为函数
 (reduce #(do (.add %1 %2) %1) (java.util.ArrayList.) (range 10))
 
+(def x (java.util.ArrayList.))
+(.add x 1)
+;没办法作为流使用
+(map #(do (.add x (inc %)) %) x)
+
 ;java的数据结构也能遍历
 (map println (reduce #(do (.add %1 %2) %1) (java.util.ArrayList.) (range 10)))
 
@@ -69,3 +74,17 @@ doto 适合java对象操作
     java.util.Comparator
     (compare   [this i j] (if (> i j) 1 0)))
 (.compare (com-imp.) 1 2)
+
+(def graph [[4 5] [1 2] [4 3] [2 6] [1 3] [2 4] [3 5]])
+(defn bfs[graph n]
+	(let [visited (java.util.HashSet.)
+	      queue (java.util.LinkedList.)
+		  update (fn[_ v]
+					(doseq[x (filter #(not (.contains visited %)) (graph v))]
+						(do (.add queue x) (.add visited x) (println x)))) ]
+		(doseq [v queue] (update nil v))
+		;没办法作为流使用
+		;(reduce update queue nil)
+		;(map update queue nil)
+		queue))
+(bfs graph (count graph))
