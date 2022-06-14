@@ -2,6 +2,12 @@
 ;map多多个序列操作相当于将同位置拼成一个序列，然后调用，最短结束，就结束过程
 (map (fn[ & args] (reduce + args )) '(1 2 3 4) '(4 5 6) '(1 4 5))
 (map #(reduce + %&) '(1 2 3) '(4 5 6) '(1 4 5))
+
+;flatmap
+(mapcat identity '((1 2 3) (4 5 6)))
+;map成vector注意内层没变
+(mapv identity '((1 2 3) (4 5 6)))
+
 ;mapcat 等价(apply concat (map .. 
 ;mapv 等价 (vec (map 应为vector是数组，所以应该不是惰性化实现
 ;filterv同理
@@ -11,6 +17,10 @@
 (filter odd? (range 10))
 ((filter odd?) (range 10))
 
+
+;将下标作为索引
+(map-indexed vector "foobar")
+(map-indexed hash-map "foobar")
 
 ;两两操作的都可以考虑reduce
 (reduce max '(1 2 3))
@@ -66,7 +76,8 @@ interpose 在列表中没量过之间插入
 
 (def log->file (file-logger "message.log"))      
 
-;memoize可用于纯函数缓存，这里因为随机数不是纯函数，所以结果不对                    
+;memoize可用于纯函数缓存，这里因为随机数不是纯函数，所以结果不对    
+;repeatedly 用于函数，会调用参数，repeat用于实体                
 (repeatedly 10 (partial rand-int 10))
 (repeatedly 10 (partial (memoize rand-int) 10)) 
 
@@ -79,6 +90,13 @@ apply 和 直接括号执行的区别在于可以用容器解包为参数
 (apply * (repeat 19 3))
 直接(* (repeat 19 3))就不行 
 经常用于不定参数截取后，递归调用
+
+apply可以对多个参数调用，不需要写成lambda， edges会被解包放在后面参数上不是一个参数
+(apply min-key #(nth % 2) '((1 0 62) (2 0 57) (2 1 50)))
+等效
+(min-key #(nth % 2) '(1 0 62) '(2 0 57) '(2 1 50))
+;这个不行，后面作为一个元素处理
+(min-key #(nth % 2) '((1 0 62) (2 0 57) (2 1 50)))
 
 eval能执行符号表
 (eval '(+ 1 2))
@@ -96,6 +114,8 @@ eval能执行符号表
 
 ;iterate[f x] 返回x, (f x), (f (f x))的惰性序列,可以代替(def x (cons 1 (map fn x)))这样的流
 (take 10 (iterate #(/ % 2) 1))
+;整数数列，等价(range)
+(iterate inc 1)
 
 ;两种基于流的斐波拉契实现
 
@@ -123,6 +143,9 @@ identity直接返回入参
 (sort (complement <) (repeatedly 10 #(rand-int 20)))
 (sort < (repeatedly 10 #(rand-int 20)))
 
+;sorted-map, sorted-map-by, sorted-set, sorted-set-by 类似红黑树的效果
+;clojure里貌似没有自带的优先级队列，排序只能考虑用这个
+
 ;keep类似于map，但是去掉nil
 (keep identity '(1 2 5 nil))
 
@@ -130,3 +153,23 @@ identity直接返回入参
 (distinct '(1 2 3 1 2 3))
 ;distinct可以惰性化，去重的时候只要可前面比较就可以了
 (take 3 (distinct '(1 2 3 1 2 3)))
+;distinct可以根据seq，vec的内容进行去重，但是sort确不能排序。。。python支持后者
+(distinct (repeatedly 100 #(vector (rand-int 2) (rand-int 2))))
+(distinct (repeatedly 100 #(vector (rand-int 2) (rand-int 2))))
+
+;group-by类似java
+(group-by #(mod % 3) (range 10))
+
+;partition-by拆分流，返回是处拆分流
+ (partition-by #(= 3 %) [1 2 3 4 5])
+ 
+;shuffle随机打乱
+(->> (partial shuffle [1 2 3]) (repeatedly 5))
+ 
+;frequencies统计频次
+(frequencies ['a 'b 'a 'a])
+
+cumXxxx的效果
+(reductions + (range 1 10))
+(reductions * (range 1 10))
+(reductions conj [] '(1 2 3))

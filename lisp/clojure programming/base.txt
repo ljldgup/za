@@ -5,6 +5,9 @@ coljure相除默认分数，
 (/ 1 2.)
 (/ 1 1.5)
 
+;保留小数点
+(with-precision 2 (/ 1 3.0))
+
 (quot 22 7) ;整除
 (rem 22 7) (mod 22 7) ;余数
  
@@ -211,3 +214,6 @@ case使用
     :a (println 'a)
     :b (println 'b)
     (println 'c))
+    
+;clojure 字符串也可以像python那样迭代
+(for [x "xfsdf"] x)
