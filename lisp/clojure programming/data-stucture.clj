@@ -101,6 +101,8 @@ assoc不会修改原来容器
 
 去掉set中的:a
 (disj #{:a 1}  :a)
+增加
+(conj #{1} 2)
 
 ;seq 返回列表，是链表实现的
 (seq "abfd")
