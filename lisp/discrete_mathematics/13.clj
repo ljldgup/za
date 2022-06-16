@@ -26,11 +26,6 @@
 (defn final-status[string] '( \n ) )
 (final-status "123123")
 
-;把status作为raw-status下一个调用的匹配器
-(defn assembly-status[status raw-status]
-    (println status raw-status)
-    (raw-status status))
-
     
 (defn ch-match? [raw-ch pattern-chs]
     (if (or (= pattern-chs :any-ch) (pattern-chs raw-ch))
@@ -57,20 +52,40 @@
 							
 ;单个匹配，返回lamdba，传入下一个状态生成匹配函数
 (defn single-match-status [pattern-chs]
-    fixed-match-status [pattern-chs 1])
+    (fixed-match-status pattern-chs 1))
 						
-(defmulti gen-status (fn[& args](count args)))
-(defmethod gen-status :default [& args] [println args])
+(defmulti gen-status (fn[& args](if (= :or (first args) :or (keyword (str "and" (count args)))))))
+
+;把status作为raw-status下一个调用的匹配器
+(defn assembly-status[status raw-status]
+    (println status raw-status)
+    (raw-status status))
+
+;并行化状态，用于或
+(defn parallel-status[& statuses]
+    (fn[next-status]
+        (let [new-statuses (map 
+                                #(assembly-status %1 next-status) 
+                                (map gen-statuses statues))]
+            (fn[string]
+                (some #(% string) new-status)))))
+
+;不是or就是and，and根据入参确定是单个还是定长，还是范围
+(defmethod gen-status :or [pattern-chs]
+    (single-match-status pattern-chs))
+(defmethod gen-status :and1 [pattern-chs]
+    (single-match-status pattern-chs))
+(defmethod gen-status :and2 [pattern-chs length]
+    (fixed-match-status pattern-chs length))
 
 
-(defmethod gen-status 1 [pattern-chs]
-    (single-status pattern-chs))
-(defmethod gen-status 2 [pattern-chs length]
-    (fixed-status pattern-chs length))
+
+
+
 (gen-status \a)
 (gen-status \a 2)
 
-(def parsed-pattern '((#{\a} 2) (#{\d \c \b}) (:any-ch 3)))
+(def parsed-pattern '((#{\a} 2) (:or (#{\d \c \b}) (#{\e} 3))) (#{\a}))
 (def regular-match-machine (reduce 
                 #(assembly-status %1 %2) 
                 final-status 
