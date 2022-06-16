@@ -32,6 +32,11 @@
 ;可以新增字段
 (assoc (Point. 3 4) :z [:a :b])
 
+
+;update也能操作
+(update (Point. 3 4) :x inc)
+update-in (Point. 3 4) [:x :y] inc)
+
 ;不能作为函数操作
 ((Point. 3 4) :x)
 
