@@ -64,13 +64,17 @@ lamdba
 (let [[x & rest_args] '("123" 2 3 "4")]
     (println x)
     (println rest_args))
+	
+	
 
 
 
 ;多重解包, _占位类似python
 (let [ [_ [_ target]] [[1 2] [3 4]]] target)
-            
-            
+
+;if-let内部只能又一个赋值，一个执行表达式，结果为假，内部不执行
+(let [x nil] (println x))        
+(if-let [x nil] (println x))
 
 ;函数参数可以直接用let形式解构
 ((fn[[x & rest_args]] 
@@ -202,6 +206,11 @@ letfn定义临时函数，避免函数内定义的函数需要递归时的空间
 (inner2 3)
 
 letfn [(x[]...)] 等效于 let [x (fn[]...)]
+直接将函数替换成返回一个lamdba也可以实现相同效果，
+关键在于将当前的环境封装的一个函数中去，而不是def一个函数，def的结果是空间全局的，会互相刷新
+如果要递归，那么只能好在lamdba中增加一个参数，调用的时候将fn自己传进去，实现递归
+
+
 
 ;recur配合loop实现循环   
 (loop [x 0]
