@@ -53,8 +53,8 @@
 ;范围匹配器，贪婪模式
 (defn range-match-status [pattern-chs min-length max-length]
 ;    (println 'range-match-status pattern-chs min-length max-length)
-    (defn gen-matcher[pattern-chs next-status]
-        (fn[matcher n string]
+    (defn gen-ranage-status[pattern-chs next-status]
+        (fn[status n string]
 ;            (println 'range-match pattern-chs n string)
             ;当长度n用完，字符串为空，或者无法匹配，直接用下一个匹配器进行匹配
             (if (or 
@@ -63,7 +63,7 @@
                     (= n 0))
                 (if-let[matched-str (next-status string)] matched-str)
                 ;占用当前字符，查看后续能否匹配，不能就放弃占用，直接用下一个状态机匹配
-                (let[rest-matched-str (matcher matcher (dec n) (subs string 1))]
+                (let[rest-matched-str (status status (dec n) (subs string 1))]
                     (if rest-matched-str
                         (cons (first string) rest-matched-str)
                         ;不占用当前字符匹配，无匹配返回nil
@@ -75,9 +75,9 @@
             (serial-status-assemble 
                 (list  (list pattern-chs min-length) (list pattern-chs 0 (- max-length min-length))))
             (fn[next-status]
-                (let [matcher (gen-matcher pattern-chs next-status)]
+                (let [status (gen-ranage-status pattern-chs next-status)]
                     ;(println next-status)
-                    #(matcher matcher max-length % )))))
+                    #(status status max-length % )))))
 
                             
 							
