@@ -6,14 +6,21 @@ seq 检查空序列
 
 
 ;集合类数据结构
-(def v [1 2 3])
+(def v [1 2 3 4 5 6])
 ;conj可以加多个，加在尾部
-(conj v 1 2) 
+(conj v 7 8) 
 
 ;cons只能加一个，加在头部
 (cons 1  v)
-(cons 1 2 v) 
+(cons 1 2 v) ;错误
 
+;取头部3个
+(take 3 v)
+;舍弃头部3个
+(drop 3 v)
+;取子sequence的方法，1是位置，2是长度
+(->> v (drop 1) (take 2))
+;自带subseq不根据下标操作
 
 ;conj，cons都是加在最前面
 ;加在后面用concat
@@ -149,7 +156,7 @@ lazy-cat，concat可以合并惰性流，
 
 
 展开任意嵌套的数据结构
-(flatten '(1 (2 3) (1  (2 (3))))
+(flatten '(1 (2 3) (1  (2 (3)))))
 
 
 mapcat和java中flatmap相同，只展开一层
@@ -261,18 +268,6 @@ mapcat和java中flatmap相同，只展开一层
     [dx dy])
 
 
-
-
-
-
-
-;partition 产生相邻三个元素的序列集合，首尾不产生
-(partition 3 1 (range 5))
-;增加首尾元素
-(partition 3 1 (concat [nil] (range 5) [nil]))
-
-
-
 ;repeat没有指定数量 返回一个无穷的lazy-seq
 (repeat nil)
 ;返回长度为10的惰性序列
@@ -320,3 +315,36 @@ mapcat和java中flatmap相同，只展开一层
 (identical? (conj #{} 1) (conj #{} 1))
 ;true这里应该被编译器优化成同一个了
 (identical? #{} #{})
+
+;嵌套seq的操作
+(def nested-seq (map #(range % (+ % 5)) (range 5)))
+(ffirst nested-seq)
+(fnext nested-seq)
+;(next (first x))
+(nfirst nested-seq)
+; (next (next x))
+(nnext nested-seq)
+;next rest区别在于next没有时候返回空， rest返回'()
+
+;返回一个vector包含pred 为假，真两个seq子集
+(split-with #(< (first %) 3) nested-seq)
+
+
+;返回一个
+(split-at 2 nested-seq)
+
+
+;partition 产生相邻三个元素的序列集合，首尾不产生
+(partition 3 1 (range 5))
+;增加首尾元素
+(partition 3 1 (concat [nil] (range 5) [nil]))
+
+;any?有任意元素返回true
+(any? '(false))
+;some任意一个满足表达式为真的元素
+(some identity '(false))
+(some #(not %) '(false))
+
+or 效果类似，or 全不为真返回false
+every? 和 and和上面类同
+not-every? not-any?效果类似

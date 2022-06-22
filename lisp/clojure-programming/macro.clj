@@ -1,3 +1,22 @@
+;常用宏
+;doto 将第一个式子的结果加到后面每个列表的最后一个执行
+;doto 适合java对象操作
+;->>,-> 是将每次计算的结果作为后一个表达式的参数
+;->>放在结尾，->放在第二个
+(doto 1 (println 1 ) (println 2 ) (println 3))
+(->> 1 (println 1 ) (println 2 ) (println 3))
+(-> 1 (println 1 ) (println 2 ) (println 3))
+
+;cond-> cond->> 为真的时候执行
+(cond-> 1          ; we start with 1
+    true inc       ; the condition is true so (inc 1) => 2
+    false (* 42)   ; the condition is false so the operation is skipped
+    (= 2 2) (* 3))
+;some-> some->> 任意不为真就停止
+
+;注意如果需要放在第一个作为函数，reduce就可以直接实现
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require '(clojure [string :as str]
                    [walk :as walk]))
 

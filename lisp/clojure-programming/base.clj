@@ -166,15 +166,6 @@ for也能实现嵌套,for会将结果作为容器返回
 (for [x (range 4 8), y (range 11 13) z (* x y)] z )
 (for [x (range 4 8), y (range 11 13) :let [z (* x y)]] z )
 
-;any?有任意元素返回true
-(any? '(false))
-;some任意一个满足表达式为真的元素
-(some identity '(false))
-(some #(not %) '(false))
-
-or 效果类似，or 全不为真返回false
-every? 和 and和上面类同
-
 
 
 letfn定义临时函数，避免函数内定义的函数需要递归时的空间污染
@@ -233,3 +224,5 @@ case使用
     
 ;clojure 字符串也可以像python那样迭代
 (for [x "xfsdf"] x)
+
+(assert (= 5 (+ 2 2)) "There are four lights!")

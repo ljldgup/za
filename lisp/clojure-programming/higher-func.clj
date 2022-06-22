@@ -42,9 +42,12 @@
 (def negated-sum-str (comp str - +))
 (negated-sum-str 1 2)
 注意这个函数是从右往左执行的
-;(def negated-compare (comp - compare))
+
 (compare 1 2)
+(def negated-compare (comp - compare))
 (negated-compare 1 2)
+
+ ((comp (filter odd?) (map inc) (take 5)) (range 100))
 
 
 ;通过require加别名，  
@@ -104,13 +107,7 @@ eval能执行符号表
 (eval (read-string "(+ 1 2)"))
 
 
-;doto 将第一个式子的结果加到后面每个列表的最后一个执行
-;doto 适合java对象操作
-;->>,-> 是将每次计算的结果作为后一个表达式的参数
-;->>放在结尾，->放在第二个
-(doto 1 (println 1 ) (println 2 ) (println 3))
-(->> 1 (println 1 ) (println 2 ) (println 3))
-(-> 1 (println 1 ) (println 2 ) (println 3))
+
 
 ;iterate[f x] 返回x, (f x), (f (f x))的惰性序列,可以代替(def x (cons 1 (map fn x)))这样的流
 (take 10 (iterate #(/ % 2) 1))

@@ -15,6 +15,7 @@ doto 将第一个式子的结果加到后面每个列表的最后一个执行
 doto 适合java对象操作
 (object 1 (.setXxx 1 ) (.setXxx 2 ))
 
+(.. "fooBAR" (toLowerCase) (contains "ooba"))
 
 (def frame (java.awt.Frame.))
 ;匹配查找函数
