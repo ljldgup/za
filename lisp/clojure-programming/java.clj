@@ -89,3 +89,7 @@ doto 适合java对象操作
 		;(map update queue nil)
 		queue))
 (bfs graph (count graph))
+
+
+(System/exit 1)
+(doseq[[k v] (System/getenv)] (println k v))
