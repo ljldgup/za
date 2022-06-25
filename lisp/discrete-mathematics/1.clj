@@ -11,7 +11,7 @@
     (map #(cons value %) lists)) 
 ;map会返回一个seq，只能用apply调用concat
 (defn append-values[lists, values]
-    (apply concat (map #(append-value lists %) values)))
+    (mapcat #(append-value lists %) values))
 (defn cross-join[& list-values]
     (reduce #(append-values %1 %2) '(()) list-values))
 
