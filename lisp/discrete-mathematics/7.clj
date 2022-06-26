@@ -8,6 +8,7 @@
 (def shunzi (* 9 4 4 4 4 4))
 (def tonghuashun (* 9 4))
 (def total (combination 52 5))
+;同花∪顺子 = 同花+顺子-同花顺
 (def probility (/ (- total (- (+ tonghua shunzi) tonghuashun)) total))
 
 

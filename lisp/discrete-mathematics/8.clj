@@ -30,3 +30,15 @@
 
 (->> (map exp-stream (rest integers)) interleave-sorted distinct (take 100))
     
+;展开e^-1,1-1/1! + 1/2!......
+(defn e-series
+    ([n rst] 
+        (let [new-rst (* -1 (/ rst n))]
+            (cons new-rst (lazy-seq (e-series (inc n) new-rst)))))
+    ([](cons 1 (e-series 1 1))))
+    
+;错位排列Dn
+(defn misplace[n]
+    (* 
+        (reduce * (range 1 (inc n))) 
+        (reduce + (take (inc n) (e-series )))))
