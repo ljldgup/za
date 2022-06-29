@@ -6,6 +6,7 @@
 (defn gen-positions[n, upper] 
     (for [_ (range n)](list (rand-int upper) (rand-int upper))))
 (gen-positions 10 100)
+(distinct (gen-positions 100 3))
 
 (defn gen-empty-graph[n] 
     (vec (repeat n #{})))
@@ -16,6 +17,7 @@
 (gen-empty-record 10)
 
 ;生成每个节点为偶数的欧拉通路，这里只是关系，没有具体坐标
+;返回的graph是vector，第n个set内容代表点n连接的点
 (defn gen-euler-graph[n]
     (loop [graph (gen-empty-graph n)
           record (gen-empty-record n)
@@ -23,14 +25,16 @@
           ;(println record (sort left-set) graph )
             (if (= 0 (count left-set))
                 graph
+                  ;这里一定几率造成死循环，因为可以连接的点用完了，但是还有奇数度的点
+                  ;n越小几率越大
                 (let [point (first left-set)
-                      ;这里一定几率造成死循环，因为可以连接的点用完了，但是还有奇数度的点
-                      ;n越小几率越大
-                      connected (first (filter #(and (not= point %) (not ((graph point) %)))  ( infinite-randint-stream n)))
+                      ;与其连接的点
+                      connected (first (filter #(and (not= point %) (not ((graph point) %)))  (infinite-randint-stream n)))
                       new-record (-> record (update point inc) (update connected inc))
                       new-graph (-> graph (update point #(conj % connected)) (update connected #(conj % point)))
                       p-record (new-record point)
                       c-record (new-record connected)
+                      ;从连接的两个点确定删除还是保留
                       remove-points (filter #(and (even? (new-record %)) (not= (new-record %) 0)) (list point connected))
                       add-points (filter #(odd? (new-record %)) (list point connected))
                       t-left-set (reduce #(disj %1 %2) left-set remove-points)
