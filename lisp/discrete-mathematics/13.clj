@@ -1,6 +1,7 @@
 ;13.2例5,单位延迟机
 
 ;这里直接用一个map来表示输入带来的状态变化，状态隐含在value中的函数中，就是list ?
+;这里通过def lamdba 中调用自身实现递归
 (def machine-s1-s2 {0,(fn[x](list 0 (machine-s1-s2 x))) 1,(fn[x](list 1 (machine-s1-s2 x)))})
 (def s0 (fn[x](list 0 (machine-s1-s2 x))))
 (def input (repeatedly 20 #(rand-int 2)))
@@ -9,13 +10,13 @@
         (if (not (empty? signals))
             (let [signal (first signals)
                   [output new-status] (status signal)]
-;;                (println signal output)
+;                (println signal output)
                 (recur (rest signals) new-status))))
                 
 ;不用loop的遍历方案          
 (defn status-reducer[status signal]
     (let [[output new-status] (status signal)]
-;;        (println signal output)
+;        (println signal output)
         new-status))
 (reduce status-reducer s0 input)
 
@@ -25,7 +26,7 @@
 
 ;单个字符匹配  
 (defn ch-match? [pattern-chs raw-ch]
-;;    (println 'ch-match? pattern-chs raw-ch )
+;    (println 'ch-match? pattern-chs raw-ch )
     (if (or (= pattern-chs :any-ch) (pattern-chs raw-ch))
         true
         false))
@@ -101,9 +102,9 @@
         
 (defmulti gen-status choose-generator)
 
-;并行化状态，用于或
-(defn parallel-assembly-status[parsed-patterns]
-;;    (println 'parallel-assembly-status parsed-patterns)
+;or 并行化状态，用于或
+(defn parallel-status-assemble[parsed-patterns]
+;    (println 'parallel-assembly-status parsed-patterns)
     (fn[next-status]
         ;把每个过程和下一个过程串联
         (let [new-statuses (map 
@@ -112,20 +113,43 @@
             (fn[string]
                 ;返回第一个能匹配的结果，失败继续尝试下次，实现回溯
                 (some #(% string) new-statuses)))))
-                
+
+
+;and 串行装配          
 (defn serial-status-assemble [parsed-patterns]
 ;    (println 'serial-assembly-status parsed-patterns)
+    ;注意这里要等到下一个状态到来才会执行内部装配，所以装配实际是从尾部开始的
     (fn[next-status]
         (reduce 
             #(assembly-status %2 %1) 
             next-status
             (reverse (map gen-status parsed-patterns)))))
-                
-;不是or就是and，and根据入参确定是单个还是定长，还是范围
+            
+
+;环视后方匹配
+(defn after-status-assemble[parsed-patterns]
+;    (println 'after-assembly-status parsed-patterns)
+    (fn[next-status]
+        ;这里装配的是这可以用string调用的状态机
+        (let [after-statuses ((gen-status parsed-patterns) final-status)]
+            (fn[string]
+                ;环视能匹配，再匹配后方的
+                (let [matched (after-statuses string)]
+                    (if (nil? matched)
+                      nil
+                      (next-status string)))))))
+
+
+;不是or(parallel)就是and(serial)，and根据入参确定是单个还是定长，还是范围
 (defmethod gen-status :parallel [patterns]
-    (parallel-assembly-status (rest patterns)))
+;    (println :prallel) 
+    (parallel-status-assemble (rest patterns)))
 (defmethod gen-status :serial [patterns]
+;    (println :serial) 
     (serial-status-assemble (rest patterns)))
+(defmethod gen-status :after [patterns]
+;    (println :after) 
+    (after-status-assemble (second patterns)))
 ;单个字符匹配
 (defmethod gen-status 1 [patterns]
     (apply single-match-status patterns))
@@ -172,7 +196,15 @@
 (regular-match-machine  "aaefe")
 
 (def patterns '(:serial (#{\a} 2 5) (#{\d \c \b}) (:parallel (:serial (#{\a} 2) (#{\d \c \b})) (:serial (#{\c} 3) (#{\e} 3)) )))
-(def regular-match-machine)
+(def regular-match-machine ((gen-status patterns) final-status))
+(regular-match-machine  "aabaab")
+(regular-match-machine  "aaaacccceee")
+(regular-match-machine  "aaaaadaab")
+(regular-match-machine  "aaac")
+(regular-match-machine  "aaefe")
+
+;环视
+(def patterns '(:serial (#{\a} 2 5) (:after (:parallel (#{\b}) (#{\c} 2)))))
 (def regular-match-machine ((gen-status patterns) final-status))
 (regular-match-machine  "aabaab")
 (regular-match-machine  "aaaacccceee")
