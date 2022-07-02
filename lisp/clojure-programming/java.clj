@@ -93,3 +93,6 @@ doto 适合java对象操作
 
 (System/exit 1)
 (doseq[[k v] (System/getenv)] (println k v))
+
+;反射
+(map #(println (.getName %)) (.getDeclaredMethods (.getClass java.util.Date))))
