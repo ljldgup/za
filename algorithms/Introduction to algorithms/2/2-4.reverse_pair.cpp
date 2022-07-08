@@ -61,7 +61,8 @@ int getReversPairWithMergeSort(int *nums, int left, int right){
     int count = 0;
     int rightPos = mid + 1;
     for(int i = left; i <= mid ; i++){
-        //这里右边不用回退，直接从上次的地方开始，因为元素已经排序，左边必然大于右边
+        //这里右边不用回退，直接从上次的地方开始，
+        //因为元素已经排序，右半部分左边的元素必然小于当前左侧元素
 		while(rightPos <= right && *(nums + rightPos) < *(nums + i)) rightPos++;
 		count += rightPos - mid - 1;
 	}
