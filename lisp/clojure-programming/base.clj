@@ -195,8 +195,16 @@ letfn定义临时函数，避免函数内定义的函数需要递归时的空间
 letfn [(x[]...)] 等效于 let [x (fn[]...)]
 直接将函数替换成返回一个lamdba也可以实现相同效果，
 关键在于将当前的环境封装的一个函数中去，而不是def一个函数，def的结果是空间全局的，会互相刷新
-如果要递归，那么只能好在lamdba中增加一个参数，调用的时候将fn自己传进去，实现递归
+如果要递归，非尾递归只能好在lamdba中增加一个参数，调用的时候将fn自己传进去，实现递归
 
+
+;lamdba+尾递归，能够正常工作
+(defn lamdba-inner-recur[x]
+    #((fn[n] (if (> n 0) (do (println n) (recur (dec n))))) x))
+
+(def test1 (lamdba-inner-recur 20))
+(def test2 (lamdba-inner-recur 10))
+(test1)
 内部返回函数尽量用lambda，要递归用lamdba+recur
 在python中没有这个问题。。
 
