@@ -66,13 +66,14 @@ int extended_euclid(int a, int b, int &x, int &y){
  	}
 }
 
-//模线性方程求解
+//模线性方程求解ax mod n = b
 int modular_linear_equation_solver(int a, int b, int n){
 	int x0, x, y, d, t;
 	d = extended_euclid(a, n, x, y);
 	cout<<a<<' '<<n<<"最大公约数"<<d<<endl;
 	cout<<a<<' '<<n<<"最大公约数ax+by表达"<<" = "<<x<<"*"<<a<<" + "<<y<<"*"<<n<<endl;
 	
+    //解为d的0-(n//d-1)的倍数，因为ax mod n程周期性，周期为n//d
 	if(b%d == 0){
 		x0 = (x*(b/d))%n; 
 		cout<<"x0:"<<x0<<endl;
