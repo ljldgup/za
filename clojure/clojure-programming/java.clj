@@ -9,6 +9,8 @@ Thread/sleep 1000
  (try (/ 3 0) (catch Exception e (println e)))  
  (assert true)  
  
+;强转
+(cast Number 1)
  
 doto 将第一个式子的结果加到后面每个列表的最后一个执行
 (doto 1 (println 1 ) (println 2 ) (println 3))
