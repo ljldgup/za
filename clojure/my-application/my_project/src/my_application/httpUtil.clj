@@ -39,7 +39,7 @@
     (if (nil? file_name)
       (list relate_path "index.html")
       (list relate_path file_name))))
-(get_related_path_name "https://www.baidu.com/")
+;(get_related_path_name "https://www.baidu.com/")
 
 (defn get_http [url]
   (let [httpGet (HttpGet. url)]
@@ -66,4 +66,4 @@
 (defn cache_return_string [url]
   (slurp (get_with_cache url)))
 
-(cache_return_string "https://www.baidu.com/")
+;(cache_return_string "https://www.baidu.com/")
