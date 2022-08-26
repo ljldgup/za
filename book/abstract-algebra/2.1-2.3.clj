@@ -12,9 +12,12 @@
 ;随机打乱  
 (defn get-random-permutation[n]
     (->> (range n) shuffle vec))
+	
+(defn get-random-permutation[permutation n]
+    (reduce (map permutation (range n)))
 
 ;获得置换的组成
-(defn get-cycle-permutation[permutation]
+(defn get-cycle-permutation[n permutation]
     (println 'permutation permutation)
     (let [result (transient #{})
          visited (transient #{})
@@ -25,13 +28,18 @@
                     (do 
                         (conj! visited ele)
                         (recur (permutation ele) (conj! visiting ele)))))]
-         (doseq [element (range (count permutation))]
+         (doseq [element (range n)]
             (if (not (visited element)) (dfs element (transient []))))
          (persistent! result)))
 
-(->> 10 get-random-permutation  get-cycle-permutation)
+(def n 10)
+(def random-permutation (get-random-permutation n))
 
-(->> 13 get-random-permutation  get-cycle-permutation)
+(get-cycle-permutation n random-permutation)
+
+(->> (range 1 n) (map #(apply comp (repeat % random-permutation))) (map #(get-cycle-permutation n %)) (map println)) 
+
+(get-cycle-permutation  n #(->> (random-permutation %) random-permutation))
 
 ;注意 gcd,lcm都是可以reduce的
 (defn gcd[a b]
@@ -50,11 +58,12 @@
 ;其实就是求的元素阶的最小公倍数
 (def n 13)
 (def permutation-n (get-random-permutation 13))
-(def cycle-permutation-n (get-cycle-permutation permutation-n))
+(def cycle-permutation-n (get-cycle-permutation n permutation-n))
 (def permutation-n-lcm  (->> cycle-permutation-n (map count) (reduce lcm)))
 (def no-change-permutation (apply comp (repeat permutation-n-lcm permutation-n)))
 (map no-change-permutation (range n))
-
+;置换长度都是1
+(get-cycle-permutation n no-change-permutation)
 
 
 ;mod n的子群数量，f1群乘积方法
