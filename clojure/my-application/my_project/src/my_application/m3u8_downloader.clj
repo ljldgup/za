@@ -2,6 +2,7 @@
   (:require [my-application.httpUtil :refer :all]))
 
 (def piece_count_limit 1000)
+(def rand_delay_limit 500)
 (def out_put_file "cmd.txt")
 
 (def basic_url "https://3bmmikh.life/new/hls")
@@ -53,7 +54,8 @@
       (do
         (spit out_put_file (get_ffmpeg_cmd local_path title) :append true)
         (doseq [ts_path ts_paths]
-          ;(Thread/sleep (rand-int rand_delay_limit))
+            ;;增加一个随机延迟避免被网站屏蔽
+          (Thread/sleep (rand-int rand_delay_limit))
           (cache_return_string (str ts_base_url ts_path)))))))
 ;(download_m3u8 "https://3bmmikh.life/new/hls/c6f169e6c2ff41109822d0187179eb69/index.m3u8")
 
