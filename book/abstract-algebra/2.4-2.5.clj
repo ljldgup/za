@@ -34,6 +34,7 @@
 ;按陪集对单个元素聚合，可以看到得到陪集的元素，都陪集中
 (->> 
 	(range 1 group_num) 
+	;直接用获取陪集函数聚类，没必要提前算出来
 	(group-by #(get_coset % one_group))
 	(map println))
 	
