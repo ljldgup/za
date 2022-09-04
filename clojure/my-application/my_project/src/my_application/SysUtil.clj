@@ -1,4 +1,4 @@
-(ns my-application.SysUtil)
+(ns my-application.sys_util)
 
 (defn mkdirs[path]
   ;(println path)

@@ -1,5 +1,5 @@
-(ns my-application.httpUtil
-  (:require [my-application.SysUtil :refer :all]))
+(ns my-application.http_util
+  (:require [my-application.sys_util :refer :all]))
 
 ;使用apache httpclient :dependencies [[org.apache.httpcomponents/httpclient "4.5.3"]]
 (import
