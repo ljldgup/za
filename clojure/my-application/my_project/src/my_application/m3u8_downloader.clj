@@ -61,7 +61,7 @@
       (catch  Exception e 
         (do 
             (println (.getMessage e))
-            (spit out_put_file 
+            (spit out_put_expect_file 
                 (str url (.getMessage e)) 
                 :append true)))))))
 ;(download_m3u8 "https://3bmmikh.life/new/hls/c6f169e6c2ff41109822d0187179eb69/index.m3u8")
