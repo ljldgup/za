@@ -4,6 +4,7 @@
 (def piece_count_limit 1000)
 (def rand_delay_limit 500)
 (def out_put_file "cmd.txt")
+(def out_put_expect_file "expect.txt")
 
 (def basic_url "https://3bmmikh.life/new/hls")
 
@@ -51,12 +52,18 @@
         ts_paths (get_ts_paths vedio_url)]
     (map println (list url vedio_base_url vedio_url ts_base_url))
     (if (< (count ts_paths) piece_count_limit)
-      (do
-        (spit out_put_file (get_ffmpeg_cmd local_path title) :append true)
+      (try
         (doseq [ts_path ts_paths]
             ;;增加一个随机延迟避免被网站屏蔽
-          (Thread/sleep (rand-int rand_delay_limit))
-          (cache_return_string (str ts_base_url ts_path)))))))
+          ;(Thread/sleep (rand-int rand_delay_limit))
+          (cache_return_string (str ts_base_url ts_path)))
+        (spit out_put_file (get_ffmpeg_cmd local_path title) :append true)
+      (catch  Exception e 
+        (do 
+            (println (.getMessage e))
+            (spit out_put_file 
+                (str url (.getMessage e)) 
+                :append true)))))))
 ;(download_m3u8 "https://3bmmikh.life/new/hls/c6f169e6c2ff41109822d0187179eb69/index.m3u8")
 
 (defn download_mimei [url]
