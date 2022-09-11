@@ -61,11 +61,12 @@
 
 (defn download_mimei [url]
   (let [[relate_index_url title] (get_url_name url)
-        index_url (str basic_url relate_index_url)]
+        index_url (str basic_url relate_index_url)
+        [relate_path _] (get_related_path_name index_url)]
     (try
         (download_m3u8 index_url)
-        (spit out_put_file (str "rem " url) :append true)
-        (spit out_put_file (get_ffmpeg_cmd (get_related_path_name url) title) :append true)
+        (spit out_put_file (str "rem " url "\r\n") :append true)
+        (spit out_put_file (get_ffmpeg_cmd relate_path title) :append true)
         (catch  Exception e 
         (do 
             (println (.getMessage e))
