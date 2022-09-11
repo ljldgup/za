@@ -43,51 +43,57 @@
 
 
 
-(defn download_m3u8 [url title]
+(defn download_m3u8 [url]
   (let [vedio_base_url (get_base_url url)
-        [local_path _] (get_related_path_name url)
         vedio_path (get_vedio_path url)
         vedio_url (str vedio_base_url vedio_path)
         ts_base_url (get_base_url vedio_url)
         ts_paths (get_ts_paths vedio_url)]
     (map println (list url vedio_base_url vedio_url ts_base_url))
     (if (< (count ts_paths) piece_count_limit)
-      (try
+      (do
         (doseq [ts_path ts_paths]
             ;;增加一个随机延迟避免被网站屏蔽
           ;(Thread/sleep (rand-int rand_delay_limit))
-          (cache_return_string (str ts_base_url ts_path)))
-        (spit out_put_file (get_ffmpeg_cmd local_path title) :append true)
-      (catch  Exception e 
-        (do 
-            (println (.getMessage e))
-            (spit out_put_expect_file 
-                (str url (.getMessage e)) 
-                :append true)))))))
+          (cache_return_string (str ts_base_url ts_path)))))))
+
 ;(download_m3u8 "https://3bmmikh.life/new/hls/c6f169e6c2ff41109822d0187179eb69/index.m3u8")
 
 (defn download_mimei [url]
   (let [[relate_index_url title] (get_url_name url)
         index_url (str basic_url relate_index_url)]
-    (download_m3u8 index_url title)))
+    (try
+        (download_m3u8 index_url)
+        (spit out_put_file (str "rem " url) :append true)
+        (spit out_put_file (get_ffmpeg_cmd (get_related_path_name url) title) :append true)
+        (catch  Exception e 
+        (do 
+            (println (.getMessage e))
+            (spit out_put_expect_file 
+                (str url " " (.getMessage e)) :append true))))))
 
 ;(download_mimei "https://3bmmnr0e.life/suoyoushipin/guochan/29796.html")
-(def urls_file "url_list.txt")
+
 (import (java.util.concurrent Executors ThreadPoolExecutor))
 (import (java.io BufferedReader FileReader))
+
+;线程池
 (defonce the-executor
   (Executors/newFixedThreadPool
     (-> (Runtime/getRuntime)
         (.availableProcessors)
         (* 2))))
 
-(defn download_mimeis_from_file[file_name]
+(def urls_file "url_list.txt")
+(defn mimeis_from_file[]
   (let [download_agent (agent 10)]
-    (with-open [rdr (BufferedReader. (FileReader. file_name))]
+    (with-open [rdr (BufferedReader. (FileReader. urls_file))]
         (doseq [url (line-seq rdr)] 
             ;future无法控制线程池。。
             ;(future (download_mimei url))
             (.submit the-executor #(download_mimei url))))))
+;(mimeis_from_file)
+
 
 (defn download_mimeis [url_list]
   (spit out_put_file "")

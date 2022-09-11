@@ -51,15 +51,17 @@
   ;(println 'binary_save url)
 
   (let [[relate_path file_name] (get_related_path_name url)
-        path_name (str relate_path file_name)]
+        path_name (str relate_path file_name)
+        tmp_path_name (str path_name ".tmp")]
     (if (not (exists path_name))
       (do
         (mkdirs relate_path)
         (let [httpGet (HttpGet. url)]
-          (println "write into " path_name)
+          (println "download into " path_name)
           (with-open [response (->> (.execute pooledClient httpGet) .getEntity .getContent)
-                      os (clojure.java.io/output-stream (str relate_path file_name))]
-            (clojure.java.io/copy response os))))
+                      os (clojure.java.io/output-stream tmp_path_name)]
+            (clojure.java.io/copy response os))
+          (mv tmp_path_name path_name)))
       (println "exists" path_name))
     path_name))
 
