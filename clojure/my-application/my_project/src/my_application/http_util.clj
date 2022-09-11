@@ -48,7 +48,7 @@
 
 
 (defn get_with_cache [url]
-  (println 'binary_save url)
+  ;(println 'binary_save url)
 
   (let [[relate_path file_name] (get_related_path_name url)
         path_name (str relate_path file_name)]

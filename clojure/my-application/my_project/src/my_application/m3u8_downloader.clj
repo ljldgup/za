@@ -72,8 +72,19 @@
     (download_m3u8 index_url title)))
 
 ;(download_mimei "https://3bmmnr0e.life/suoyoushipin/guochan/29796.html")
+(def urls_file "url_list.txt")
 
+(import (java.io BufferedReader FileReader))
+(defn download_mimeis_from_file[file_name]
+  (let [download_agent (agent 10)]
+    (with-open [rdr (BufferedReader. (FileReader. file_name))]
+        (doseq [url (line-seq rdr)] 
+            (send download_agent (fn[_](download_mimei url))))
+        (await download_agent))))
 
 (defn download_mimeis [url_list]
   (spit out_put_file "")
-  (doseq [url url_list] (download_mimei url)))
+  (let [download_agent (agent 10)]
+      (doseq [url url_list] 
+        (send download_agent (fn[_](download_mimei url))))
+      (await download_agent)))
