@@ -73,18 +73,24 @@
 
 ;(download_mimei "https://3bmmnr0e.life/suoyoushipin/guochan/29796.html")
 (def urls_file "url_list.txt")
-
+(import (java.util.concurrent Executors ThreadPoolExecutor))
 (import (java.io BufferedReader FileReader))
+(defonce the-executor
+  (Executors/newFixedThreadPool
+    (-> (Runtime/getRuntime)
+        (.availableProcessors)
+        (* 2))))
+
 (defn download_mimeis_from_file[file_name]
   (let [download_agent (agent 10)]
     (with-open [rdr (BufferedReader. (FileReader. file_name))]
         (doseq [url (line-seq rdr)] 
-            (send download_agent (fn[_](download_mimei url))))
-        (await download_agent))))
+            ;future无法控制线程池。。
+            ;(future (download_mimei url))
+            (.submit the-executor #(download_mimei url))))))
 
 (defn download_mimeis [url_list]
   (spit out_put_file "")
   (let [download_agent (agent 10)]
       (doseq [url url_list] 
-        (send download_agent (fn[_](download_mimei url))))
-      (await download_agent)))
+        (.submit the-executor #(download_mimei url)))))
