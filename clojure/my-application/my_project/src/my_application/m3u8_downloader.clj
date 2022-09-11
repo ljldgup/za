@@ -83,9 +83,16 @@
     (-> (Runtime/getRuntime)
         (.availableProcessors)
         (* 2))))
+        
+        
+        
+(defn clear_record[]
+  (spit out_put_file "")
+  (spit out_put_expect_file ""))
 
 (def urls_file "url_list.txt")
 (defn mimeis_from_file[]
+  (clear_record)
   (let [download_agent (agent 10)]
     (with-open [rdr (BufferedReader. (FileReader. urls_file))]
         (doseq [url (line-seq rdr)] 
@@ -96,7 +103,9 @@
 
 
 (defn download_mimeis [url_list]
+  (clear_record)
   (spit out_put_file "")
+  (spit out_put_expect_file "")
   (let [download_agent (agent 10)]
       (doseq [url url_list] 
         (.submit the-executor #(download_mimei url)))))
