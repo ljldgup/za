@@ -63,6 +63,8 @@ def p_expression_plus(p):
     'expression : expression PLUS term'
     #   ^            ^        ^    ^
     #  p[0]         p[1]     p[2] p[3]
+    # 这里expression，term不代表具体的值，只用来指代表达式的一部分，
+    # 左边的expression是加法结果，结合右边的expression说明 expression PLUS term结果还能作为expression来用，即这是一个递归定义
     p[0] = p[1] + p[3]
 
 def p_expression_minus(p):
