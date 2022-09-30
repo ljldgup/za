@@ -3,6 +3,7 @@ import hashlib
 import json
 import time
 
+#pip install paho-mqtt  -i https://mirrors.aliyun.com/pypi/simple/
 import paho.mqtt.client as mqtt
 
 
