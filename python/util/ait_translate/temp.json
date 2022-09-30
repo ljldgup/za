@@ -1,0 +1,19 @@
+{
+"clientId":"" //应用ID
+"redirectUrl":"" //Outh2重定向URL
+"clientName":"" //应用名称
+"signature":"" //签名方式,MD5或者SHA256
+"creatorId":"" //创建人
+"description":"" //应用描述
+"userId":"" //用户ID
+"enableOAuth2":"" //是否开启OAuth2
+"secureKey":"" //应用密钥
+"createTime":"" //创建时间
+"id":"" //id
+"ipWhiteList":"" //IP白名单,多个用,分隔
+"status":"" //状态
+"username":"" //用户名
+"destination":"" //准发目标
+"destinationUrl":"" //转发目标地址
+}
+
