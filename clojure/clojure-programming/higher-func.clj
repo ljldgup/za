@@ -170,6 +170,7 @@ identity直接返回入参
 
 ;group-by类似java
 (group-by #(mod % 3) (range 10))
+;group-by直接用聚类函数的值作为key，没必要提前算出来聚类的列！！
 
 ;partition-by拆分流，返回是处拆分流
  (partition-by #(= 3 %) [1 2 3 4 5])
