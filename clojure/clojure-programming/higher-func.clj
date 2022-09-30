@@ -14,6 +14,20 @@
 
 (map inc (range 10)) 
 ((map inc) (range 10))
+
+;; Used without a collection, map will create a transducer:
+(def xf (map inc))
+(transduce xf conj (range 5))
+;; => [1 2 3 4 5]
+
+;transduce 转换器+累加器+过滤器
+(def xf (comp (filter odd?) (take 10)))
+(transduce xf conj (range))
+;;=> [1 3 5 7 9 11 13 15 17 19]
+(transduce xf + (range))
+;; => 100
+
+
 (filter odd? (range 10))
 ((filter odd?) (range 10))
 
