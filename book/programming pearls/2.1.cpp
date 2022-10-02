@@ -24,9 +24,10 @@ void swap(int *nums, int left, int right, int swap_length){
 
 }
 
+//右移
 //left 开始值， right结束位置
-void rotate(int *nums, int left, int right, int rotate_length){
-	cout<<"rotate "<<left<<" "<<right<<" "<<rotate_length<<endl;
+void rotate_with_recursive(int *nums, int left, int right, int rotate_length){
+
 	
 	int length = right - left + 1;
 	if(rotate_length == 0 || length < rotate_length) return;
@@ -36,15 +37,48 @@ void rotate(int *nums, int left, int right, int rotate_length){
 	//这里使用min(length-rotate_length, rotate_length) 交换头尾，分情况进行递归
 	if(length/2 < length){
 		swap(nums, left, right, rotate_length);
-		rotate(nums, left + rotate_length, right, rotate_length);
+		rotate_with_recursive(nums, left + rotate_length, right, rotate_length);
 	}else if(length/2 == length){
 		swap(nums, left, right, rotate_length);
 	}else{
 		int new_rotate_length = length - rotate_length;
 		swap(nums, left, right, new_rotate_length);
-		rotate(nums, left, right - new_rotate_length, rotate_length - new_rotate_length);
-	}
+		rotate_with_recursive(nums, left, right - new_rotate_length, rotate_length - new_rotate_length);
+    }
 }
+
+void rotate_with_recursive(int *nums,  int rotate_length, int length){
+    cout<<"rotate_with_recursive "<<length<<" "<<rotate_length<<endl;
+    rotate_with_recursive(nums, 0, length - 1, rotate_length);
+}
+
+int gcd(int a, int b){
+    if(a < b) return gcd(b,a);
+    if(b==0) return a;
+    return gcd(b, a%b);
+}
+
+void swap_by_step(int *array, int start, int rotate_length, int length){
+    start = start % length;
+    int t = *(array + start);
+    int previous = start;
+    int current = (start - rotate_length + length) % length;
+    while(start != current){
+        *(array + previous) = *(array + current);
+        previous = current;
+        //加左移，减右移,  + length 防止负数的时候出问题
+        current = (current - rotate_length + length) % length;
+    }
+    *(array + previous) = t;
+}
+
+void rotate_by_step(int *nums,  int rotate_length, int length){
+    cout<<"rotate_by_step "<<length<<" "<<rotate_length<<endl;
+    int step = gcd(rotate_length, length);
+    for(int i = 0; i < step; i++) swap_by_step(nums, i, rotate_length,length);
+}
+
+
 
 
 const int length = 30;
@@ -54,10 +88,16 @@ int main(){
 	for(int i = 0;i< length; i++) cout<<nums[i]<<" ";
 	cout<<endl;
 
-	rotate(nums, 0, length - 1, random(length));
-
+    int rotate_length = random(length);
+    
+	rotate_with_recursive(nums, rotate_length, length);
 	for(int i = 0;i< length; i++) cout<<nums[i]<<" ";
 	cout<<endl;
-
+    
+    for(int i = 0;i< length; i++) nums[i] = i;
+    rotate_by_step(nums, rotate_length, length);
+	for(int i = 0;i< length; i++) cout<<nums[i]<<" ";
+	cout<<endl;
+    
 	return 0;
 }
