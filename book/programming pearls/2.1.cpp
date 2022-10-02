@@ -26,6 +26,7 @@ void swap(int *nums, int left, int right, int swap_length){
 
 //右移
 //left 开始值， right结束位置
+//输出理论上应该是旋转完成的结果
 void rotate_with_recursive(int *nums, int left, int right, int rotate_length){
 
 	
@@ -45,6 +46,7 @@ void rotate_with_recursive(int *nums, int left, int right, int rotate_length){
 		swap(nums, left, right, new_rotate_length);
 		rotate_with_recursive(nums, left, right - new_rotate_length, rotate_length - new_rotate_length);
     }
+
 }
 
 void rotate_with_recursive(int *nums,  int rotate_length, int length){
@@ -63,6 +65,7 @@ void swap_by_step(int *array, int start, int rotate_length, int length){
     int t = *(array + start);
     int previous = start;
     int current = (start - rotate_length + length) % length;
+    //循环不变式  previous 是 current 按步长rotate_length的上一步
     while(start != current){
         *(array + previous) = *(array + current);
         previous = current;
