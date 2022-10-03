@@ -361,3 +361,5 @@ not-every? not-any?效果类似
                       
 (areduce xs i ret (float 0)
                   (+ ret (aget xs i))))
+;数组设值
+(aset my-array 1 10)
