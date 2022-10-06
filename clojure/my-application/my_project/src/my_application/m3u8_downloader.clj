@@ -66,6 +66,7 @@
     (try
         (download_m3u8 index_url)
         (spit out_put_file (str "rem " url "\r\n") :append true)
+        (spit out_put_file (str "\r\n") :append true)
         (spit out_put_file (get_ffmpeg_cmd relate_path title) :append true)
         (catch  Exception e 
         (do 
@@ -94,12 +95,11 @@
 (def urls_file "url_list.txt")
 (defn mimeis_from_file[]
   (clear_record)
-  (let [download_agent (agent 10)]
-    (with-open [rdr (BufferedReader. (FileReader. urls_file))]
-        (doseq [url (line-seq rdr)] 
-            ;future无法控制线程池。。
-            ;(future (download_mimei url))
-            (.submit the-executor #(download_mimei url))))))
+  (with-open [rdr (BufferedReader. (FileReader. urls_file))]
+    (doseq [url (line-seq rdr)] 
+        ;future无法控制线程池。。
+        ;(future (download_mimei url))
+        (.submit the-executor #(download_mimei url)))))
 ;(mimeis_from_file)
 
 
@@ -107,6 +107,5 @@
   (clear_record)
   (spit out_put_file "")
   (spit out_put_expect_file "")
-  (let [download_agent (agent 10)]
-      (doseq [url url_list] 
-        (.submit the-executor #(download_mimei url)))))
+  (doseq [url url_list] 
+     (.submit the-executor #(download_mimei url))))
