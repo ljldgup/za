@@ -348,3 +348,18 @@ mapcat和java中flatmap相同，只展开一层
 or 效果类似，or 全不为真返回false
 every? 和 and和上面类同
 not-every? not-any?效果类似
+
+
+
+;数组
+(def an-array (int-array 25000 (int 0)))
+(amap ^ints an-array 
+                   idx 
+                   ret 
+                   (+ (int 1) 
+                      (aget ^ints an-array idx)))
+                      
+(areduce xs i ret (float 0)
+                  (+ ret (aget xs i))))
+;数组设值
+(aset my-array 1 10)

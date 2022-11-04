@@ -3,7 +3,8 @@ import random
 
 
 async def async_test(i):
-    # 必须await 否则不生效
+    # asyncio.sleep必须await 否则不生效
+    # await 必须在async 函数内
     await asyncio.sleep(random.random()*10)
     print(i)
 
