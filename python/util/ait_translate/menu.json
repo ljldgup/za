@@ -1,0 +1,887 @@
+[
+	{
+		"title": "总览",
+		"name": "overview",
+		"icon": "HomeOutlined",
+		"path": "/overview",
+		"type": "menu"
+	},
+	{
+		"title": "企业管理",
+		"name": "businessManage",
+		"icon": "PicCenterOutlined",
+		"path": "/businessManage",
+		"type": "menu",
+		"children": [
+			{
+				"title": "资源空间管理",
+				"name": "resourceSpace",
+				"icon": "CodepenOutlined",
+				"path": "/businessManage/resourceSpace",
+				"type": "menu",
+				"children": [
+					{
+						"title": "创建",
+						"name": "add",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "详情",
+						"name": "resourceSpaceDetail",
+						"path": "/businessManage/resourceSpace/detail",
+						"hiddenItem": true,
+						"type": "link",
+						"children": [
+							{
+								"title": "编辑",
+								"name": "edit",
+								"hiddenItem": true,
+								"type": "button"
+							}
+						]
+					},
+					{
+						"title": "删除",
+						"name": "delete",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			},
+			{
+				"title": "成员管理",
+				"name": "memberManage",
+				"icon": "TeamOutlined",
+				"path": "/businessManage/memberManage",
+				"type": "menu",
+				"children": [
+					{
+						"title": "创建",
+						"name": "add",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "批量删除",
+						"name": "batchDelete",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "授权",
+						"name": "author",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "编辑",
+						"name": "edit",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "安全设置",
+						"name": "safetySet",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "删除",
+						"name": "delete",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			},
+			{
+				"title": "北向应用管理",
+				"name": "northboundApplication",
+				"icon": "AppstoreOutlined",
+				"path": "/businessManage/northboundApplication",
+				"type": "menu",
+				"children": [
+					{
+						"title": "创建",
+						"name": "add",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "详情",
+						"name": "view",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "编辑",
+						"name": "edit",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "数据订阅设置",
+						"name": "dataSubscribeSetting",
+						"path": "/businessManage/northboundApplication/dataSubscribeSetting",
+						"hiddenItem": true,
+						"type": "link",
+						"children": [
+							{
+								"title": "创建",
+								"name": "add",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "详情",
+								"name": "view",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "编辑",
+								"name": "edit",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "删除",
+								"name": "delete",
+								"hiddenItem": true,
+								"type": "button"
+							}
+						]
+					},
+					{
+						"title": "删除",
+						"name": "delete",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			}
+		]
+	},
+	{
+		"title": "设备管理",
+		"name": "deviceManage",
+		"icon": "BoxPlotOutlined",
+		"path": "/deviceManage",
+		"type": "menu",
+		"children": [
+			{
+				"title": "产品",
+				"name": "product",
+				"icon": "LaptopOutlined",
+				"path": "/deviceManage/product",
+				"type": "menu",
+				"children": [
+					{
+						"title": "创建产品",
+						"name": "add",
+						"path": "/deviceManage/product/save",
+						"hiddenItem": true,
+						"type": "link"
+					},
+					{
+						"title": "标准产品",
+						"name": "standardProduct",
+						"path": "/deviceManage/product/standardProduct",
+						"hiddenItem": true,
+						"type": "link",
+						"children": [
+							{
+								"title": "标准产品详情",
+								"name": "standardProductDetail",
+								"path": "/deviceManage/product/standardProductDetail",
+								"hiddenItem": true,
+								"type": "link"
+							}
+						]
+					},
+					{
+						"title": "批量共享",
+						"name": "batchShare",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "从共享产品复制",
+						"name": "shareProduct",
+						"path": "/deviceManage/product/shareProduct",
+						"hiddenItem": true,
+						"type": "link",
+						"children": [
+							{
+								"title": "共享产品详情",
+								"name": "shareProductDetail",
+								"path": "/deviceManage/product/shareProductDetail",
+								"hiddenItem": true,
+								"type": "link",
+								"children": [
+									{
+										"title": "复制产品",
+										"name": "copyProduct",
+										"hiddenItem": true,
+										"type": "button"
+									}
+								]
+							},
+							{
+								"title": "复制产品",
+								"name": "copyProduct",
+								"hiddenItem": true,
+								"type": "button"
+							}
+						]
+					},
+					{
+						"title": "产品详情",
+						"name": "productDetail",
+						"path": "/deviceManage/product/detail",
+						"hiddenItem": true,
+						"type": "link",
+						"children": [
+							{
+								"title": "编辑",
+								"name": "edit",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "编辑标签",
+								"name": "editTag",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "发布",
+								"name": "publish",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "撤销发布",
+								"name": "noPublish",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "申请标准产品",
+								"name": "applyStandardProduct",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "编辑草稿",
+								"name": "editDraft",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "文件上传配置",
+								"name": "fileUploadConfig",
+								"hiddenItem": true,
+								"type": "button"
+							}
+						]
+					},
+					{
+						"title": "编辑产品",
+						"name": "edit",
+						"path": "/deviceManage/product/save",
+						"hiddenItem": true,
+						"type": "link"
+					},
+					{
+						"title": "共享",
+						"name": "share",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "取消共享",
+						"name": "noShare",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "发布",
+						"name": "publish",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "撤销",
+						"name": "noPublish",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "停用",
+						"name": "reactive",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "删除",
+						"name": "delete",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			},
+			{
+				"title": "设备",
+				"name": "device",
+				"icon": "DesktopOutlined",
+				"path": "/deviceManage/device",
+				"type": "menu",
+				"children": [
+					{
+						"title": "添加",
+						"name": "add",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "批量添加",
+						"name": "batchAdd",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "批量下载认证信息",
+						"name": "batchDownloadAuthInfo",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "批量删除",
+						"name": "batchDelete",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "批量导出",
+						"name": "batchExport",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "全部导出",
+						"name": "exportAll",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "设备详情",
+						"name": "deviceDetail",
+						"path": "/deviceManage/device/detail",
+						"hiddenItem": true,
+						"type": "link",
+						"children": [
+							{
+								"title": "编辑",
+								"name": "edit",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "属性配置",
+								"name": "attributeConfig",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "批量撤销",
+								"name": "batchReVoc",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "撤销",
+								"name": "reVoc",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "批量清空",
+								"name": "batchEmpty",
+								"hiddenItem": true,
+								"type": "button"
+							},
+							{
+								"title": "清除",
+								"name": "clear",
+								"hiddenItem": true,
+								"type": "button"
+							}
+						]
+					},
+					{
+						"title": "编辑",
+						"name": "edit",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "删除",
+						"name": "delete",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "子设备",
+						"name": "childDevice",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			},
+			{
+				"title": "设备分组",
+				"name": "deviceGrouping",
+				"icon": "GoldOutlined",
+				"path": "/deviceManage/deviceGrouping",
+				"type": "menu",
+				"children": [
+					{
+						"title": "详情",
+						"name": "view",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			}
+		]
+	},
+	{
+		"title": "南向服务",
+		"name": "southboundService",
+		"icon": "DatabaseOutlined",
+		"path": "/southboundService",
+		"type": "menu",
+		"children": [
+			{
+				"title": "协议管理",
+				"name": "protocolManage",
+				"icon": "WalletOutlined",
+				"path": "/southboundService/protocolManage",
+				"type": "menu",
+				"children": [
+					{
+						"title": "创建",
+						"name": "add",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "批量删除",
+						"name": "batchDelete",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "编辑",
+						"name": "edit",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "调试",
+						"name": "debug",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "启用",
+						"name": "enable",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "禁用",
+						"name": "disable",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "删除",
+						"name": "delete",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			},
+			{
+				"title": "网络组件",
+				"name": "networkCommon",
+				"icon": "DeploymentUnitOutlined",
+				"path": "/southboundService/networkCommon",
+				"type": "menu",
+				"children": [
+					{
+						"title": "创建",
+						"name": "add",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "批量删除",
+						"name": "batchDelete",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "编辑",
+						"name": "edit",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "启用",
+						"name": "enable",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "禁用",
+						"name": "disable",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "删除",
+						"name": "delete",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			},
+			{
+				"title": "设备网关",
+				"name": "deviceGateway",
+				"icon": "CloudServerOutlined",
+				"path": "/southboundService/deviceGateway",
+				"type": "menu",
+				"children": [
+					{
+						"title": "创建",
+						"name": "add",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "批量删除",
+						"name": "batchDelete",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "编辑",
+						"name": "edit",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "启动",
+						"name": "start",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "暂停",
+						"name": "suspend",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "恢复",
+						"name": "restOr",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "停止",
+						"name": "stop",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "删除",
+						"name": "delete",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			},
+			{
+				"title": "设备异常处理",
+				"name": "deviceError",
+				"icon": "QuestionCircleOutlined",
+				"path": "/southboundService/deviceError",
+				"type": "menu",
+				"children": [
+					{
+						"title": "解锁",
+						"name": "unlock",
+						"hiddenItem": true,
+						"type": "button"
+					},
+					{
+						"title": "移除黑名单",
+						"name": "removeBlacklist",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			}
+		]
+	},
+	{
+		"title": "证书管理",
+		"name": "certifyManage",
+		"icon": "BookOutlined",
+		"path": "/certifyManage",
+		"type": "menu",
+		"children": [
+			{
+				"title": "创建",
+				"name": "add",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "批量删除",
+				"name": "batchDelete",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "编辑",
+				"name": "edit",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "删除",
+				"name": "delete",
+				"hiddenItem": true,
+				"type": "button"
+			}
+		]
+	},
+	{
+		"title": "规则引擎",
+		"name": "ruleEngin",
+		"icon": "RetweetOutlined",
+		"path": "/ruleEngin",
+		"type": "menu",
+		"children": [
+			{
+				"title": "创建",
+				"name": "add",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "批量删除",
+				"name": "batchDelete",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "查看",
+				"name": "view",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "编辑",
+				"name": "edit",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "启动",
+				"name": "start",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "停止",
+				"name": "stop",
+				"hiddenItem": true,
+				"type": "button"
+			},
+			{
+				"title": "删除",
+				"name": "delete",
+				"hiddenItem": true,
+				"type": "button"
+			}
+		]
+	},
+	{
+		"title": "运维监控",
+		"name": "monitorOverMainTen",
+		"icon": "FundViewOutlined",
+		"path": "/monitorOverMainTen",
+		"type": "menu",
+		"children": [
+			{
+				"title": "告警中心",
+				"name": "alarmCenter",
+				"icon": "AlertOutlined",
+				"path": "/monitorOverMainTen/alarmCenter",
+				"type": "menu",
+				"children": [
+					{
+						"title": "当前告警",
+						"name": "currentAlarm",
+						"icon": "ExclamationCircleOutlined",
+						"path": "/monitorOverMainTen/alarmCenter/currentAlarm",
+						"type": "menu"
+					},
+					{
+						"title": "告警等级",
+						"name": "alarmLevel",
+						"icon": "RiseOutlined",
+						"path": "/monitorOverMainTen/alarmCenter/alarmLevel",
+						"type": "menu"
+					},
+					{
+						"title": "历史告警",
+						"name": "historyAlarm",
+						"icon": "HistoryOutlined",
+						"path": "/monitorOverMainTen/alarmCenter/historyAlarm",
+						"type": "menu"
+					}
+				]
+			}
+		]
+	},
+	{
+		"title": "通知管理",
+		"name": "noticeManage",
+		"icon": "MessageOutlined",
+		"path": "/noticeManage",
+		"type": "menu",
+		"children": [
+			{
+				"title": "通知配置",
+				"name": "noticeConfig",
+				"icon": "AlertOutlined",
+				"path": "/noticeManage/noticeConfig",
+				"type": "menu"
+			},
+			{
+				"title": "通知模板",
+				"name": "noticeTemplate",
+				"icon": "BellOutlined",
+				"path": "/noticeManage/noticeTemplate",
+				"type": "menu"
+			}
+		]
+	},
+	{
+		"title": "日志管理",
+		"name": "logManage",
+		"icon": "CalendarOutlined",
+		"path": "/logManage",
+		"type": "menu",
+		"children": [
+			{
+				"title": "访问日志",
+				"name": "accessLog",
+				"icon": "SmallDashOutlined",
+				"path": "/logManage/accessLog",
+				"type": "menu",
+				"children": [
+					{
+						"title": "详情",
+						"name": "view",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			},
+			{
+				"title": "系统日志",
+				"name": "systemLog",
+				"icon": "OrderedListOutlined",
+				"path": "/logManage/systemLog",
+				"type": "menu",
+				"children": [
+					{
+						"title": "详情",
+						"name": "view",
+						"hiddenItem": true,
+						"type": "button"
+					}
+				]
+			}
+		]
+	},
+	{
+		"title": "流媒体",
+		"name": "streamingMedia",
+		"icon": "VideoCameraOutlined",
+		"path": "/streamingMedia",
+		"type": "menu"
+	},
+	{
+		"title": "平台管理",
+		"name": "systemSetup",
+		"icon": "SettingOutlined",
+		"path": "/systemSetup",
+		"type": "menu",
+		"children": [
+			{
+				"title": "用户管理",
+				"name": "userManage",
+				"icon": "UserAddOutlined",
+				"path": "/systemSetup/userManage",
+				"type": "menu"
+			},
+			{
+				"title": "菜单管理",
+				"name": "menuManage",
+				"icon": "MenuOutlined",
+				"path": "/systemSetup/menuManage",
+				"type": "menu"
+			},
+			{
+				"title": "权限管理",
+				"name": "authorManage",
+				"icon": "SafetyOutlined",
+				"path": "/systemSetup/authorManage",
+				"type": "menu",
+				"children": [
+					{
+						"title": "角色类别管理",
+						"name": "roleClassManage",
+						"icon": "UserSwitchOutlined",
+						"path": "/systemSetup/authorManage/roleClassManage",
+						"type": "menu"
+					},
+					{
+						"title": "角色管理",
+						"name": "roleManage",
+						"icon": "UsergroupAddOutlined",
+						"path": "/systemSetup/authorManage/roleManage",
+						"type": "menu"
+					}
+				]
+			},
+			{
+				"title": "存储管理",
+				"name": "storageManage",
+				"icon": "FolderOutlined",
+				"path": "/systemSetup/storageManage",
+				"type": "menu"
+			}
+		]
+	}
+]
