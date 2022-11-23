@@ -49,11 +49,11 @@ def map_2_yml(properties, padding=""):
 
 
 if __name__ == '__main__':
-    path =r'C:\Users\jlli.AGIOEMA\Desktop\pro.txt'
+    path =r'test.properties'
     prop_map = split_properties(path)
     yml_txt = map_2_yml(prop_map)
-    with open(path+".yml",'w',encoding='utf-8') as f:
-        f.writelines(yml_txt)
+    # with open(path+".yml",'w',encoding='utf-8') as f:
+    #     f.writelines(yml_txt)
     print(yml_txt)
 
 

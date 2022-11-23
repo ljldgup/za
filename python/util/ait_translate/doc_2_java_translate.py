@@ -35,7 +35,7 @@ def gen_java(info):
 
 if __name__ == '__main__':
     # doc表复制出来，格式：menu_id	varchar(64)	菜单id
-    t = parse_file(r"C:\Users\jlli.AGIOEMA\Desktop\user.txt")
+    t = parse_file(r"temp.txt")
     t = list(map(
         lambda x: list(map(dash_to_camel, x)), t))
     code = gen_java(t)

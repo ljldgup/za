@@ -37,20 +37,18 @@ def gen_menu_sql(item):
                         item['parent_id'], item["hiddenItem"], item["order"], item["type"]]))
     sql = sql_format.format(*values)
 
-    if item["id"] != "-1": print(sql)
+    if item["order"]: print(sql)
 
     if 'children' not in item:
         return
 
-    order = 0
+    order = 1
     for child in item['children']:
         child['parent_id'] = item['id']
         child['level'] = item['level'] + 1
 
-        if 'order' not in child:
-            child['order'] = order
-            order += 1
-
+        child['order'] = item["order"] + str(order)
+        order += 1
         gen_menu_sql(child)
 
 
@@ -59,5 +57,6 @@ if __name__ == '__main__':
         menu_json = json.loads(f.read())
         root = {'id': '-1', 'title': '虚拟根目录', 'name': 'root', 'type': 'dummy', 'order': 1}
         root['children'] = menu_json
+        root['order'] = ""
         for menu in menu_json: menu['parent_id'] = '-1'
         gen_menu_sql(root)

@@ -1,0 +1,6 @@
+name	varchar(255)	等级名称
+Level	varchar(32)	报警等级
+color	text	等级颜色
+display_type	varchar(2)	颜色显示方式，字典
+alarm_level_display_type
+description	text	描述
