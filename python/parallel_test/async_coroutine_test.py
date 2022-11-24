@@ -1,5 +1,4 @@
 import asyncio
-import random
 
 import aioconsole
 
@@ -7,7 +6,7 @@ import aioconsole
 async def async_test(n: int):
     # asyncio.sleep必须await 否则不生效
     # await 必须在async 函数内
-    await asyncio.sleep(random.random() * 10)
+    await asyncio.sleep(5)
     print(n)
 
 
@@ -22,6 +21,15 @@ async def input_test():
     while True:
         num = await aioconsole.ainput()
         await asyncio.gather(async_test(int(num)))
+
+
+async def input_loop_test():
+    while True:
+        print("input")
+        num = await aioconsole.ainput()
+        print("complete")
+        # 将自己重新塞入任务,可以达到始终在监听输入的效果
+        await asyncio.gather(input_loop_test(), async_test(int(num)))
 
 
 if __name__ == '__main__':
@@ -40,4 +48,5 @@ if __name__ == '__main__':
 
     # asyncio.run(nest_test(10))
 
-    asyncio.run(input_test())
+    # asyncio.run(input_test())
+    asyncio.run(input_loop_test())
