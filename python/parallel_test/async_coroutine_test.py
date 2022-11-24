@@ -23,13 +23,14 @@ async def input_test():
         await asyncio.gather(async_test(int(num)))
 
 
-async def input_loop_test():
+# 推迟执行+递归有非常神奇的效果
+async def input_recursive_test():
     while True:
         print("input")
         num = await aioconsole.ainput()
         print("complete")
         # 将自己重新塞入任务,可以达到始终在监听输入的效果
-        await asyncio.gather(input_loop_test(), async_test(int(num)))
+        await asyncio.gather(input_recursive_test(), async_test(int(num)))
 
 
 if __name__ == '__main__':
@@ -49,4 +50,4 @@ if __name__ == '__main__':
     # asyncio.run(nest_test(10))
 
     # asyncio.run(input_test())
-    asyncio.run(input_loop_test())
+    asyncio.run(input_recursive_test())
