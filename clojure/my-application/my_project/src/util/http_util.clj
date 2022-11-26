@@ -1,4 +1,4 @@
-(ns my-application.http_util
+(ns util.http_util
   (:require [my-application.sys_util :refer :all]))
 
 ;使用apache httpclient :dependencies [[org.apache.httpcomponents/httpclient "4.5.3"]]

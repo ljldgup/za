@@ -1,5 +1,5 @@
 (ns my-application.m3u8-downloader
-  (:require [my-application.http_util :refer :all]))
+  (:require [util.http_util :refer :all]))
 
 (def piece_count_limit 1000)
 (def rand_delay_limit 500)
