@@ -127,6 +127,7 @@
             (cons-stream 
                 last-prime
                 (sieve 
+                    ;增加当前的素数不为因子作为过滤器
                     (stream-filter 
                         #(not= (rem % last-prime) 0) 
                         (stream-cdr stream)))))))

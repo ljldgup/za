@@ -230,3 +230,33 @@ case使用
 (for [x "xfsdf"] x)
 
 (assert (= 5 (+ 2 2)) "There are four lights!")
+
+----------------------------------------------------------
+
+(def a 1)
+
+;将b绑定到a上，即b是a的一个别名  var a 等价于#'a
+(def b (var a))
+;将显示#'user/a
+b
+
+(def c a)
+;将显示#'user/c
+c
+;b和c相当于c中指针传递和值传递，而java中除了基本类型只有指针传递
+
+(alter-var-root (var a) inc)
+;2
+
+(alter-var-root b inc)
+;3
+
+a
+(deref b)
+@b
+@#'a
+@(var a)
+;3
+
+c
+;1
