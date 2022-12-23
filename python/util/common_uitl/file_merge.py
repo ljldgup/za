@@ -3,7 +3,7 @@ import os
 if __name__ == '__main__':
     dir = r'C:\Users\jlli.AGIOEMA\Desktop\backup'
     files = os.listdir(dir)
-    with open('merge.txt','w') as m:
+    with open('merge.txt', 'w') as m:
         for file in files:
             path = os.path.join(dir,file)
             if not os.path.isfile(path):

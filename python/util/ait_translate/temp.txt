@@ -1,6 +1,14 @@
-name	varchar(255)	等级名称
-Level	varchar(32)	报警等级
-color	text	等级颜色
-display_type	varchar(2)	颜色显示方式，字典
-alarm_level_display_type
-description	text	描述
+Id
+device_id	varchar(64)	关联设备id
+conifg_type	varchar(32)	配置类型 动态属性dynamic_properties，消息 event，消息参数event_args，服务参数func_args
+code		标识 对应物模型中的标致
+parent_id		关联父记录，如
+access_mode	varchar(8)	R可读，W可写，RW读写
+readable	bool	设备读取
+begin_address	int8	起始地址
+addr_length	int8	地址长度
+read_function_code	varchar(8)	读功能码
+write_function_code	varchar(8)	写功能码
+access_way	varchar(8)	操作方式
+default_value	text	默认值
+evaluate_method	varchar(8)

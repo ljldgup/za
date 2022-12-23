@@ -2,6 +2,10 @@ import re
 
 from common_util import parse_file, dash_to_camel
 
+"""
+windows表格-》java
+"""
+
 
 def get_length(varchar):
     return re.search(r'\d+', varchar).group()
@@ -10,11 +14,16 @@ def get_length(varchar):
 def gen_java(info):
     code = ""
     for record in info:
-        if len(record) < 3:
+        record_len = len(record)
+        if record_len < 3:
             print(str(record) + " 长度太小")
             continue
 
-        code += '@Comment("{}")\n'.format(record[2])
+        if record_len >= 4:
+            code += '@Comment("{}:{}")\n'.format(record[2], record[3])
+        else:
+            code += '@Comment("{}")\n'.format(record[2])
+
         code += '@Schema(description = "{}")\n'.format(record[2])
         if 'var' in record[1].lower():
             length = get_length(record[1])
@@ -23,7 +32,7 @@ def gen_java(info):
         elif 'bool' in record[1].lower():
             code += '@Column\n'
             code += 'private Boolean {};\n'.format(record[0])
-        elif 'int8' in record[1].lower():
+        elif 'int' in record[1].lower():
             code += '@Column\n'
             code += 'private Long {};\n'.format(record[0])
         else:
