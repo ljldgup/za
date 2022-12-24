@@ -34,9 +34,6 @@ coljure相除默认分数，
 
 
 
-;#""表示正则, re-开头的几个正则操作
-(re-seq #"a.+?b" "adbacb")
-
 
 
 
@@ -230,3 +227,46 @@ case使用
 (for [x "xfsdf"] x)
 
 (assert (= 5 (+ 2 2)) "There are four lights!")
+
+----------------------------------------------------------
+
+(def a 1)
+
+;将b绑定到a上，即b是a的一个别名  var a 等价于#'a
+(def b (var a))
+;将显示#'user/a
+b
+
+(def c a)
+;将显示#'user/c
+c
+;b和c相当于c中指针传递和值传递，而java中除了基本类型只有指针传递
+
+(alter-var-root (var a) inc)
+;2
+
+(alter-var-root b inc)
+;3
+
+a
+(deref b)
+@b
+@#'a
+@(var a)
+;3
+
+c
+;1
+
+;;;;;;;;;;;;;;;;
+
+;#""表示正则, re-开头的几个正则操作
+(re-seq #"a.+?b" "adbacb")
+
+;也可以用于读取有转义的字符串 类似python r''的效果
+(str "sdf\b")
+;"sdf\\b"
+
+;这里不能用java String 的操作符，因为实际是java.util.regex.Pattern对象
+(clojure.string/includes? #"sd\ff" "sd\\")   
+;true  

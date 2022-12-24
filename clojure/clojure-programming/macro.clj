@@ -1,9 +1,14 @@
+;宏不光可以用在运算，也可以用在定义上，参见http-kit中的get等方法实现
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;常用宏
 ;doto 将第一个式子的结果加到后面每个列表的最后一个执行
 ;doto 适合java对象操作
+(doto 1 (println 1 ) (println 2 ) (println 3))
 ;->>,-> 是将每次计算的结果作为后一个表达式的参数
 ;->>放在结尾，->放在第二个
-(doto 1 (println 1 ) (println 2 ) (println 3))
 (->> 1 (println 1 ) (println 2 ) (println 3))
 (-> 1 (println 1 ) (println 2 ) (println 3))
 
