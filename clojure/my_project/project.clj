@@ -4,5 +4,5 @@
    [org.apache.httpcomponents/httpclient "4.5.3"]
    [com.alibaba/fastjson "1.2.83"]
    [http-kit "2.6.0"]
-   [org.clojure/data.json "2.4.0"]]
+   [org.clojure/data.json "2.4.0"]z]
   :repl-options {:init-ns web.m3u8-downloader})

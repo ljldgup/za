@@ -27,10 +27,14 @@
     (with-open [os (clojure.java.io/output-stream tmp_path_name)]
       (http/get  url {:as :stream}
                  (fn [{:keys [status headers body error opts]}]
+                   (print 'get_with_http_kit headers status)
                    (clojure.java.io/copy body os)
                    ))
       )
     (mv tmp_path_name path_name)))
+
+;(def http_get #'get_with_apache)
+(def http_get #'get_with_http_kit)
 
 (defn get_with_cache [url]
   ;(println 'binary_save url)
@@ -41,7 +45,7 @@
       (do
         (println "download into " path_name)
         (mkdirs relate_path)
-        (get_with_http_kit url path_name))
+        (@http_get url path_name))
       (println "exists" path_name))
     path_name))
 

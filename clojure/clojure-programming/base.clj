@@ -262,3 +262,11 @@ c
 
 ;#""表示正则, re-开头的几个正则操作
 (re-seq #"a.+?b" "adbacb")
+
+;也可以用于读取有转义的字符串 类似python r''的效果
+(str "sdf\b")
+;"sdf\\b"
+
+;这里不能用java String 的操作符，因为实际是java.util.regex.Pattern对象
+(clojure.string/includes? #"sd\ff" "sd\\")   
+;true  
