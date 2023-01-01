@@ -74,6 +74,18 @@ future 实现异步函数函数
 ;强制修改
 (reset! sarah "reset value")
 @sarah
+-----------------------
+;ref 引用
+(def names (ref []))
+;;=> #'user/names
+
+;; dosync 中作为一个事务，才能用alter改变其值
+(dosync
+    (alter names conj "zack"))
+;;=> ["zack"]
+
+(dosync
+    (ref-set names ["zack" "shelley"]))
 
 ------------------------------------------
 ;观察器

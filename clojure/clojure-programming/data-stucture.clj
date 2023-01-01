@@ -339,6 +339,10 @@ mapcat和java中flatmap相同，只展开一层
 ;增加首尾元素
 (partition 3 1 (concat [nil] (range 5) [nil]))
 
+;包含不到长度的元素
+(partition-all 4 [0 1 2 3 4 5 6 7 8 9])
+;;=> ((0 1 2 3) (4 5 6 7) (8 9))
+
 ;any?有任意元素返回true
 (any? '(false))
 ;some任意一个满足表达式为真的元素
